@@ -1,0 +1,110 @@
+/* ==============================================================================
+
+CSS Information
+
+ File name:      default.css
+
+ Style Info:     デフォルトのスタイルのリセット及び基本設定 for html5
+
+============================================================================= */
+
+* {
+	margin: 0px;
+	padding: 0px;
+	box-sizing: border-box;
+}
+
+html {
+	overflow-y: scroll;
+}
+
+main, article, aside, header, canvas, details, figcaption, figure, footer, nav, section, summary {
+	display: block;
+}
+
+table, pre, code, select, input, textarea, kbd, var, ins, del, samp, h1, h2, h3, h4, h5, h6 {
+	font-size:100%;
+}
+
+br {
+	vertical-align: middle;/* FFで改行あるなしで高さが微妙に変わるのを回避 */
+}
+
+address,cite,dfn,em,var {
+	font-style: normal;
+}
+
+img{
+	border: none;
+	vertical-align: bottom;
+	line-height: 1;
+	-ms-interpolation-mode: bicubic; /* 大きい画像縮小してもキレイ */
+}
+
+table {
+	border-spacing: 0;
+	border-collapse: collapse;
+}
+
+ul,ol,li {
+	list-style: none;
+}
+
+blockquote, q {
+	quotes: none;
+}
+
+abbr,acronym {
+	border: 0;
+	font-variant: normal;
+}
+
+form label {
+	cursor : pointer;
+}
+
+select option {
+	padding : 0 5px;
+}
+
+input, textarea{
+	margin:1px;
+	padding:2px;
+	line-height:1;
+}
+
+textarea{
+	overflow:auto;
+}
+
+input, button, textarea, select, optgroup, option {
+	font-family: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+}
+
+a {
+	cursor:pointer;
+}
+
+/* form系 */
+
+input[type="text"],input[type="password"],input[type="email"],input[type="tel"],input[type="url"],input[type="number"],input[type="time"],input[type="week"],input[type="month"],input[type="search"],input[type="button"],input[type="submit"],input[type="reset"], button, textarea {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background: transparent;
+	border: none;
+	border-radius: 0;
+	font: inherit;
+	outline: none;
+}
+
+textarea {
+	resize: vertical;
+}
+
+select::-ms-expand {
+	display: none;
+}
+
