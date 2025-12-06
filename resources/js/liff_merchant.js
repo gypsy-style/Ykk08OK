@@ -4,7 +4,8 @@ import liff from '@line/liff';
 async function main() {
     try {
         // LIFF IDを定義（envなどから設定できるようにするのが望ましい）
-        const liffId = window.LIFF_ID_MERCHANT_INFORMATION;
+        const liffId = window.LIFF_ID;
+        const liffIdRegister = window.LIFF_ID_REGISTER;
 
         if (!liffId) {
             throw new Error('LIFF IDが設定されていません。');
@@ -29,15 +30,19 @@ async function main() {
         console.log('アクセストークン:', accessToken);
 
         // サーバーにPOSTリクエストを送信してユーザーIDを取得
-        const merchantData = await fetchMerchantInformation(accessToken);
+        const userId = await fetchUserIdFromServer(accessToken);
 
-        if (merchantData) {
-            console.log('取得した店舗情報:', merchantData);
-            updateMerchantInformation(merchantData);
+        // ユーザーIDをフォームに設定
+        if (userId) {
+            console.log('ユーザーIDが取得されました:', userId);
+            setUserIdToForm(userId);
         } else {
-            console.warn('店舗情報が見つかりませんでした。');
+            console.warn('ユーザーIDが見つかりませんでした。');
             alert('ユーザーが未登録です。先にユーザー登録をしてください');
-            window.location.href = "https://liff.line.me/" + liffId;
+            // 登録画面へリダイレクト
+            window.location.href = "https://liff.line.me/"+liffIdRegister;
+            return false;
+
         }
     } catch (error) {
         console.error('エラーが発生しました:', error);
@@ -46,10 +51,9 @@ async function main() {
 }
 
 // サーバーにアクセストークンを送信してユーザーIDを取得
-async function fetchMerchantInformation(accessToken) {
-    console.log(accessToken);
+async function fetchUserIdFromServer(accessToken) {
     try {
-        const response = await fetch('/dhug84Ghsjd/get-merchant-information', {
+        const response = await fetch('/get-user-id', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -57,48 +61,28 @@ async function fetchMerchantInformation(accessToken) {
             },
             body: JSON.stringify({ access_token: accessToken }),
         });
-        console.log(response);
 
         if (!response.ok) {
             throw new Error(`サーバーリクエストエラー: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log(data);
-        return data || null;
+        return data.user_id || null;
     } catch (error) {
         console.error('サーバーからのユーザーID取得中にエラーが発生しました:', error);
         throw error;
     }
 }
 
-
-function updateMerchantInformation(data) {
-    document.getElementById('agency_name').textContent = data.agency_name || 'N/A';
-    document.getElementById('name').textContent = data.name || 'N/A';
-    document.getElementById('merchant_code').textContent = data.merchant_code || 'N/A';
-
-    document.getElementById('postal_code').textContent = data.postal_code || 'N/A';
-
-    document.getElementById('address').textContent = data.address || 'N/A';
-    document.getElementById('phone').textContent = data.phone || 'N/A';
-
-    // 編集画面のURLを生成
-    const merchantId = data.merchant_id;
-    window.EDIT_URL = window.EDIT_URL.replace(':id', merchantId);
-    $('#edit_link a').attr('href',window.EDIT_URL);
-
-    // ログイン中のユーザーと店舗のオーナーが同一かチェック
-    const userId = data.user_id;
-    const merchantUserId = data.merchant_user_id;
-    if(userId == merchantUserId) {
-         // 「登録情報を修正する」ボタンを表示
-         document.querySelector('.lmf-btn_box.btn_dgy.btn_small').style.display = 'block';
-         // 「登録スタッフ一覧」ボタンを表示
-         document.querySelector('.lmf-btn_box.member_list').style.display = 'block';
+// ユーザーIDをフォームのhiddenフィールドに設定
+function setUserIdToForm(userId) {
+    const userIdField = document.getElementById('user_id');
+    if (userIdField) {
+        userIdField.value = userId;
+    } else {
+        console.warn('フォーム内にユーザーIDフィールドが見つかりませんでした。');
     }
 }
-
 
 // メイン関数を呼び出す
 main();

@@ -27,7 +27,7 @@ async function main() {
         const currentPath = window.location.pathname;
         console.log(currentPath);
 
-        if (currentPath === '/dhug84Ghsjd/order/history') {
+        if (currentPath === '/order/history') {
             console.log('order history');
             const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
             const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : null;
@@ -41,7 +41,7 @@ async function main() {
             };
 
             // Laravelに注文データを送信
-            const response = await fetch('/dhug84Ghsjd/api/order/history', {
+            const response = await fetch('/api/order/history', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
