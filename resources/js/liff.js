@@ -41,7 +41,7 @@ async function main() {
             };
 
             // Laravelに注文データを送信
-            const response = await fetch('/api/order/history', {
+            const response = await fetch('/ykk08ok/api/order/history', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

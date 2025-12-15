@@ -72,7 +72,7 @@ async function main() {
             };
             console.log(payload);
 
-            const response = await fetch('/merchants/store_member', {
+            const response = await fetch('/ykk08ok/merchants/store_member', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

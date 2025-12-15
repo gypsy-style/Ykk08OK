@@ -39,7 +39,7 @@ async function main() {
         console.log(orderData);
 
         // Laravelに注文データを送信
-        const response = await fetch('/api/merchant/member_list', {
+        const response = await fetch('/ykk08ok/api/merchant/member_list', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -53,7 +53,7 @@ async function main() {
 // サーバーにアクセストークンを送信してユーザーIDを取得
 async function fetchUserIdFromServer(accessToken) {
     try {
-        const response = await fetch('/get-user-id', {
+        const response = await fetch('/ykk08ok/get-user-id', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

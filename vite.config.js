@@ -32,5 +32,5 @@ export default defineConfig({
         manifest: true,
         assetsInclude: ['**/*.jpg', '**/*.png', '**/*.jpeg', '**/*.gif', '**/*.svg']
     },
-    base: '/public/build/', // 環境変数を使用
+    base: '/ykk08ok/public/build/', // 環境変数を使用
 });

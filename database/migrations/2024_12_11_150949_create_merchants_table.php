@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('postal_code2', 4); // 郵便番号2
             $table->string('address'); // 住所
             $table->string('phone'); // 電話番号
-            $table->string('contact_person'); // 担当者
+            $table->string('contact_person')->nullable(); // 担当者（NULL許可）
             $table->unsignedBigInteger('user_id'); // ユーザーID
             $table->timestamps();
 
