@@ -56,6 +56,44 @@ class OrderController extends Controller
     }
 
     /**
+     * access_token から加盟店の member_rank を取得
+     */
+    public function getMemberRank(Request $request)
+    {
+        $accessToken = $request->input('access_token') ?? $request->input('accessToken');
+        if (!$accessToken) {
+            return response()->json(['error' => 'access_token is required'], 422);
+        }
+
+        $profile = $this->getLineProfile($accessToken);
+        if (!$profile) {
+            return response()->json(['error' => 'User not found or invalid token'], 404);
+        }
+        $lineId = $profile['line_id'];
+
+        $user = User::where('line_id', $lineId)->first();
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // オーナー or メンバーから加盟店を特定
+        $merchant = Merchant::where('user_id', $user->id)->first();
+        if (!$merchant) {
+            $merchantMember = MerchantMember::where('user_id', $user->id)->first();
+            if ($merchantMember) {
+                $merchant = Merchant::find($merchantMember->merchant_id);
+            }
+        }
+        if (!$merchant) {
+            return response()->json(['error' => 'Merchant not found'], 404);
+        }
+
+        return response()->json([
+            'member_rank' => (int) ($merchant->member_rank ?? 1),
+        ]);
+    }
+
+    /**
      * カード画面
      * @param Request $request 
      * @return View|Factory 
@@ -80,6 +118,16 @@ class OrderController extends Controller
             return redirect()->back()->withErrors(['line_id' => 'ユーザーが見つかりません。']);
         }
         $userId = $user->id;
+
+        // 加盟店を特定（オーナー or メンバー）
+        $merchant = Merchant::where('user_id', $userId)->first();
+        if (!$merchant) {
+            $merchantMember = MerchantMember::where('user_id', $userId)->first();
+            if ($merchantMember) {
+                $merchant = Merchant::find($merchantMember->merchant_id);
+            }
+        }
+        $memberRank = (int) ($merchant->member_rank ?? 1);
 
         // 2. item_number_{商品ID} フォーマットのデータを抽出
         $items = [];
@@ -109,9 +157,10 @@ class OrderController extends Controller
             $actualQuantity = $quantity * $product->unit_quantity; // 注文個数 × 商品入数
             $product->quantity = $quantity; // 各商品の個数を追加
             $product->actual_quantity = $actualQuantity; // 実際の個数を追加
-            $product->subtotal = $product->price * $quantity; // 小計を計算
+            $unitPrice = $product->getPriceForRank($memberRank);
+            $product->subtotal = $unitPrice * $quantity; // 小計を計算（ランク価格）
             // 税込単価（10%）を表示用に付与
-            $product->price_with_tax = (int) round($product->price * 1.1);
+            $product->price_with_tax = (int) round($unitPrice * 1.1);
             $totalPrice += $product->subtotal; // 合計に加算
             $totalQuantity += $product->quantity; // 合計に加算
         }
@@ -185,7 +234,8 @@ class OrderController extends Controller
         $totalPrice = 0;
 
         foreach ($products as $product) {
-            $totalPrice += $product->price * $items[$product->id];
+            $unitPrice = $product->getPriceForRank((int) ($merchant->member_rank ?? 1));
+            $totalPrice += $unitPrice * $items[$product->id];
         }
         // 送料の計算（20,000円以下なら770円）
         $shippingFee = ($totalPrice <= 20000) ? 770 : 0;
@@ -215,11 +265,12 @@ class OrderController extends Controller
             foreach ($products as $product) {
                 // メイン商品を登録（DBには実際の個数を保存）
                 $actualQuantity = $items[$product->id];
+                $unitPrice = $product->getPriceForRank((int) ($merchant->member_rank ?? 1));
                 DB::table('order_details')->insert([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'quantity' => $actualQuantity, // 注文個数 × 商品入数
-                    'price' => $product->price,
+                    'price' => $unitPrice,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

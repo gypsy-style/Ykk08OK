@@ -50,6 +50,15 @@
                 <dt><label for="price">サロン価格</label></dt>
                 <dd><input type="number" name="price" id="price" class="form-control" required></dd>
 
+                <dt><label for="price_1">価格1（会員ランク1）</label></dt>
+                <dd><input type="number" name="price_1" id="price_1" class="form-control" placeholder="未入力ならサロン価格を使用"></dd>
+
+                <dt><label for="price_2">価格2（会員ランク2）</label></dt>
+                <dd><input type="number" name="price_2" id="price_2" class="form-control" placeholder="未入力ならサロン価格を使用"></dd>
+
+                <dt><label for="price_3">価格3（会員ランク3）</label></dt>
+                <dd><input type="number" name="price_3" id="price_3" class="form-control" placeholder="未入力ならサロン価格を使用"></dd>
+
                 <dt><label for="wholesale_price">代理店価格</label></dt>
                 <dd><input type="number" name="wholesale_price" id="wholesale_price" class="form-control"></dd>
 

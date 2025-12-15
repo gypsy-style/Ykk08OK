@@ -22,6 +22,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('volume')->nullable();
             $table->integer('price');
+            $table->integer('price_1')->nullable();
+            $table->integer('price_2')->nullable();
+            $table->integer('price_3')->nullable();
             $table->integer('wholesale_price')->nullable();
             $table->integer('retail_price')->nullable();
             $table->integer('tax_rate');

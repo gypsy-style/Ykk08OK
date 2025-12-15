@@ -27,7 +27,7 @@ async function main() {
         const currentPath = window.location.pathname;
         console.log(currentPath);
 
-        if (currentPath === '/order/history') {
+        if (currentPath.endsWith('/ykk08ok/order/history')) {
             console.log('order history');
             const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
             const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : null;
@@ -62,6 +62,33 @@ async function main() {
             }
         } else {
             console.log('This is not the /order/history page. Skipping order data processing.');
+        }
+
+        // 注文一覧（/order/list）では、member_rank に応じて表示価格を切り替える
+        if (currentPath.endsWith('/order/list')) {
+            const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : null;
+            if (csrfToken) {
+                try {
+                    const resp = await fetch('/ykk08ok/api/merchant/member_rank', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({ access_token: accessToken }),
+                    });
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        const rank = parseInt(data.member_rank, 10);
+                        if ([1, 2, 3].includes(rank)) {
+                            applyRankPriceToOrderList(rank);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch member_rank:', e);
+                }
+            }
         }
 
         // 送信前のガード: トークン未設定なら再取得を試みる
@@ -157,6 +184,26 @@ function renderOrderHistory(orders) {
         `;
 
         orderContainer.innerHTML += orderBlock; // Append the order block to the container
+    });
+}
+
+function applyRankPriceToOrderList(rank) {
+    const inputs = document.querySelectorAll('input[name^="item_number_"]');
+    inputs.forEach((input) => {
+        const priceDefault = input.getAttribute('data-price-default');
+        const priceRank = input.getAttribute(`data-price-${rank}`);
+        const effective = (priceRank !== null && priceRank !== '') ? priceRank : priceDefault;
+        if (effective === null || effective === '') return;
+
+        // 価格表示
+        const itemWrap = input.closest('.item_cartin');
+        const priceEl = itemWrap ? itemWrap.querySelector('.item_price') : null;
+        if (priceEl) {
+            const num = Number(effective);
+            priceEl.innerHTML = `${num.toLocaleString()}円<small class="tax">(税込)</small>`;
+        }
+        // 計算用（line_form_order.js が data-price を参照）
+        input.setAttribute('data-price', effective);
     });
 }
 

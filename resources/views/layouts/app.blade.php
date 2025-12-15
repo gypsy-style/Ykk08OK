@@ -6,6 +6,7 @@
 	<meta name="format-detection" content="telephone=no" />
 	<!-- 条件分岐でCSRFトークンを挿入 -->
 	@if (Route::is('order.history') 
+	OR Route::is('order.list')
 	OR Request::is('merchants/create') 
 	OR Request::is('merchants/information')
 	OR Request::is('merchants/member_list')

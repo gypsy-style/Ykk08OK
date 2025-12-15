@@ -48,6 +48,7 @@ Route::get('/order/detail/{order}', [UserOrderController::class, 'detail'])->nam
 // API
 Route::post('/api/order/history', [UserOrderController::class, 'getOrderHistory']);
 Route::post('/api/merchant/member_list', [UserMerchantController::class, 'getMemberList']);
+Route::post('/api/merchant/member_rank', [UserOrderController::class, 'getMemberRank']);
 Route::post('/api/order/cancel', [UserOrderController::class, 'cancel'])->name('order.cancel');
 
 

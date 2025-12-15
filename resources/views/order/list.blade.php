@@ -55,10 +55,26 @@
 											<div class="item_info">
 												<span class="item_name">{{ $product->set_sale_name ?: $product->product_name }}</span>
 												<div class="item_cartin">
-													<b class="item_price">{{ number_format($product->price_with_tax) }}円<small class="tax">(税込)</small></b>
+													@php
+														$defaultTax = (int) round(($product->price ?? 0) * 1.1);
+														$rank1Tax = $product->price_1 !== null ? (int) round($product->price_1 * 1.1) : null;
+														$rank2Tax = $product->price_2 !== null ? (int) round($product->price_2 * 1.1) : null;
+														$rank3Tax = $product->price_3 !== null ? (int) round($product->price_3 * 1.1) : null;
+													@endphp
+													<b class="item_price"
+														data-price-default="{{ $defaultTax }}"
+														data-price-1="{{ $rank1Tax ?? '' }}"
+														data-price-2="{{ $rank2Tax ?? '' }}"
+														data-price-3="{{ $rank3Tax ?? '' }}"
+													>{{ number_format($defaultTax) }}円<small class="tax">(税込)</small></b>
 													<button class="minus" type="button">－</button><input
 														data-name="{{ $product->product_name }}" data-pid="{{ $product->product_code }}"
-														data-price="{{ $product->price_with_tax }}" name="item_number_{{ $product->id }}" type="text" value="0"><button
+														data-price="{{ $defaultTax }}"
+														data-price-default="{{ $defaultTax }}"
+														data-price-1="{{ $rank1Tax ?? '' }}"
+														data-price-2="{{ $rank2Tax ?? '' }}"
+														data-price-3="{{ $rank3Tax ?? '' }}"
+														name="item_number_{{ $product->id }}" type="text" value="0"><button
 														class="plus" type="button">＋</button>
 												</div>
 											</div>
