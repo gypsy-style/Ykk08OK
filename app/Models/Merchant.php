@@ -19,12 +19,17 @@ class Merchant extends Model
         'name',
         'merchant_code',
         'status',
+        'member_rank',
         'postal_code1',
         'postal_code2',
         'address',
         'phone',
         'contact_person',
         'user_id',
+    ];
+
+    protected $casts = [
+        'member_rank' => 'integer',
     ];
 
     public function user()

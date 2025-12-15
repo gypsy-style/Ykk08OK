@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // 店舗名
             $table->tinyInteger('status'); // ステータス (1, 2)
+            $table->integer('member_rank')->default(1); // 会員ランク（1〜3）
             $table->string('postal_code1', 3); // 郵便番号1
             $table->string('postal_code2', 4); // 郵便番号2
             $table->string('address'); // 住所

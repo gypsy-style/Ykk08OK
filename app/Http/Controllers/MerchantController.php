@@ -53,7 +53,8 @@ class MerchantController extends Controller
                 'phone' => 'required|string|max:15',
             ]);
 
-            $merchant->update($request->all());
+            // 会員ランクは agency/admin の create/edit からのみ更新できる仕様
+            $merchant->update($request->except(['member_rank']));
 
             return response()->json([
                 'success' => true,
@@ -104,7 +105,11 @@ class MerchantController extends Controller
             $line_id = $user->line_id;
 
             // 店舗情報を作成
-            $merchant = Merchant::create($request->all());
+            // 会員ランクは agency/admin の create/edit からのみ更新できる仕様なので、ここでは固定で1
+            $merchant = Merchant::create(array_merge(
+                $request->except(['member_rank']),
+                ['member_rank' => 1]
+            ));
 
             // リッチメニュー更新
             $richmenu_id_3 = env('RICHMENU_ID_3');

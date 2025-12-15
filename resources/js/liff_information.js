@@ -49,7 +49,7 @@ async function main() {
 async function fetchMerchantInformation(accessToken) {
     console.log(accessToken);
     try {
-        const response = await fetch('/get-merchant-information', {
+        const response = await fetch('/ykk08ok/get-merchant-information', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -25,6 +25,15 @@
                     </select>
                 </dd>
 
+                <dt><label for="member_rank">会員ランク</label></dt>
+                <dd>
+                    <select class="form-control" id="member_rank" name="member_rank">
+                        <option value="1" {{ (string)old('member_rank', 1) === '1' ? 'selected' : '' }}>1</option>
+                        <option value="2" {{ (string)old('member_rank', 1) === '2' ? 'selected' : '' }}>2</option>
+                        <option value="3" {{ (string)old('member_rank', 1) === '3' ? 'selected' : '' }}>3</option>
+                    </select>
+                </dd>
+
                 <dt><label for="product_image">郵便番号1</label></dt>
                 <dd><input type="text" class="form-control" id="postal_code1" name="postal_code1" value="{{ old('postal_code1') }}" required></dd>
 
