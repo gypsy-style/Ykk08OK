@@ -64,3 +64,17 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## ローカル（Docker）で注文フローを通す手順（dummy_token）
+
+- 前提: `APP_ENV=local` で起動していること（Docker環境）
+- `dummy_token` でLINE APIを呼ばずに固定の `line_id` を返すモックが入っています（`DUMMY_LINE_ID` を使用）
+
+### 手順
+
+```bash
+docker-compose exec php_ykk08ok php artisan migrate
+docker-compose exec php_ykk08ok php artisan db:seed --class=LocalOrderTestSeeder
+```
+
+ブラウザで `http://localhost:8883/ykk08ok/order/list` を開き、商品を選択して注文完了まで確認してください。

@@ -50,13 +50,13 @@
                 <dt><label for="price">サロン価格</label></dt>
                 <dd><input type="number" name="price" id="price" class="form-control" required></dd>
 
-                <dt><label for="price_1">価格1（会員ランク1）</label></dt>
+                <dt><label for="price_1">サロン価格1</label></dt>
                 <dd><input type="number" name="price_1" id="price_1" class="form-control" placeholder="未入力ならサロン価格を使用"></dd>
 
-                <dt><label for="price_2">価格2（会員ランク2）</label></dt>
+                <dt><label for="price_2">サロン価格2</label></dt>
                 <dd><input type="number" name="price_2" id="price_2" class="form-control" placeholder="未入力ならサロン価格を使用"></dd>
 
-                <dt><label for="price_3">価格3（会員ランク3）</label></dt>
+                <dt><label for="price_3">サロン価格3</label></dt>
                 <dd><input type="number" name="price_3" id="price_3" class="form-control" placeholder="未入力ならサロン価格を使用"></dd>
 
                 <dt><label for="wholesale_price">代理店価格</label></dt>
@@ -71,11 +71,7 @@
                 <dt><label for="jan">JAN</label></dt>
                 <dd><input type="text" name="jan" id="jan" class="form-control"></dd>
 
-                <dt><label for="jan">スタッフ商品コード</label></dt>
-                <dd><input type="text" name="salon_product_code" id="salon_product_code" class="form-control"></dd>
-
-                <dt><label for="retail_price">スタッフセール価格</label></dt>
-                <dd><input type="number" name="salon_price" id="salon_price" class="form-control"></dd>
+                {{-- スタッフ商品コード / スタッフセール価格（salon_*）は不要のため無効化 --}}
 
                 <dt><label for="lot">商品ロット</label></dt>
                 <dd>

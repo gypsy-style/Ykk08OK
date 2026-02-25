@@ -72,11 +72,7 @@
                 <dt><label for="jan">JAN</label></dt>
                 <dd><input type="text" name="jan" id="jan" value="{{ old('jan', $product->jan) }}"></dd>
 
-                <dt><label for="jan">スタッフ商品コード</label></dt>
-                <dd><input type="text" name="salon_product_code" id="salon_product_code" value="{{ old('jan', $product->salon_product_code) }}"></dd>
-
-                <dt><label for="retail_price">スタッフセール価格</label></dt>
-                <dd><input type="number" name="salon_price" id="salon_price" value="{{ old('jan', $product->salon_price) }}"></dd>
+                {{-- スタッフ商品コード / スタッフセール価格（salon_*）は不要のため無効化 --}}
                 <dt><label for="lot">商品ロット</label></dt>
                 <dd>
                     <textarea name="lot" id="lot">{{ old('lot', $product->lot ?? '') }}</textarea>

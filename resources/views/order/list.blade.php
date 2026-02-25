@@ -90,7 +90,7 @@
 						</div>
 					</div>
 				</div><!-- .main_splide -->
-				<input type="hidden" name="access_token" value="" id="access_token">
+				<input type="hidden" name="access_token" value="{{ app()->environment('local') ? 'dummy_token' : '' }}" id="access_token">
 			</form>
 		</div>
 	</main>
@@ -222,12 +222,14 @@
 
 @endsection
 @push('scripts')
-<script>
-	window.LIFF_ID = "{{ config('app.order_liff_id') }}";
-</script>
-@vite(['resources/js/liff.js'])
-<script>
-	// liff.js の初期化や設定をここに記述
-	// LIFF initialization code
-</script>
+@if (!app()->environment('local'))
+	<script>
+		window.LIFF_ID = "{{ config('app.order_liff_id') }}";
+	</script>
+	@vite(['resources/js/liff.js'])
+	<script>
+		// liff.js の初期化や設定をここに記述
+		// LIFF initialization code
+	</script>
+@endif
 @endpush

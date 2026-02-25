@@ -21,6 +21,15 @@ class Controller extends BaseController
      */
     public function getLineProfile(string $accessToken): ?array
     {
+        // ローカルテスト用：dummy_* トークンの場合は外部LINE APIを呼ばず固定値を返す
+        if (app()->environment('local') && str_starts_with($accessToken, 'dummy_')) {
+            $dummyLineId = env('DUMMY_LINE_ID', 'DUMMY_LINE_ID');
+            return [
+                'line_id' => $dummyLineId,
+                'display_name' => 'Dummy User',
+            ];
+        }
+
         $url = 'https://api.line.me/v2/profile';
         $headers = [
             'Authorization' => 'Bearer ' . $accessToken,
