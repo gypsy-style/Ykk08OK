@@ -255,7 +255,7 @@ class OrderController extends Controller
                 'user_id' => $userId,
                 'total_price' => $totalPrice,
                 'shipping_fee' => $shippingFee,
-                'status' => 1, // 初期ステータス
+                'status' => 2, // 初期ステータス
                 'memo' => $memo, 
                 'created_at' => now(),
                 'updated_at' => now(),
