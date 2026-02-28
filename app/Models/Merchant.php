@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class Merchant extends Model
 {
@@ -31,6 +33,24 @@ class Merchant extends Model
     protected $casts = [
         'member_rank' => 'integer',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function (Merchant $merchant) {
+            if (empty($merchant->merchant_code)) {
+                $merchant->merchant_code = self::generateUniqueMerchantCode();
+            }
+        });
+    }
+
+    public static function generateUniqueMerchantCode(): string
+    {
+        do {
+            $code = 'GOON-' . Str::upper(Str::random(4));
+        } while (DB::table('merchants')->where('merchant_code', $code)->exists());
+
+        return $code;
+    }
 
     public function user()
     {

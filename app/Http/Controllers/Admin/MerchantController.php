@@ -29,7 +29,12 @@ class MerchantController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'merchant_code' => 'required|string|max:255',
+            'merchant_code' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('merchants', 'merchant_code'),
+            ],
             'status' => 'required|integer|in:1,2',
             'member_rank' => 'required|integer|in:1,2,3',
             'postal_code1' => 'required|string|max:3',
@@ -64,7 +69,12 @@ class MerchantController extends Controller
         try{
             $request->validate([
                 'name' => 'required|string|max:255',
-                'merchant_code' => 'required|string|max:255',
+                'merchant_code' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('merchants', 'merchant_code')->ignore($id),
+                ],
                 'status' => 'required|integer|in:1,2',
                 'member_rank' => 'required|integer|in:1,2,3',
                 'postal_code1' => 'required|string|max:3',
