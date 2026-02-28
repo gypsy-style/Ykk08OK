@@ -20,6 +20,7 @@ class Merchant extends Model
         'agency_id',
         'name',
         'merchant_code',
+        'campaign_code',
         'status',
         'member_rank',
         'postal_code1',

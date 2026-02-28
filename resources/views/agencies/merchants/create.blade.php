@@ -17,6 +17,9 @@
                 <dt><label for="product_code">サロンコード</label></dt>
                 <dd><input type="text" class="form-control" id="merchant_code" name="merchant_code" value="{{ old('merchant_code') }}" required></dd>
 
+                <dt><label for="campaign_code">キャンペーンコード（任意）</label></dt>
+                <dd><input type="text" class="form-control" id="campaign_code" name="campaign_code" value="{{ old('campaign_code') }}"></dd>
+
                 <dt><label for="category_id">ステータス</label></dt>
                 <dd>
                     <select class="form-control" id="status" name="status">

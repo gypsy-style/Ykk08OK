@@ -51,6 +51,7 @@ class MerchantController extends Controller
                 'postal_code2' => 'required|string|size:4',
                 'address' => 'required|string|max:255',
                 'phone' => 'required|string|max:15',
+                'campaign_code' => 'nullable|string|max:255',
             ]);
 
             // 会員ランクは agency/admin の create/edit からのみ更新できる仕様
@@ -79,6 +80,7 @@ class MerchantController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'status' => 'required|integer|in:1,2',
+                'campaign_code' => 'nullable|string|max:255',
                 'postal_code1' => 'required|string|size:3',
                 'postal_code2' => 'required|string|size:4',
                 'address' => 'required|string|max:255',

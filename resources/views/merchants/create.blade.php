@@ -18,6 +18,8 @@
                     <dd><input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" required></dd>
                     <dt>サロンコード</dt>
 						<dd><input type="text" name="merchant_code" id="merchant_code" class="form-control" value="{{ old('merchant_code') }}" required></dd>
+                    <dt>キャンペーンコード（任意）</dt>
+						<dd><input type="text" name="campaign_code" id="campaign_code" class="form-control" value="{{ old('campaign_code') }}"></dd>
                         <dt>郵便番号 (前半3桁)</dt>
 						<dd><input type="text" name="postal_code1" id="postal_code1" class="form-control" maxlength="3" value="{{ old('postal_code1') }}" required></dd>
                         <dt>郵便番号 (後半4桁)</dt>
