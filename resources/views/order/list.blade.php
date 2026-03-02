@@ -5,6 +5,18 @@
 
 <div class="lmf-container">
 
+	{{-- 原因確認用: register から redirect()->back() で戻ったときに表示 --}}
+	@error('line_id')
+		<div style="padding:12px;margin-bottom:12px;background:#fee;border:1px solid #c00;border-radius:4px;color:#c00;">
+			<strong>エラー:</strong> {{ $message }}
+		</div>
+	@enderror
+	@if($errors->any())
+		<div style="padding:12px;margin-bottom:12px;background:#fef3cd;border:1px solid #856404;border-radius:4px;color:#856404;">
+			@foreach($errors->all() as $err) {{ $err }} @endforeach
+		</div>
+	@endif
+
 	<script>
 		// 基本設定 ///////////////////////////////////////
 		var tax = 1;
