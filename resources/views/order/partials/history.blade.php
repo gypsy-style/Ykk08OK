@@ -27,7 +27,7 @@ $orderStatusLabel = $statusLabels[$order->status] ?? '不明なステータス';
             <span class="text">{{ $order->created_at->format('Y/m/d') }}</span>
         </li>
         <li><em class="label">注文合計金額</em>
-            <span class="text">{{ number_format($order->total_price) }}円</span>
+            <span class="text">{{ number_format($order->total_price_included) }}円</span>
         </li>
         <li><em class="label">ステータス</em>
             <span class="text">{{ $orderStatusLabel }}</span>

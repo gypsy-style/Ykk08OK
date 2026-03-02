@@ -413,6 +413,11 @@ class OrderController extends Controller
             ->orderBy('created_at', 'desc') // 追加: created_at を降順でソート
             ->get();
 
+        // 表示用に税込注文合計を付与（商品合計税込 + 送料）
+        $orders->each(function ($order) {
+            $order->total_price_included = (int) round($order->total_price * 1.1) + ($order->shipping_fee ?? 0);
+        });
+
         // BladeでHTMLをレンダリング
         $html = $this->renderDetailHtml($orders);
 
