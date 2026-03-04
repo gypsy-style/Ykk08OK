@@ -109,7 +109,7 @@ class MerchantController extends Controller
             // 店舗情報を作成
             // 会員ランクは agency/admin の create/edit からのみ更新できる仕様なので、ここでは固定で1
             $merchant = Merchant::create(array_merge(
-                $request->except(['member_rank']),
+                $request->except(['member_rank', 'merchant_code']),
                 ['member_rank' => 1]
             ));
 
