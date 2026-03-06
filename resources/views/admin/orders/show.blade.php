@@ -64,8 +64,8 @@ default: return $action;
 						<td></td>
 						<td>
 							@if($order->status === 2)
-								<input type="number" id="shipping-fee-input" value="{{ $order->shipping_fee }}" min="0" style="width:100px;">円
-								<button type="button" id="shipping-fee-save">保存</button>
+								<input type="number" id="shipping-fee-input" value="{{ $order->shipping_fee }}" min="0" style="width:100px; padding:4px 8px; border:1px solid #aaa; border-radius:4px; background:#fff; color:#333; font-size:14px;">円
+								<button type="button" id="shipping-fee-save" style="margin-left:8px; padding:4px 12px; background:#4a90d9; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;">保存</button>
 							@else
 								{{ $order->shipping_fee }}円
 							@endif
