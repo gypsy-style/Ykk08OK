@@ -17,9 +17,6 @@
                     <dt>サロン名</dt>
                     <dd><input type="text" name="name" id="name" class="form-control" value="{{ old('name', $merchant->name) }}" required></dd>
 
-                    <dt>キャンペーンコード（任意）</dt>
-                    <dd><input type="text" name="campaign_code" id="campaign_code" class="form-control" value="{{ old('campaign_code', $merchant->campaign_code) }}"></dd>
-
                     <dt>郵便番号 (前半3桁)</dt>
                     <dd><input type="text" name="postal_code1" id="postal_code1" class="form-control" maxlength="3" value="{{ old('postal_code1', $merchant->postal_code1) }}" required></dd>
                     
@@ -31,6 +28,9 @@
                     
                     <dt>電話番号</dt>
                     <dd><input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone', $merchant->phone) }}" required></dd>
+
+                    <dt>キャンペーンコード（任意）</dt>
+                    <dd><input type="text" name="campaign_code" id="campaign_code" class="form-control" value="{{ old('campaign_code', $merchant->campaign_code) }}"></dd>
 
                     <p class="lmf-btn_box btn_small"><input type="submit" value="サロン編集"></p>
                     

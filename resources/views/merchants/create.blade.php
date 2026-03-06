@@ -8,29 +8,29 @@
     <main class="lmf-main_contents">
         <section class="lmf-content">
 
-        <form id="merchantForm">
+            <form id="merchantForm">
                 @csrf
                 <input type="hidden" name="agency_id" value="{{ $agency_id }}">
                 <div class="lm-form_block lmf-white_block">
-					<dl class="lmf-form_box">
-						
-                    <dt>サロン名</dt>
-                    <dd><input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" required></dd>
-                    <dt>キャンペーンコード（任意）</dt>
-						<dd><input type="text" name="campaign_code" id="campaign_code" class="form-control" value="{{ old('campaign_code') }}"></dd>
+                    <dl class="lmf-form_box">
+
+                        <dt>サロン名</dt>
+                        <dd><input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" required></dd>
                         <dt>郵便番号 (前半3桁)</dt>
-						<dd><input type="text" name="postal_code1" id="postal_code1" class="form-control" maxlength="3" value="{{ old('postal_code1') }}" required></dd>
+                        <dd><input type="text" name="postal_code1" id="postal_code1" class="form-control" maxlength="3" value="{{ old('postal_code1') }}" required></dd>
                         <dt>郵便番号 (後半4桁)</dt>
-						<dd><input type="text" name="postal_code2" id="postal_code2" class="form-control" maxlength="4" value="{{ old('postal_code2') }}" required></dd>
+                        <dd><input type="text" name="postal_code2" id="postal_code2" class="form-control" maxlength="4" value="{{ old('postal_code2') }}" required></dd>
                         <dt>住所</dt>
-						<dd><input type="text" name="address" id="address" class="form-control" value="{{ old('address') }}" required></dd>
+                        <dd><input type="text" name="address" id="address" class="form-control" value="{{ old('address') }}" required></dd>
                         <dt>電話番号</dt>
-						<dd><input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone') }}" required></dd>
+                        <dd><input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone') }}" required></dd>
+                        <dt>キャンペーンコード（任意）</dt>
+                        <dd><input type="text" name="campaign_code" id="campaign_code" class="form-control" value="{{ old('campaign_code') }}"></dd>
                         <p class="lmf-btn_box btn_small"><input type="submit" value="サロン登録"></p>
-				</div>
+                </div>
                 <input type="hidden" name="user_id" id="user_id" class="form-control" value="{{ old('user_id') }}" required>
                 <input type="hidden" name="status" value="2">
-                
+
 
             </form>
         </section>
@@ -53,29 +53,29 @@
             submitButton.disabled = true; // 二重送信防止
 
             fetch("{{ route('merchants.store') }}", {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('サロン登録が完了しました');
-                    liff.closeWindow();
-                } else {
-                    document.getElementById("errorMessage").innerText = data.error || "エラーが発生しました";
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('サロン登録が完了しました');
+                        liff.closeWindow();
+                    } else {
+                        document.getElementById("errorMessage").innerText = data.error || "エラーが発生しました";
+                        document.getElementById("errorMessage").style.display = "block";
+                    }
+                    submitButton.disabled = false;
+                })
+                .catch(error => {
+                    document.getElementById("errorMessage").innerText = "通信エラーが発生しました";
                     document.getElementById("errorMessage").style.display = "block";
-                }
-                submitButton.disabled = false;
-            })
-            .catch(error => {
-                document.getElementById("errorMessage").innerText = "通信エラーが発生しました";
-                document.getElementById("errorMessage").style.display = "block";
-                console.error("Error:", error);
-                submitButton.disabled = false;
-            });
+                    console.error("Error:", error);
+                    submitButton.disabled = false;
+                });
         });
     });
 </script>
