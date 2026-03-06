@@ -166,7 +166,8 @@ class OrderController extends Controller
         }
 
         // 送料の計算（20,000円以下なら770円）
-        $shippingFee = ($totalPrice <= 20000) ? 770 : 0;
+        // $shippingFee = ($totalPrice <= 20000) ? 770 : 0;
+        $shippingFee = 0;
         // 税込合計（10%）
         $grandTotalTaxIncluded = (int) round($totalPrice * 1.1) + $shippingFee;
 
@@ -238,7 +239,8 @@ class OrderController extends Controller
             $totalPrice += $unitPrice * $items[$product->id];
         }
         // 送料の計算（20,000円以下なら770円）
-        $shippingFee = ($totalPrice <= 20000) ? 770 : 0;
+        // $shippingFee = ($totalPrice <= 20000) ? 770 : 0;
+        $shippingFee = 0;
 
         try {
             DB::beginTransaction();

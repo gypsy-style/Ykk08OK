@@ -158,7 +158,8 @@
 			});
 
 			// 送料の計算（20,000円以下なら770円）
-			let shippingFee = (total <= 20000) ? 770 : 0;
+			// let shippingFee = (total <= 20000) ? 770 : 0;
+			let shippingFee = 0;
 			// 税込合計（10%）+ 送料
 			let grandTotalTaxIncluded = Math.round(total * 1.1) + shippingFee;
 
