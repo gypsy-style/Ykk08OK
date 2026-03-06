@@ -110,6 +110,22 @@ class OrderController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function updateShippingFee(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'shipping_fee' => 'required|integer|min:0'
+        ]);
+
+        if ($order->status !== 2) {
+            return response()->json(['success' => false, 'message' => 'ステータスが2の注文のみ送料を変更できます'], 403);
+        }
+
+        $order->shipping_fee = $validated['shipping_fee'];
+        $order->save();
+
+        return response()->json(['success' => true]);
+    }
+
     public function bulkUpdate(Request $request)
     {
         $orderIds = $request->order_ids;

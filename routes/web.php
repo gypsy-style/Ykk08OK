@@ -101,6 +101,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('merchants', AdminMerchantController::class);
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show', 'edit']);
         Route:: PUT('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route:: PUT('orders/{order}/shipping-fee', [AdminOrderController::class, 'updateShippingFee'])->name('admin.orders.updateShippingFee');
         Route::post('orders/bulk-update', [AdminOrderController::class, 'bulkUpdate'])->name('orders.bulk-update');
         Route::resource('users', AdminUserController::class);
         Route::post('/users/{user}/update-richmenu', [AdminUserController::class, 'updateRichmenu'])->name('admin.users.update-richmenu');

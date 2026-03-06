@@ -62,7 +62,14 @@ default: return $action;
 					<tr>
 						<th>送料</th>
 						<td></td>
-						<td>{{ $order->shipping_fee }}円</td>
+						<td>
+							@if($order->status === 2)
+								<input type="number" id="shipping-fee-input" value="{{ $order->shipping_fee }}" min="0" style="width:100px;">円
+								<button type="button" id="shipping-fee-save">保存</button>
+							@else
+								{{ $order->shipping_fee }}円
+							@endif
+						</td>
 					</tr>
 				</tbody>
 				<tfoot>
@@ -146,6 +153,34 @@ default: return $action;
 </section>
 <script>
 	document.addEventListener('DOMContentLoaded', function() {
+		const shippingFeeSaveBtn = document.getElementById('shipping-fee-save');
+		if (shippingFeeSaveBtn) {
+			shippingFeeSaveBtn.addEventListener('click', function() {
+				const orderId = {{ $order->id }};
+				const shippingFee = document.getElementById('shipping-fee-input').value;
+				fetch(`${BASE_URL}/admin/orders/${orderId}/shipping-fee`, {
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+						},
+						body: JSON.stringify({ shipping_fee: shippingFee })
+					})
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							alert('送料を更新しました');
+						} else {
+							alert('更新に失敗しました');
+						}
+					})
+					.catch(error => {
+						console.error('Error:', error);
+						alert('エラーが発生しました');
+					});
+			});
+		}
+
 		const statusDropdowns = document.querySelectorAll('.status-dropdown');
 
 		statusDropdowns.forEach(dropdown => {
