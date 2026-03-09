@@ -15,14 +15,14 @@
             <em class="label">代理店処理済みの受注</em>
             <b class="number color__sky">
                 <span class="num">{{ $agenciesProcessed->order_count }}</span><small class="unit">件</small>
-                <span class="num">{{ number_format($agenciesProcessed->total_price) }}</span><small class="unit">円</small>
+                <span class="num">{{ number_format((int) round($agenciesProcessed->total_price * 1.1)) }}</span><small class="unit">円</small>
             </b>
         </div>
         <div class="hq_box">
             <em class="label">本部処理済みの受注</em>
             <b class="number color__sky">
                 <span class="num">{{ $headquartersProcessed->order_count }}</span><small class="unit">件</small>
-                <span class="num">{{ number_format($headquartersProcessed->total_price) }}</span><small class="unit">円</small>
+                <span class="num">{{ number_format((int) round($headquartersProcessed->total_price * 1.1)) }}</span><small class="unit">円</small>
             </b>
         </div>
     </div>
@@ -108,7 +108,7 @@
                         <p class="status-change-date {{ $order->isUrgent() ? 'urgent-date' : '' }}">{{ $order->last_status_change['text'] }}</p>
                         @endif
                         <div class="price_box">
-                            <p class="prices"><b class="price01">価格 {{ number_format($order->total_price) }}円</b></p>
+                            <p class="prices"><b class="price01">価格 {{ number_format((int) round($order->total_price * 1.1) + ($order->shipping_fee ?? 0)) }}円</b></p>
                         </div>
                     </div>
                     <div class="modifi_btns">
