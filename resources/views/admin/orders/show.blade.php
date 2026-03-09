@@ -56,7 +56,7 @@ default: return $action;
 					<tr>
 						<th>{{ $detail->product->product_name }}</th>
 						<td>{{ $detail->quantity }} </td>
-						<td>{{ number_format($detail->price) }}円</td>
+						<td>{{ number_format((int) round($detail->price * 1.1)) }}円</td>
 					</tr>
 					@endforeach
 					<tr>
@@ -76,7 +76,7 @@ default: return $action;
 					<tr>
 						<th>合計</th>
 						<td>{{$totalQuantity }}</td>
-						<td>{{ number_format(($order->total_price ?? 0) + ($order->shipping_fee ?? 0)) }}円</td>
+						<td>{{ number_format((int) round(($order->total_price ?? 0) * 1.1) + ($order->shipping_fee ?? 0)) }}円</td>
 					</tr>
 				</tfoot>
 			</table>
