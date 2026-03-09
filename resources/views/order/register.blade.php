@@ -47,11 +47,11 @@
 					<div class="attention-shipping" style="background:#faffea; border-radius:6px; padding:12px 16px; margin:8px 0;">
 						<dl style="margin:0; display:grid; grid-template-columns:auto 1fr; gap:4px 12px; align-items:center;">
 							<dt style="white-space:nowrap;">アマテラス</dt>
-							<dd style="margin:0; color:#5a3e35;">3本で送料無料</dd>
+							<dd style="margin:0;">3本で送料無料</dd>
 							<dt style="white-space:nowrap;">ツクヨミ 100g</dt>
-							<dd style="margin:0; color:#5a3e35;">5本で送料無料</dd>
+							<dd style="margin:0;">5本で送料無料</dd>
 							<dt style="white-space:nowrap;">ツクヨミ 300g</dt>
-							<dd style="margin:0; color:#5a3e35;">3本で送料無料</dd>
+							<dd style="margin:0;">3本で送料無料</dd>
 						</dl>
 					</div>
 					<div style="text-align: center;">
