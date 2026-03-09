@@ -38,8 +38,21 @@
 						</li>
 						@endforeach
 					</ul>
-					<div class="lmf-order_total">
+					<div class="lmf-order_total" style="display: none;">
 						<b class="label">送料</b><b class="item_price shipping_price">{{ number_format($shippingFee) }}円</b>
+					</div>
+					<div>
+						<b class="label">送料について</b></b>
+					</div>
+					<div class="attention-shipping" style="background:#e5d0c4; border-radius:6px; padding:12px 16px; margin:8px 0;">
+						<dl style="margin:0; display:grid; grid-template-columns:auto 1fr; gap:4px 12px; align-items:center;">
+							<dt style="font-weight:bold; color:#5a3e35; white-space:nowrap;">アマテラス</dt>
+							<dd style="margin:0; color:#5a3e35;">3本で送料無料</dd>
+							<dt style="font-weight:bold; color:#5a3e35; white-space:nowrap;">ツクヨミ 100g</dt>
+							<dd style="margin:0; color:#5a3e35;">5本で送料無料</dd>
+							<dt style="font-weight:bold; color:#5a3e35; white-space:nowrap;">ツクヨミ 300g</dt>
+							<dd style="margin:0; color:#5a3e35;">3本で送料無料</dd>
+						</dl>
 					</div>
 					<div class="lmf-order_total">
 						<b class="label">合計</b><span class="quantity">[{{$totalQuantity}}点]</span><b class="item_price grand_total_price">{{ number_format($grandTotalTaxIncluded) }}円<small class="tax">(税込)</small></b>
