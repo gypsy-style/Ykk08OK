@@ -16,7 +16,7 @@
                 <div class="lma-user_box">
                     <div class="user_info">
                         <h3 class="name">{{ $merchant->name }}</h3>
-                        <p class="sub">{{ $merchant->agency->name ?? '代理店未設定' }}</p>
+                        <p class="sub" style="font-size: 0.8em; color: #888;">{{ $merchant->agency->name ?? '代理店未設定' }}</p>
                     </div>
                     <div class="lma-btn_box btn_list">
                         <a href="{{ route('admin.merchants.edit', $merchant->id) }}" class="btn btn-primary btn-sm">編集</a>
