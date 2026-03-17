@@ -73,7 +73,13 @@
                     @endforeach
                 </ul>
                 <div class="lmf-order_total">
-                    <b class="label">合計</b><span class="quantity">[{{ $order->details->sum('quantity') }}点]</span><b class="item_price">{{ number_format((int) round($order->total_price * 1.1) + ($order->shipping_fee ?? 0)) }}円<small class="tax">(税込)</small></b>
+                    <b class="label">小計</b><span class="quantity">[{{ $order->details->sum('quantity') }}点]</span><b class="item_price">{{ number_format((int) round($order->total_price * 1.1)) }}円<small class="tax">(税込)</small></b>
+                </div>
+                <div class="lmf-order_total">
+                    <b class="label">送料</b><span class="quantity"></span><b class="item_price">{{ number_format($order->shipping_fee ?? 0) }}円</b>
+                </div>
+                <div class="lmf-order_total">
+                    <b class="label">合計</b><span class="quantity"></span><b class="item_price">{{ number_format((int) round($order->total_price * 1.1) + ($order->shipping_fee ?? 0)) }}円<small class="tax">(税込)</small></b>
                 </div>
                 @if($order->status == 1) {{-- 代理店未処理 --}}
                 <p class="lmf-btn_box btn_small btn_dgy">
