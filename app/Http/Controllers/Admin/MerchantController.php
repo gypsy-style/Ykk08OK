@@ -109,15 +109,16 @@ class MerchantController extends Controller
 
             // ステータスによってリッチメニューを変える
             $status = $request->input('status');
-            if($status === 1) {
-                $richmenu = env('RICHMENU_ID_4');
+            if ($status == 1) {
+                // ステータスが 1 の場合richmenu_4に
+                $richmenu_id = env('RICHMENU_ID_4');
                 $richmenu_name = 'RICHMENU_ID_4';
-
-            }else {
-                $richmenu = env('RICHMENU_ID_3');
+            } elseif ($status == 2) {
+                // ステータスが 2 の場合richmenu_3に
+                $richmenu_id = env('RICHMENU_ID_3');
                 $richmenu_name = 'RICHMENU_ID_3';
             }
-            $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu);
+            $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu_id);
 
             $user->update(['richmenu_id'=>$richmenu_name]);
             
