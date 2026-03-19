@@ -9,7 +9,7 @@
             <h2>加盟店一覧</h2>
         </div>
     </div>
-    <div class="lma-content_block staff nobg">
+    <div class="lma-content_block staff {{ $merchant->status == 2 ? 'tbd' : '' }}">
         <ul class="lma-user_list store">
             @foreach($merchants as $merchant)
             <li>
