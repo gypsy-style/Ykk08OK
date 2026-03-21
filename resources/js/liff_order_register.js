@@ -1,5 +1,7 @@
 import liff from '@line/liff';
 
+window.liff = liff;
+
 async function main() {
     try {
         // LIFFの初期化
