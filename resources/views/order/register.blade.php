@@ -119,9 +119,10 @@
 						let liffOrderUrl = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
 						window.location.href = liffOrderUrl;
 					}).catch(function(err) {
-						console.error('sendMessages error', err);
-						let liffOrderUrl = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
-						window.location.href = liffOrderUrl;
+						alert("注文が送信できませんでした。"+err.message);
+						// console.error('sendMessages error', err);
+						// let liffOrderUrl = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
+						// window.location.href = liffOrderUrl;
 					});
 				})
 				.catch(error => {
