@@ -63,7 +63,17 @@
                 .then(data => {
                     if (data.success) {
                         alert('サロン登録が完了しました');
-                        liff.closeWindow();
+                        liff.sendMessages([
+                            {
+                                type: 'text',
+                                text: '【店舗登録済】'
+                            }
+                        ]).catch(function(err) {
+                            console.error('sendMessages error', err);
+                        }).finally(function() {
+                            liff.closeWindow();
+                        });
+                        return;
                     } else {
                         document.getElementById("errorMessage").innerText = data.error || "エラーが発生しました";
                         document.getElementById("errorMessage").style.display = "block";
