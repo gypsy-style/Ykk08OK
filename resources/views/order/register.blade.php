@@ -106,8 +106,21 @@
 					// ローカルストレージを削除
 					localStorage.removeItem('cartData');
 					$('#order_regist')[0].reset(); // フォームをリセット
-					let liffOrderUrl = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
-					window.location.href = liffOrderUrl;
+
+					// トークルームに注文メッセージを送信
+					liff.sendMessages([
+						{
+							type: 'text',
+							text: '【注文しました】'
+						}
+					]).then(function() {
+						let liffOrderUrl = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
+						window.location.href = liffOrderUrl;
+					}).catch(function(err) {
+						console.error('sendMessages error', err);
+						let liffOrderUrl = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
+						window.location.href = liffOrderUrl;
+					});
 
 				},
 				error: function(xhr) {
