@@ -23,8 +23,10 @@ async function main() {
         // });
 
         console.log('LINE ID has been sent to the server!');
-    } catch (error) {
+    } catch (error) { 
+        alert('LINE IDが取得できませんでしたよ。')
         console.error('Error with LIFF or server communication:', error);
+
     }
 }
 

@@ -24,31 +24,6 @@ async function main() {
             console.error('Hidden input element with id "access_token" not found.');
         }
 
-        // user_id を取得してhidden inputにセット
-        const userIdInput = document.getElementById('user_id');
-        if (userIdInput) {
-            try {
-                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-                const resp = await fetch('/ykk08ok/get-user-id', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfMeta ? csrfMeta.getAttribute('content') : '',
-                    },
-                    body: JSON.stringify({ access_token: accessToken }),
-                });
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data.user_id) {
-                        userIdInput.value = data.user_id;
-                        console.log('user_id set:', data.user_id);
-                    }
-                }
-            } catch (e) {
-                console.error('Failed to fetch user_id:', e);
-            }
-        }
-
         const currentPath = window.location.pathname;
         console.log(currentPath);
 
