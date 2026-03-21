@@ -82,32 +82,34 @@
 	</main>
 </div><!-- /.lmf-container -->
 <script>
-	$(document).ready(function() {
-		$('#order_regist').submit(function(event) {
-			event.preventDefault(); // デフォルトのフォーム送信を防ぐ
+	document.addEventListener("DOMContentLoaded", function() {
+		document.getElementById("order_regist").addEventListener("submit", function(event) {
+			event.preventDefault();
 
-			let formData = new FormData(this); // フォームデータを取得
-			let submitBtn = $('#submitBtn');
+			const formData = new FormData(this);
+			const submitBtn = document.querySelector('#order_regist button[type="submit"]');
 
-			// ボタンを無効化して処理中表示
-			submitBtn.prop('disabled', true).text('送信中...');
+			submitBtn.disabled = true;
+			submitBtn.textContent = '送信中...';
 
-			$.ajax({
-				url: "{{ route('order.store') }}", // 送信先（Laravelのルート）
-				type: "POST",
-				data: formData,
-				processData: false,
-				contentType: false,
-				headers: {
-					'X-CSRF-TOKEN': $('input[name=_token]').val() // CSRFトークンをセット
-				},
-				success: function(response) {
+			fetch("{{ route('order.store') }}", {
+					method: "POST",
+					headers: {
+						"X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value
+					},
+					body: formData
+				})
+				.then(response => {
+					if (!response.ok) {
+						return response.json().then(data => { throw data; });
+					}
+					return response.json();
+				})
+				.then(data => {
 					alert("注文が正常に送信されました！");
-					// ローカルストレージを削除
 					localStorage.removeItem('cartData');
-					$('#order_regist')[0].reset(); // フォームをリセット
+					document.getElementById('order_regist').reset();
 
-					// トークルームに注文メッセージを送信
 					liff.sendMessages([
 						{
 							type: 'text',
@@ -121,16 +123,16 @@
 						let liffOrderUrl = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
 						window.location.href = liffOrderUrl;
 					});
-
-				},
-				error: function(xhr) {
-					alert("エラーが発生しました: " + xhr.responseJSON.message);
-				},
-				complete: function() {
-					submitBtn.prop('disabled', false).text('トークに送信'); // ボタンを元に戻す
-				}
-			});
+				})
+				.catch(error => {
+					alert("エラーが発生しました: " + (error.error || error.message || "不明なエラー"));
+					submitBtn.disabled = false;
+					submitBtn.textContent = '注文する';
+				});
 		});
+	});
+
+	$(document).ready(function() {
 
 		// 追加注文
 		$(document).ready(function() {

@@ -43,13 +43,15 @@ class UserController extends Controller
                 $email = $line_id . '@example.com';
             }
 
-            $user = User::create([
-                'name' => $request->input('name'),
-                'display_name' => $display_name,
-                'email' => $email,
-                'line_id' => $line_id,
-                'richmenu_id' => 'RICHMENU_ID_2',
-            ]);
+            $user = User::firstOrCreate(
+                ['line_id' => $line_id],
+                [
+                    'name' => $request->input('name'),
+                    'display_name' => $display_name,
+                    'email' => $email,
+                    'richmenu_id' => 'RICHMENU_ID_2',
+                ]
+            );
 
             // 4. リッチメニュー更新
             $richmenu_id_2 = env('RICHMENU_ID_2');
