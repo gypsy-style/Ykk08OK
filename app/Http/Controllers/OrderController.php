@@ -188,16 +188,25 @@ class OrderController extends Controller
         $data = $request->all();
         Log::alert(print_r($data, true));
 
-        // ユーザー取得
-        $userId = $data['user_id'];
-        $user = User::find($userId);
-        
+        // ユーザー取得（access_token 優先、なければ user_id にフォールバック）
+        $accessToken = $data['access_token'] ?? null;
+        if ($accessToken) {
+            $profile = $this->getLineProfile($accessToken);
+            if (!$profile) {
+                return response()->json(['error' => 'ユーザーが見つかりません'], 404);
+            }
+            $user = User::where('line_id', $profile['line_id'])->first();
+        } else {
+            $user = User::find($data['user_id'] ?? null);
+        }
+
         // 備考
         $memo = $data['memo'];
 
         if (!$user) {
             return response()->json(['error' => 'ユーザーが見つかりません'], 404);
         }
+        $userId = $user->id;
         $merchant = Merchant::where('user_id', $userId)->first();
         if(!$merchant) {
             // オーナーではない場合
