@@ -103,6 +103,7 @@
 					</div>
 				</div><!-- .main_splide -->
 				<input type="hidden" name="access_token" value="{{ app()->environment('local') ? 'dummy_token' : '' }}" id="access_token">
+			<input type="hidden" name="user_id" id="user_id" value="">
 			</form>
 		</div>
 	</main>

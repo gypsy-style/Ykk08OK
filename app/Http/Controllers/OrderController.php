@@ -103,21 +103,32 @@ class OrderController extends Controller
     {
         // 1. リクエストデータを取得
         $data = $request->all();
-        // line_idを取得
-        $accessToken = $data['access_token'];
-        $profile = $this->getLineProfile($accessToken);
-        if ($profile) {
-            $line_id = $profile['line_id'];
-        } else {
-            return response()->json(['error' => 'User not found or invalid token'], 404);
-        }
 
-        // ユーザー情報を渡す
-        $user = User::where('line_id', $line_id)->first();
-        if (!$user) {
-            return redirect()->back()->withErrors(['line_id' => 'ユーザーが見つかりません。']);
+        // user_id が直接渡された場合はそれを優先（access_token フォールバック対応）
+        $userId = $data['user_id'] ?? null;
+        if ($userId) {
+            $user = User::find($userId);
+            if (!$user) {
+                return redirect()->back()->withErrors(['line_id' => 'ユーザーが見つかりません。']);
+            }
+            $line_id = $user->line_id;
+        } else {
+            // フォールバック（ローカル環境など user_id が未設定の場合）
+            $accessToken = $data['access_token'] ?? null;
+            if (!$accessToken) {
+                return redirect()->back()->withErrors(['line_id' => 'ユーザー情報が取得できませんでした。']);
+            }
+            $profile = $this->getLineProfile($accessToken);
+            if (!$profile) {
+                return redirect()->back()->withErrors(['line_id' => 'LINEユーザー情報を取得できませんでした。']);
+            }
+            $line_id = $profile['line_id'];
+            $user = User::where('line_id', $line_id)->first();
+            if (!$user) {
+                return redirect()->back()->withErrors(['line_id' => 'ユーザーが見つかりません。']);
+            }
+            $userId = $user->id;
         }
-        $userId = $user->id;
 
         // 加盟店を特定（オーナー or メンバー）
         $merchant = Merchant::where('user_id', $userId)->first();
