@@ -104,10 +104,7 @@ class OrderController extends Controller
         // 1. リクエストデータを取得
         $data = $request->all();
         // line_idを取得
-        $accessToken = $request->input('access_token');
-        if (!$accessToken) {
-            return response()->json(['error' => 'access_token is required'], 422);
-        }
+        $accessToken = $data['access_token'];
         $profile = $this->getLineProfile($accessToken);
         if ($profile) {
             $line_id = $profile['line_id'];
