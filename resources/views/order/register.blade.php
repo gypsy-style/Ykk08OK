@@ -81,12 +81,6 @@
 		</section>
 	</main>
 </div><!-- /.lmf-container -->
-@push('scripts')
-<script>
-    window.LIFF_ID = "{{ config('app.order_register_liff_id') }}";
-</script>
-
-@vite(['resources/js/liff_order_register.js'])
 <script>
 	document.addEventListener("DOMContentLoaded", function() {
 		document.getElementById("order_regist").addEventListener("submit", function(event) {
@@ -241,5 +235,9 @@
 	});
 </script>
 @endsection
-
+@push('scripts')
+<script>
+    window.LIFF_ID = "{{ config('app.order_register_liff_id') }}";
+</script>
+@vite(['resources/js/liff_order_register.js'])
 @endpush
