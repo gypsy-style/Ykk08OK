@@ -15,31 +15,12 @@ class AdminSeeder extends Seeder
      */
     public function run()
     {
-        $admins = [
-            [
-                'name' => 'Super Admin',
-                'email' => 'admin@example.com',
-                'password' => Hash::make('password'),
-            ],
-            [
-                'name' => '管理者太郎',
-                'email' => 'admin.taro@example.com',
-                'password' => Hash::make('password123'),
-            ],
-            [
-                'name' => '管理者花子',
-                'email' => 'admin.hanako@example.com',
-                'password' => Hash::make('password123'),
-            ],
-            [
-                'name' => 'システム管理者',
-                'email' => 'system@example.com',
-                'password' => Hash::make('system123'),
-            ],
-        ];
-
-        foreach ($admins as $admin) {
-            Admin::create($admin);
-        }
+        // 倉庫アカウント（permission=2: ダッシュボード・受注管理のみ）
+        Admin::create([
+            'name' => '倉庫担当',
+            'email' => 'warehouse@example.com',
+            'password' => Hash::make('password'),
+            'permission' => 2,
+        ]);
     }
 }

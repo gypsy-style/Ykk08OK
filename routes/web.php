@@ -87,7 +87,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('login', [AdminAuthController::class, 'login']);
     Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-    Route::middleware('auth:admin')->group(function () {
+    Route::middleware(['auth:admin', 'admin.permission'])->group(function () {
         // ダッシュボード
         Route::get('index', [AdminDashboardController::class, 'index'])->name('dashboard');
         // 商品管理
