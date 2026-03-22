@@ -4,24 +4,31 @@ window.liff = liff;
 
 async function main() {
     try {
+        if (!window.LIFF_ID) {
+            console.error('LIFF_ID is not set');
+            return;
+        }
+
         // LIFFの初期化
         await liff.init({ liffId: window.LIFF_ID });
+        console.log('LIFF initialized');
 
-        // ユーザーがログインしていない場合はログインさせる
+        // ログインしていない場合はスキップ（register ページは LIFF entry point ではない）
         if (!liff.isLoggedIn()) {
-            liff.login();
+            console.warn('LIFF not logged in on register page');
             return;
         }
 
         // アクセストークンを取得してhidden inputにセット
         const accessToken = liff.getAccessToken();
+        console.log('accessToken:', accessToken ? 'obtained' : 'null');
         const tokenInput = document.getElementById('liff_access_token');
         if (tokenInput && accessToken) {
             tokenInput.value = accessToken;
         }
 
     } catch (error) {
-        console.error('Error with LIFF or server communication:', error);
+        alert('LIFF init error: ' + (error?.message || String(error)));
     }
 }
 

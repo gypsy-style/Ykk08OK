@@ -119,8 +119,8 @@ async function main() {
         // });
 
         console.log('LINE ID has been sent to the server!');
-    } catch (error) { 
-        alert('LINEのアクセストークンが取得できませんでした。')
+    } catch (error) {
+        alert('LINEのアクセストークンが取得できませんでした。\n\n' + (error?.message || String(error)));
         console.error('Error with LIFF or server communication:', error);
 
         // テスト用フォールバック
