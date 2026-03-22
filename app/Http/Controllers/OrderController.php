@@ -104,13 +104,15 @@ class OrderController extends Controller
         // 1. リクエストデータを取得
         $data = $request->all();
         // line_idを取得
-        $accessToken = $data['access_token'];
-        $profile = $this->getLineProfile($accessToken);
-        if ($profile) {
-            $line_id = $profile['line_id'];
-        } else {
-            return response()->json(['error' => 'User not found or invalid token'], 404);
+        $accessToken = $data['access_token'] ?? null;
+        if (!$accessToken) {
+            return redirect()->route('order.list')->withErrors(['line_id' => 'アクセストークンが取得できませんでした。再度お試しください。']);
         }
+        $profile = $this->getLineProfile($accessToken);
+        if (!$profile) {
+            return redirect()->route('order.list')->withErrors(['line_id' => 'LINEユーザー情報を取得できませんでした。']);
+        }
+        $line_id = $profile['line_id'];
 
         // ユーザー情報を渡す
         $user = User::where('line_id', $line_id)->first();
