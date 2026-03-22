@@ -178,8 +178,17 @@
 			const confirmButton = document.getElementById('confirm_button'); // ボタンを取得
 			const sendForm = document.getElementById('send_form'); // フォームを取得
 
-			confirmButton.addEventListener('click', function() {
-				sendForm.submit(); // フォームを送信
+			confirmButton.addEventListener('click', async function() {
+				const tokenInput = document.getElementById('access_token');
+				// LIFF初期化完了まで最大3秒待つ
+				for (let i = 0; i < 15 && tokenInput && !tokenInput.value; i++) {
+					await new Promise(r => setTimeout(r, 200));
+				}
+				if (!tokenInput || !tokenInput.value) {
+					alert('LINEへのログインに失敗しました。ページを再読み込みしてお試しください。');
+					return;
+				}
+				sendForm.submit();
 			});
 		});
 	</script>

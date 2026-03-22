@@ -236,7 +236,7 @@
 @endsection
 @push('scripts')
 <script>
-    window.LIFF_ID = "{{ config('app.order_register_liff_id') }}";
+    window.LIFF_ID = "{{ config('app.order_liff_id') }}";
 </script>
 @vite(['resources/js/liff_order_register.js'])
 @endpush
