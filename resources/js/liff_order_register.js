@@ -11,7 +11,6 @@ async function main() {
 
         // LIFFの初期化
         await liff.init({ liffId: window.LIFF_ID });
-        console.log('LIFF initialized');
 
         // ログインしていない場合はスキップ（register ページは LIFF entry point ではない）
         if (!liff.isLoggedIn()) {
@@ -19,16 +18,15 @@ async function main() {
             return;
         }
 
-        // アクセストークンを取得してhidden inputにセット
+        // アクセストークンを取得してhidden inputにセット（上書き）
         const accessToken = liff.getAccessToken();
-        console.log('accessToken:', accessToken ? 'obtained' : 'null');
         const tokenInput = document.getElementById('liff_access_token');
         if (tokenInput && accessToken) {
             tokenInput.value = accessToken;
         }
 
     } catch (error) {
-        alert('LIFF init error: ' + (error?.message || String(error)));
+        console.error('LIFF init error:', error);
     }
 }
 

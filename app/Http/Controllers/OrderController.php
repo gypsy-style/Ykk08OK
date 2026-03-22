@@ -182,6 +182,7 @@ class OrderController extends Controller
             'totalQuantity' => $totalQuantity,
             'user_id' => $userId,
             'grandTotalTaxIncluded' => $grandTotalTaxIncluded,
+            'access_token' => $accessToken,
         ]);
     }
 
