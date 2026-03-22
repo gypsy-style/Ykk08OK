@@ -17,6 +17,7 @@
 		<section class="lmf-content">
 			<form id="order_regist">
 				<input type="hidden" name="user_id" value="{{ $user_id }}">
+				<input type="hidden" name="access_token" id="liff_access_token" value="">
 				@csrf
 				<div class="lm-form_block lmf-white_block">
 					<h2 class="lmf-title_sub">注文内容</h2>
@@ -88,12 +89,6 @@
 
 			const formData = new FormData(this);
 			const submitBtn = document.querySelector('#order_regist button[type="submit"]');
-
-			// LIFF アクセストークンを追加
-			const accessToken = liff.getAccessToken();
-			if (accessToken) {
-				formData.append('access_token', accessToken);
-			}
 
 			submitBtn.disabled = true;
 			submitBtn.textContent = '送信中...';

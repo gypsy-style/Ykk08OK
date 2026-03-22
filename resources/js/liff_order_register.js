@@ -10,21 +10,16 @@ async function main() {
         // ユーザーがログインしていない場合はログインさせる
         if (!liff.isLoggedIn()) {
             liff.login();
+            return;
         }
 
-        
+        // アクセストークンを取得してhidden inputにセット
+        const accessToken = liff.getAccessToken();
+        const tokenInput = document.getElementById('liff_access_token');
+        if (tokenInput && accessToken) {
+            tokenInput.value = accessToken;
+        }
 
-        // LaravelにPOSTリクエストを送信
-        // await fetch('/api/save-line-id', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        //     },
-        //     body: JSON.stringify({ line_id: lineId }),
-        // });
-
-        console.log('LINE ID has been sent to the server!');
     } catch (error) {
         console.error('Error with LIFF or server communication:', error);
     }
