@@ -21,17 +21,18 @@ class AgencyController extends Controller
             'name' => 'required|string|max:255',
             'postal_code1' => 'required|string|max:3',
             'postal_code2' => 'required|string|max:4',
+            'address' => 'required|string',
             'phone' => 'required|string|max:15',
             'email' => 'required|email|unique:agencies,email',
             'password' => 'required|string|min:8',
         ]);
-        
 
         Agency::create([
             'agency_code' => $request->agency_code,
             'name' => $request->name,
             'postal_code1' => $request->postal_code1,
             'postal_code2' => $request->postal_code2,
+            'address' => $request->address,
             'phone' => $request->phone,
             'email' => $request->email,
             'contact_person' => '',
