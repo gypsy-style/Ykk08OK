@@ -34,11 +34,9 @@
                             <div class="lma-btn_box btn_min btn_gy">
                                 <a href="{{ route('admin.products.show', $product->id) }}">詳細</a>
                             </div>
-                            <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" style="display: inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="lma-btn_box btn_min" style="width: 120px; background-color: #c0392b; color: #fff; border: none; cursor: pointer; padding: .5em 1.5em; border-radius: 50vh; font-weight: 600;" onclick="return confirm('この商品を削除しますか？')">削除</button>
-                            </form>
+                            <div class="lma-btn_box btn_min">
+                                <button type="button" style="background-color: #c0392b; color: #fff; border: none; cursor: pointer;" data-product-id="{{ $product->id }}" class="delete-btn">削除</button>
+                            </div>
                         </div>
                         <p class="cate_box"><span class="cate">{{ $product->category->name ?? 'カテゴリー未設定' }}</span></p>
                         <h3 class="name">{{ $product->set_sale_name ?: $product->product_name }}
@@ -86,6 +84,28 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const selects = document.querySelectorAll('.status-select');
+
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            if (!confirm('この商品を削除しますか？')) return;
+            const productId = this.dataset.productId;
+            fetch(`/admin/products/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('削除に失敗しました');
+                }
+            })
+            .catch(() => alert('エラーが発生しました'));
+        });
+    });
 
     selects.forEach(select => {
         select.addEventListener('change', function () {
