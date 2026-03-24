@@ -40,10 +40,10 @@ default: return $action;
 		<dl class="lma-orderinfo_list">
 			<dt>受注日</dt>
 			<dd>{{ $order->created_at }}</dd>
-			<dt>住所</dt>
-			<dd>{{ optional($order->merchant)->postal_code1 && optional($order->merchant)->postal_code2 ? '〒' . $order->merchant->postal_code1 . '-' . $order->merchant->postal_code2 . ' ' : '' }}{{ optional($order->merchant)->address }}</dd>
 			<dt>発注店舗</dt>
 			<dd>{{ optional($order->merchant)->name }}</dd>
+			<dt>住所</dt>
+			<dd>{{ optional($order->merchant)->postal_code1 && optional($order->merchant)->postal_code2 ? '〒' . $order->merchant->postal_code1 . '-' . $order->merchant->postal_code2 . ' ' : '' }}{{ optional($order->merchant)->address }}</dd>
 			<dt>電話番号</dt>
 			<dd>{{ optional($order->merchant)->phone }}</dd>
 		</dl>
