@@ -39,9 +39,9 @@ default: return $action;
 	<div class="lma-content_block order_detail">
 		<dl class="lma-orderinfo_list">
 			<dt>受注日</dt>
-			<dd>{{ $order->created_at }}</dd>
+			<dd>{{ $order->created_at }}<br>{{ optional($order->merchant)->postal_code1 && optional($order->merchant)->postal_code2 ? '〒' . $order->merchant->postal_code1 . '-' . $order->merchant->postal_code2 . ' ' : '' }}{{ optional($order->merchant)->address }}</dd>
 			<dt>発注店舗</dt>
-			<dd>{{ optional($order->merchant)->name }}</dd>
+			<dd>{{ optional($order->merchant)->name }}<br>{{ optional($order->merchant)->phone }}</dd>
 		</dl>
 		<div class="lma-detail_wrap">
 			<table class="lma-detail_tbl">
