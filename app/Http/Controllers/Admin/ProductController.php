@@ -187,7 +187,7 @@ class ProductController extends Controller
         $product->accessories()->delete();
 
         $product->delete();
-        return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully');
+        return response()->json(['message' => '削除しました']);
     }
 
     public function toggleStatus(Product $product)
