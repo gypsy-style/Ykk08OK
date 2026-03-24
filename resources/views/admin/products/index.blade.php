@@ -35,7 +35,7 @@
                                 <a href="{{ route('admin.products.show', $product->id) }}">詳細</a>
                             </div>
                             <div class="lma-btn_box btn_min">
-                                <button type="button" style="background-color: #c0392b; color: #fff; border: none; cursor: pointer;" data-product-id="{{ $product->id }}" class="delete-btn">削除</button>
+                                <button type="button" style="background-color: #c0392b; color: #fff; border: none; cursor: pointer;" data-url="{{ route('admin.products.destroy', $product->id) }}" class="delete-btn">削除</button>
                             </div>
                         </div>
                         <p class="cate_box"><span class="cate">{{ $product->category->name ?? 'カテゴリー未設定' }}</span></p>
@@ -89,8 +89,8 @@ document.addEventListener('DOMContentLoaded', function () {
     deleteButtons.forEach(button => {
         button.addEventListener('click', function () {
             if (!confirm('この商品を削除しますか？')) return;
-            const productId = this.dataset.productId;
-            fetch(`/admin/products/${productId}`, {
+            const url = this.dataset.url;
+            fetch(url, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
