@@ -39,18 +39,15 @@
 						</li>
 						@endforeach
 					</ul>
-					<div class="lmf-order_total" style="display: none;">
-						<b class="label">送料</b><b class="item_price shipping_price">{{ number_format($shippingFee) }}円</b>
-					</div>
 					<div class="lmf-order_postage">
-					<div class="lmf-title_sub">送料について</div>
-					<ul class="lmf-postage_list">
-						<li><em class="name">アマテラス</em><span class="postage">3本以上で送料無料</span></li>
-						<li><em class="name">ツクヨミ100g</em><span class="postage">5本以上で送料無料</span></li>
-						<li><em class="name">ツクヨミ300g</em><span class="postage">3本以上で送料無料</span></li>
-					</ul>
-					<div class="attn">送料は注文後に確定します</div>
-				</div>
+						<div class="lmf-title_sub">送料について</div>
+						<ul class="lmf-postage_list">
+							<li><em class="name">アマテラス</em><span class="postage">3本以上で送料無料</span></li>
+							<li><em class="name">ツクヨミ100g</em><span class="postage">5本以上で送料無料</span></li>
+							<li><em class="name">ツクヨミ300g</em><span class="postage">3本以上で送料無料</span></li>
+						</ul>
+						<div class="attn">送料は注文後に確定します</div>
+					</div>
 					<div class="lmf-order_total">
 						<b class="label">合計</b><span class="quantity">[{{$totalQuantity}}点]</span><b class="item_price grand_total_price">{{ number_format($grandTotalTaxIncluded) }}円<small class="tax">(税込)</small></b>
 					</div>
@@ -95,7 +92,9 @@
 				})
 				.then(response => {
 					if (!response.ok) {
-						return response.json().then(data => { throw data; });
+						return response.json().then(data => {
+							throw data;
+						});
 					}
 					return response.json();
 				})
@@ -105,12 +104,10 @@
 					document.getElementById('order_regist').reset();
 
 					const liffOrderUrl = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
-					liff.sendMessages([
-						{
-							type: 'text',
-							text: '【注文しました】'
-						}
-					]).then(function() {
+					liff.sendMessages([{
+						type: 'text',
+						text: '【注文しました】'
+					}]).then(function() {
 						window.location.href = liffOrderUrl;
 					}).catch(function(err) {
 						console.error('sendMessages error', err);
@@ -229,7 +226,7 @@
 @endsection
 @push('scripts')
 <script>
-    window.LIFF_ID = "{{ config('app.order_liff_id') }}";
+	window.LIFF_ID = "{{ config('app.order_liff_id') }}";
 </script>
 @vite(['resources/js/liff_order_register.js'])
 @endpush
