@@ -23,6 +23,7 @@
 	@vite([
 	'resources/css/default.css',
 	'resources/css/front.css',
+	'resources/css/front-init-jiyu.css',
 	'resources/css/splide.min.css',
 	'resources/js/app.js',
 	'resources/js/line_form_order.js',
