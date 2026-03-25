@@ -16,7 +16,7 @@ class MerchantController extends Controller
 {
     public function index()
     {
-        $merchants = Merchant::with('agency')->get();
+        $merchants = Merchant::with('agency')->orderBy('created_at', 'desc')->get();
         return view('admin.merchants.index', compact('merchants'));
     }
 
