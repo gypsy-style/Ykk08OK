@@ -90,7 +90,7 @@ default: return $action;
 		</div>
 
 		<div class="lma-copy_wrap">
-			<pre id="order-copy-text" style="background:#f5f5f5; border:1px solid #ddd; border-radius:4px; padding:12px; font-size:13px; line-height:1.8; white-space:pre-wrap; word-break:break-all;">{{ $copyText }}</pre>
+			<pre id="order-copy-text" style=" border:1px solid #ddd; border-radius:4px; padding:12px; font-size:13px; line-height:1.8; white-space:pre-wrap; word-break:break-all;">{{ $copyText }}</pre>
 			<button type="button" id="copy-btn" style="margin-top:8px; padding:6px 16px; background:#4d6684; color:#fff; border:none; border-radius:4px; font-size:13px; cursor:pointer;">テキストをコピー</button>
 		</div>
 
