@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/css/admin.css', 
                 'resources/css/app.css', 
                 'resources/css/default.css', 
+                'resources/css/front-init-jiyu.css', 
                 'resources/css/front.css', 
                 'resources/css/line_form.css', 
                 'resources/css/splide.min.css',

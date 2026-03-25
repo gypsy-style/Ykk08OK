@@ -59,25 +59,7 @@
             @endforeach
         </ul>
 
-        <div class="lma-pagination">
-            @php
-                $current = $products->currentPage();
-                $last = $products->lastPage();
-                $start = max(1, $current - 2);
-                $end = min($last, $current + 2);
-            @endphp
-            <a href="{{ $current > 1 ? $products->url(1) : '#' }}">&laquo;</a>
-            <a href="{{ $products->previousPageUrl() ?? '#' }}">&lsaquo;</a>
-            @for ($page = $start; $page <= $end; $page++)
-                @if ($page == $current)
-                    <span class="current">{{ $page }}</span>
-                @else
-                    <a href="{{ $products->url($page) }}" class="inactive">{{ $page }}</a>
-                @endif
-            @endfor
-            <a href="{{ $products->nextPageUrl() ?? '#' }}">&rsaquo;</a>
-            <a href="{{ $current < $last ? $products->url($last) : '#' }}">&raquo;</a>
-        </div>
+        {{ $products->links('vendor.pagination.lma') }}
     </div>
 </section>
 @endsection

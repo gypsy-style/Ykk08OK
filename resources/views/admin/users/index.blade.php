@@ -45,10 +45,7 @@ $richmenuOptions = config('app.richmenus');
         </ul>
     </div>
 
-    <!-- ページネーション -->
-    <div class="pagination">
-        {{ $users->links() }}
-    </div>
+    {{ $users->links('vendor.pagination.lma') }}
 </section>
 <script>
 document.addEventListener('DOMContentLoaded', function () {

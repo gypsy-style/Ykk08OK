@@ -119,30 +119,7 @@ default: return $action;
             </li>
             @endforeach
         </ul>
-        <!-- ページネーション -->
-        <div class="lma-pagination">
-            @php
-            $paginator = $logs->appends(request()->query());
-            $current = $paginator->currentPage();
-            $last = $paginator->lastPage();
-            $start = max(1, $current - 2);
-            $end = min($last, $current + 2);
-            @endphp
-
-            <a href="{{ $current > 1 ? $paginator->url(1) : '#' }}">&laquo;</a>
-            <a href="{{ $paginator->previousPageUrl() ?? '#' }}">&lsaquo;</a>
-
-            @for ($page = $start; $page <= $end; $page++)
-                @if ($page == $current)
-                    <span class="current">{{ $page }}</span>
-                @else
-                    <a href="{{ $paginator->url($page) }}" class="inactive">{{ $page }}</a>
-                @endif
-            @endfor
-
-            <a href="{{ $paginator->nextPageUrl() ?? '#' }}">&rsaquo;</a>
-            <a href="{{ $current < $last ? $paginator->url($last) : '#' }}">&raquo;</a>
-        </div>
+        {{ $logs->appends(request()->query())->links('vendor.pagination.lma') }}
     </div>
 
 
