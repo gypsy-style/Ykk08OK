@@ -76,7 +76,26 @@ class OrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.orders.show', compact('order', 'logs'));
+        // コピー用テキスト生成
+        $merchant = $order->merchant;
+        $lines = [];
+        $lines[] = $merchant->name ?? '';
+        if ($merchant && $merchant->postal_code1 && $merchant->postal_code2) {
+            $lines[] = $merchant->postal_code1 . '-' . $merchant->postal_code2;
+        }
+        $lines[] = $merchant->address ?? '';
+        $lines[] = $merchant->phone ?? '';
+        $lines[] = '';
+        $totalQty = 0;
+        foreach ($order->details as $detail) {
+            $totalQty += $detail->quantity;
+            $lines[] = $detail->product->product_name . '×' . $detail->quantity . '個' . number_format((int) round($detail->price * 1.1)) . '円';
+        }
+        $lines[] = '送料' . ($order->shipping_fee ?? 0) . '円';
+        $lines[] = '合計' . $totalQty . '個' . number_format((int) round(($order->total_price ?? 0) * 1.1) + ($order->shipping_fee ?? 0)) . '円';
+        $copyText = implode("\n", $lines);
+
+        return view('admin.orders.show', compact('order', 'logs', 'copyText'));
     }
 
     public function edit(Order $order)
