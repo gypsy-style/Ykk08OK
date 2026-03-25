@@ -42,22 +42,15 @@
 					<div class="lmf-order_total" style="display: none;">
 						<b class="label">送料</b><b class="item_price shipping_price">{{ number_format($shippingFee) }}円</b>
 					</div>
-					<div style="text-align: center;">
-						<b class="label">送料について</b></b>
-					</div>
-					<div class="attention-shipping" style="background:#faffea; border-radius:6px; padding:12px 16px; margin:8px 0;">
-						<dl style="margin:0; display:grid; grid-template-columns:auto 1fr; gap:4px 12px; align-items:center;">
-							<dt style="white-space:nowrap;">アマテラス</dt>
-							<dd style="margin:0;">3本で送料無料</dd>
-							<dt style="white-space:nowrap;">ツクヨミ 100g</dt>
-							<dd style="margin:0;">5本で送料無料</dd>
-							<dt style="white-space:nowrap;">ツクヨミ 300g</dt>
-							<dd style="margin:0;">3本で送料無料</dd>
-						</dl>
-					</div>
-					<div style="text-align: center;">
-						<b class="label">送料は注文後に確定します</b></b>
-					</div>
+					<div class="lmf-order_postage">
+					<div class="lmf-title_sub">送料について</div>
+					<ul class="lmf-postage_list">
+						<li><em class="name">アマテラス</em><span class="postage">3本以上で送料無料</span></li>
+						<li><em class="name">ツクヨミ100g</em><span class="postage">5本以上で送料無料</span></li>
+						<li><em class="name">ツクヨミ300g</em><span class="postage">3本以上で送料無料</span></li>
+					</ul>
+					<div class="attn">送料は注文後に確定します</div>
+				</div>
 					<div class="lmf-order_total">
 						<b class="label">合計</b><span class="quantity">[{{$totalQuantity}}点]</span><b class="item_price grand_total_price">{{ number_format($grandTotalTaxIncluded) }}円<small class="tax">(税込)</small></b>
 					</div>
