@@ -59,12 +59,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     liff.closeWindow();
                 });
                 return;
-                // document.getElementById("successMessage").innerText = data.message;
-                // document.getElementById("successMessage").style.display = "block";
-                // document.getElementById("errorMessages").style.display = "none";
-                // document.getElementById("registerForm").reset();
-
-                console.log("Richmenu result:", data.richmenu_result);
             } else {
                 document.getElementById("errorMessages").innerText = data.error || "エラーが発生しました";
                 document.getElementById("errorMessages").style.display = "block";
