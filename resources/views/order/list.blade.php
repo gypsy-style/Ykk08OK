@@ -73,6 +73,11 @@
 														$rank2Tax = $product->price_2 !== null ? (int) round($product->price_2 * 1.1) : null;
 														$rank3Tax = $product->price_3 !== null ? (int) round($product->price_3 * 1.1) : null;
 													@endphp
+													<p class="item_price-upper"
+														data-show-1="{{ $product->show_price_1 ? '1' : '0' }}"
+														data-show-2="{{ $product->show_price_2 ? '1' : '0' }}"
+														data-show-3="{{ $product->show_price_3 ? '1' : '0' }}"
+														style="display:none;">サロン価格　{{ number_format($defaultTax) }}円</p>
 													<b class="item_price"
 														data-price-default="{{ $defaultTax }}"
 														data-price-1="{{ $rank1Tax ?? '' }}"
@@ -234,6 +239,49 @@
 
 @endsection
 @push('scripts')
+<script>
+(function() {
+    function applyShowPrice(rank) {
+        document.querySelectorAll('.item_price-upper').forEach(function(el) {
+            if (el.dataset['show' + rank] === '1') {
+                el.style.display = '';
+            }
+        });
+    }
+
+    function waitForToken(callback, tries) {
+        tries = tries || 0;
+        var el = document.getElementById('access_token');
+        var token = el ? el.value : '';
+        if (token) {
+            callback(token);
+        } else if (tries < 30) {
+            setTimeout(function() { waitForToken(callback, tries + 1); }, 200);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        waitForToken(function(token) {
+            var csrf = document.querySelector('meta[name="csrf-token"]');
+            if (!csrf) return;
+            fetch('/ykk08ok/api/merchant/member_rank', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf.getAttribute('content'),
+                },
+                body: JSON.stringify({ access_token: token }),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var rank = parseInt(data.member_rank, 10);
+                if ([1, 2, 3].includes(rank)) applyShowPrice(rank);
+            })
+            .catch(function() {});
+        });
+    });
+})();
+</script>
 @if (!app()->environment('local'))
 	<script>
 		window.LIFF_ID = "{{ config('app.order_liff_id') }}";
