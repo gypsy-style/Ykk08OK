@@ -20,8 +20,18 @@
                         <dd><input type="text" name="postal_code1" id="postal_code1" class="form-control" maxlength="3" value="{{ old('postal_code1') }}" required></dd>
                         <dt>郵便番号 (後半4桁)</dt>
                         <dd><input type="text" name="postal_code2" id="postal_code2" class="form-control" maxlength="4" value="{{ old('postal_code2') }}" required></dd>
-                        <dt>住所</dt>
-                        <dd><input type="text" name="address" id="address" class="form-control" value="{{ old('address') }}" required></dd>
+                        <dt>都道府県</dt>
+                        <dd>
+                            <select name="prefecture" id="prefecture" class="form-control" required>
+                                <option value="">選択してください</option>
+                                @foreach(['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'] as $pref)
+                                    <option value="{{ $pref }}" {{ old('prefecture') == $pref ? 'selected' : '' }}>{{ $pref }}</option>
+                                @endforeach
+                            </select>
+                        </dd>
+                        <dt>住所（市区町村以降）</dt>
+                        <dd><input type="text" name="address_detail" id="address_detail" class="form-control" value="{{ old('address_detail') }}" required></dd>
+                        <input type="hidden" name="address" id="address">
                         <dt>電話番号</dt>
                         <dd><input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone') }}" required></dd>
                         <dt>キャンペーンコード（任意）</dt>
@@ -47,6 +57,11 @@
     document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("merchantForm").addEventListener("submit", function(event) {
             event.preventDefault(); // ページリロードを防ぐ
+
+            // 都道府県と住所を結合してaddressにセット
+            const prefecture = document.getElementById('prefecture').value;
+            const addressDetail = document.getElementById('address_detail').value;
+            document.getElementById('address').value = prefecture + addressDetail;
 
             const formData = new FormData(this);
             const submitButton = document.querySelector("#merchantForm input[type='submit']");

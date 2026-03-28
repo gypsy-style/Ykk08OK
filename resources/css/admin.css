@@ -1381,7 +1381,7 @@ input.lma-search_submit[type="submit"] {
 	}
 	.lma-detail_tbl tr th:nth-child(2) ,
 	.lma-detail_tbl tr td:nth-child(2) {
-		display: none;
+		/* display: none; */
 	}
 	.lma-detail_tbl tfoot::before {
 		width: calc(100% + 20px);

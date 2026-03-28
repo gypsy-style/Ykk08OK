@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Services\LineRichMenuService;
+use App\Services\LineMessageService;
 use Illuminate\Validation\Rule;
 
 class MerchantController extends Controller
@@ -64,7 +65,7 @@ class MerchantController extends Controller
         return view('admin.merchants.edit', compact('merchant', 'agencies'));
     }
 
-    public function update(LineRichMenuService $lineRichMenuService, Request $request, $id)
+    public function update(LineRichMenuService $lineRichMenuService, LineMessageService $lineMessageService, Request $request, $id)
     {
 
         try{
@@ -97,6 +98,7 @@ class MerchantController extends Controller
             ]);
 
             $merchant = Merchant::findOrFail($id);
+            $oldStatus = $merchant->status;
             $merchant->update($request->all());
 
             // user情報取得
@@ -121,6 +123,12 @@ class MerchantController extends Controller
             $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu_id);
 
             $user->update(['richmenu_id'=>$richmenu_name]);
+
+            // ステータスが2→1に変更された場合、LINEメッセージを送信
+            if ($oldStatus == 2 && $status == 1) {
+                $message = "【店舗認証完了のお知らせ】\n\nお待たせいたしました。\nご登録内容の確認が完了し、店舗認証をさせていただきました。\n\n本日より、こちらのLINEから商品の注文が可能となります。\n下部メニューの「注文する」ボタンより、ぜひご利用ください。\n\n引き続き「KAMI注文LINE」をよろしくお願いいたします。";
+                $lineMessageService->sendMessage($line_id, $message);
+            }
             
             return redirect()->route('admin.merchants.index')->with('success', '加盟店情報を更新しました。');
         }catch(Exception $e) {
