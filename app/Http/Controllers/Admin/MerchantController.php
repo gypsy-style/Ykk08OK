@@ -104,28 +104,27 @@ class MerchantController extends Controller
             // user情報取得
             $user_id = $request->input('user_id');
             $user = User::find($user_id);
-            if(!$user) {
-                // ユーザー情報が見つかりませんエラー404
+            if (!$user) {
+                throw new Exception("ユーザーが見つかりません: user_id={$user_id}");
             }
             $line_id = $user->line_id;
 
             // ステータスによってリッチメニューを変える
-            $status = $request->input('status');
-            if ($status == 1) {
-                // ステータスが 1 の場合richmenu_4に
+            $status = (int) $request->input('status');
+            if ($status === 1) {
                 $richmenu_id = env('RICHMENU_ID_4');
                 $richmenu_name = 'RICHMENU_ID_4';
-            } elseif ($status == 2) {
-                // ステータスが 2 の場合richmenu_3に
+            } else {
                 $richmenu_id = env('RICHMENU_ID_3');
                 $richmenu_name = 'RICHMENU_ID_3';
             }
             $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu_id);
+            Log::info("RichMenu switched: line_id={$line_id}, richmenu={$richmenu_name}", ['result' => $result]);
 
-            $user->update(['richmenu_id'=>$richmenu_name]);
+            $user->update(['richmenu_id' => $richmenu_name]);
 
             // ステータスが2→1に変更された場合、LINEメッセージを送信
-            if ($oldStatus == 2 && $status == 1) {
+            if ((int) $oldStatus === 2 && $status === 1) {
                 $message = "【店舗認証完了のお知らせ】\n\nお待たせいたしました。\nご登録内容の確認が完了し、店舗認証をさせていただきました。\n\n本日より、こちらのLINEから商品の注文が可能となります。\n下部メニューの「注文する」ボタンより、ぜひご利用ください。\n\n引き続き「KAMI注文LINE」をよろしくお願いいたします。";
                 $lineMessageService->sendMessage($line_id, $message);
             }
