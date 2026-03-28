@@ -135,6 +135,9 @@ class ProductController extends Controller
             'status' => 'required|in:available,unavailable',
             'agent_sale_flag' => 'nullable|integer',
             'single_sale_prohibited' => 'nullable|boolean',
+            'show_price_1' => 'nullable|boolean',
+            'show_price_2' => 'nullable|boolean',
+            'show_price_3' => 'nullable|boolean',
             'accessories' => 'nullable|array',
             'accessories.*.product_id' => 'nullable|exists:products,id',
             'accessories.*.quantity' => 'nullable|integer|min:1|max:9999',
@@ -143,6 +146,9 @@ class ProductController extends Controller
         // チェックがオフのときにデフォルト値をセット
         $data['agent_sale_flag'] = $request->has('agent_sale_flag') ? 1 : 0;
         $data['single_sale_prohibited'] = $request->has('single_sale_prohibited') ? 1 : 0;
+        $data['show_price_1'] = $request->has('show_price_1') ? 1 : 0;
+        $data['show_price_2'] = $request->has('show_price_2') ? 1 : 0;
+        $data['show_price_3'] = $request->has('show_price_3') ? 1 : 0;
 
         // 既存の画像を削除して新しい画像を保存
         if ($request->hasFile('product_image')) {

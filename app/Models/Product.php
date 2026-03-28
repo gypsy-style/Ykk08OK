@@ -12,7 +12,8 @@ class Product extends Model
         'product_code', 'product_name', 'set_sale_name', 'category_id', 'product_image',
         'description', 'volume', 'price', 'price_1', 'price_2', 'price_3', 'wholesale_price',
         'retail_price', 'tax_rate', 'jan', 'lot', 'unit_quantity', 'status',
-        'agent_sale_flag', 'single_sale_prohibited'
+        'agent_sale_flag', 'single_sale_prohibited',
+        'show_price_1', 'show_price_2', 'show_price_3',
     ];
 
     protected $casts = [
@@ -21,6 +22,9 @@ class Product extends Model
         'price_2' => 'integer',
         'price_3' => 'integer',
         'tax_rate' => 'integer',
+        'show_price_1' => 'boolean',
+        'show_price_2' => 'boolean',
+        'show_price_3' => 'boolean',
     ];
 
     public function getPriceForRank(?int $memberRank): int
