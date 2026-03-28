@@ -48,7 +48,17 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(data => {
             if (data.success) {
                 alert('登録が完了しました。');
-                liff.closeWindow();
+                liff.sendMessages([
+                    {
+                        type: 'text',
+                        text: '【会員登録済】'
+                    }
+                ]).catch(function(err) {
+                    console.error('sendMessages error', err);
+                }).finally(function() {
+                    liff.closeWindow();
+                });
+                return;
                 // document.getElementById("successMessage").innerText = data.message;
                 // document.getElementById("successMessage").style.display = "block";
                 // document.getElementById("errorMessages").style.display = "none";

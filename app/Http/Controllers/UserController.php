@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Services\LineRichMenuService;
-use App\Services\LineMessageService;
 
 class UserController extends Controller
 {
@@ -15,7 +14,7 @@ class UserController extends Controller
         return view('user.register');
     }
 
-    public function store(LineRichMenuService $lineRichMenuService, LineMessageService $lineMessageService, Request $request)
+    public function store(LineRichMenuService $lineRichMenuService, Request $request)
     {
         try {
             // 1. LINEプロフィールを取得
@@ -58,18 +57,12 @@ class UserController extends Controller
 
             Log::info("Richmenu updated for LINE ID: {$line_id}", ['result' => $result]);
 
-            // 5. 登録完了LINEメッセージ送信
-            $messageResult = $lineMessageService->sendMessage($line_id, "登録が完了しました。\nご利用ありがとうございます。");
-
-            Log::info("LINE message sent for LINE ID: {$line_id}", ['result' => $messageResult]);
-
             // 成功レスポンスを返す
             return response()->json([
                 'success' => true,
                 'message' => '登録が完了しました。',
                 'user' => $user,
                 'richmenu_result' => $result,
-                'line_message_result' => $messageResult
             ]);
         } catch (\Exception $e) {
             Log::error('User registration error', ['exception' => $e->getMessage()]);
