@@ -83,6 +83,7 @@
 														data-price-1="{{ $rank1Tax ?? '' }}"
 														data-price-2="{{ $rank2Tax ?? '' }}"
 														data-price-3="{{ $rank3Tax ?? '' }}"
+														style="visibility:hidden;"
 													>{{ number_format($defaultTax) }}円<small class="tax">(税込)</small></b>
 													<button class="minus" type="button">－</button><input
 														data-name="{{ $product->product_name }}" data-pid="{{ $product->product_code }}"
@@ -277,7 +278,12 @@
                 var rank = parseInt(data.member_rank, 10);
                 if ([1, 2, 3].includes(rank)) applyShowPrice(rank);
             })
-            .catch(function() {});
+            .catch(function() {})
+            .finally(function() {
+                document.querySelectorAll('.item_price').forEach(function(el) {
+                    el.style.visibility = '';
+                });
+            });
         });
     });
 })();
