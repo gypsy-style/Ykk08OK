@@ -55,6 +55,32 @@
 @vite(['resources/js/liff_merchant.js'])
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // 郵便番号から住所を自動入力
+        function fetchAddress() {
+            const code1 = document.getElementById('postal_code1').value;
+            const code2 = document.getElementById('postal_code2').value;
+            if (code1.length === 3 && code2.length === 4) {
+                fetch('https://zipcloud.ibsnet.co.jp/api/search?zipcode=' + code1 + code2)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.results && data.results[0]) {
+                            const r = data.results[0];
+                            const prefSelect = document.getElementById('prefecture');
+                            for (let i = 0; i < prefSelect.options.length; i++) {
+                                if (prefSelect.options[i].value === r.address1) {
+                                    prefSelect.selectedIndex = i;
+                                    break;
+                                }
+                            }
+                            document.getElementById('address_detail').value = r.address2 + r.address3;
+                        }
+                    })
+                    .catch(() => {});
+            }
+        }
+        document.getElementById('postal_code1').addEventListener('input', fetchAddress);
+        document.getElementById('postal_code2').addEventListener('input', fetchAddress);
+
         document.getElementById("merchantForm").addEventListener("submit", function(event) {
             event.preventDefault(); // ページリロードを防ぐ
 
