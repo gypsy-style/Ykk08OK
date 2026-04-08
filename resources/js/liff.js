@@ -198,9 +198,14 @@ function applyRankPriceToOrderList(rank) {
         // 価格表示
         const itemWrap = input.closest('.item_cartin');
         const priceEl = itemWrap ? itemWrap.querySelector('.item_price') : null;
+        const underEl = itemWrap ? itemWrap.querySelector('.item_price-under') : null;
         if (priceEl) {
-            const num = Number(effective);
-            priceEl.innerHTML = `${num.toLocaleString()}円<small class="tax">(税込)</small>`;
+            const taxIncluded = Number(effective);
+            const taxExcluded = Math.round(taxIncluded / 1.1);
+            priceEl.innerHTML = `${taxExcluded.toLocaleString()}円`;
+            if (underEl) {
+                underEl.textContent = `(税込 ${taxIncluded.toLocaleString()}円)`;
+            }
         }
         // 計算用（line_form_order.js が data-price を参照）
         input.setAttribute('data-price', effective);
