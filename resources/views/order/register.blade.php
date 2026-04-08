@@ -31,7 +31,7 @@
 								<div class="item_info">
 									<span class="item_name">{{ $product->product_name }}</span>
 									<div class="item_cartin">
-										<b class="item_price">{{ number_format($product->price_with_tax) }}円<small class="tax">(税込)</small></b>
+										<b class="item_price">{{ number_format($product->price) }}円</b>
 										<button class="del">削除</button> <button type="button" class="minus">－</button><input data-name="{{ $product->product_name }}" data-pid="{{ $product->product_code }}" data-price="{{ $product->price }}" name="item_number_{{ $product->id }}" type="text" value="{{$product->quantity}}"><button type="button" class="plus">＋</button>
 									</div>
 								</div>
@@ -48,8 +48,16 @@
 						</ul>
 						<div class="attn">送料は注文後に確定します</div>
 					</div>
+					@php
+						$subTotal = $products->sum(fn($p) => ($p->price ?? 0) * ($p->quantity ?? 1));
+						$taxAmount = $grandTotalTaxIncluded - $subTotal;
+					@endphp
+					<div class="lmf-order_costs">
+					<p>送料：未確定<br>
+						消費税：<span class="tax_price">{{ number_format($taxAmount) }}</span>円</p>
+				</div>
 					<div class="lmf-order_total">
-						<b class="label">合計</b><span class="quantity">[{{$totalQuantity}}点]</span><b class="item_price grand_total_price">{{ number_format($grandTotalTaxIncluded) }}円<small class="tax">(税込)</small></b>
+						<b class="label">合計</b><span class="quantity">[{{$totalQuantity}}点]</span><b class="item_price grand_total_price">{{ number_format($subTotal) }}円</b>
 					</div>
 					<div class="lmf-btn_box btn_gy">
 						<button type="button">追加注文</button>
@@ -183,10 +191,12 @@
 			let shippingFee = 0;
 			// 税込合計（10%）+ 送料
 			let grandTotalTaxIncluded = Math.round(total * 1.1) + shippingFee;
+			let taxAmount = grandTotalTaxIncluded - total;
 
 			$('.lmf-order_total .quantity').text("[" + totalQuantity + "点]");
 			$('.shipping_price').text(shippingFee.toLocaleString() + "円");
-			$('.grand_total_price').text(grandTotalTaxIncluded.toLocaleString() + "円");
+			$('.grand_total_price').text(total.toLocaleString() + "円");
+			$('.tax_price').text(taxAmount.toLocaleString());
 		}
 
 		// プラスボタン（＋）をクリック
