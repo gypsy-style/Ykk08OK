@@ -85,7 +85,7 @@
 														data-price-3="{{ $rank3Tax ?? '' }}"
 														style="visibility:hidden;"
 													>{{ number_format($product->price ?? 0) }}円</b>
-													<p class="item_price-under">(税込 {{ number_format($defaultTax) }}円)</p>
+													<p class="item_price-under" style="visibility:hidden;">(税込 {{ number_format($defaultTax) }}円)</p>
 													<button class="minus" type="button">－</button><input
 														data-name="{{ $product->product_name }}" data-pid="{{ $product->product_code }}"
 														data-price="{{ $defaultTax }}"
@@ -281,7 +281,7 @@
             })
             .catch(function() {})
             .finally(function() {
-                document.querySelectorAll('.item_price').forEach(function(el) {
+                document.querySelectorAll('.item_price, .item_price-under').forEach(function(el) {
                     el.style.visibility = '';
                 });
             });
