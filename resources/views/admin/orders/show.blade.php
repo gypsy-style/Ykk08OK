@@ -87,7 +87,7 @@ default: return $action;
 					<tr>
 						<th>合計</th>
 						<td>{{$totalQuantity }}</td>
-						<td>{{ number_format((int) round(($order->total_price ?? 0) * 1.1) + ($order->shipping_fee ?? 0)) }}円</td>
+						<td id="grand-total-cell">{{ number_format((int) round(($order->total_price ?? 0) * 1.1) + ($order->shipping_fee ?? 0)) }}円</td>
 					</tr>
 				</tfoot>
 			</table>
@@ -177,6 +177,16 @@ default: return $action;
 					copyBtn.textContent = 'コピーしました';
 					setTimeout(() => { copyBtn.textContent = 'テキストをコピー'; }, 2000);
 				});
+			});
+		}
+
+		const taxIncludedPrice = {{ (int) round(($order->total_price ?? 0) * 1.1) }};
+		const shippingFeeInput = document.getElementById('shipping-fee-input');
+		if (shippingFeeInput) {
+			shippingFeeInput.addEventListener('input', function() {
+				const fee = parseInt(this.value) || 0;
+				const grandTotal = taxIncludedPrice + fee;
+				document.getElementById('grand-total-cell').textContent = grandTotal.toLocaleString() + '円';
 			});
 		}
 
