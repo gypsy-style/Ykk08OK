@@ -52,6 +52,7 @@ default: return $action;
 				<tbody>
 					@php
 					$totalQuantity = 0;
+					$taxAmount = (int) round(($order->total_price ?? 0) * 1.1) - ($order->total_price ?? 0);
 					@endphp
 					@foreach ($order->details as $detail)
 					@php
@@ -60,7 +61,7 @@ default: return $action;
 					<tr>
 						<th>{{ $detail->product->product_name }}</th>
 						<td>{{ $detail->quantity }} </td>
-						<td>{{ number_format((int) round($detail->price * 1.1)) }}円</td>
+						<td>{{ number_format($detail->price) }}円</td>
 					</tr>
 					@endforeach
 					<tr>
@@ -74,6 +75,12 @@ default: return $action;
 								{{ $order->shipping_fee }}円
 							@endif
 						</td>
+					</tr>
+					<!-- 消費税 -->
+					<tr>
+						<th>消費税</th>
+						<td></td>
+						<td>{{ number_format($taxAmount) }}円</td>
 					</tr>
 				</tbody>
 				<tfoot>
