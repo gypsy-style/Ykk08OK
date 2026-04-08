@@ -63,23 +63,27 @@
                                 <span class="item_name">{{ $detail->product->set_sale_name ?: $detail->product->product_name }}</span>
                                 <div class="item_cartin">
                                     <p class="item_unit-quantity">
-                                        単価：{{ number_format((int) round($detail->price * 1.1)) }}円<br>数量：{{ $detail->quantity }}個
+                                        単価：{{ number_format($detail->price) }}円<br>数量：{{ $detail->quantity }}個
                                     </p>
-                                    <b class="item_price">{{ number_format((int) round($detail->price * $detail->quantity * 1.1)) }}円<small class="tax">(税込)</small></b>
+                                    <b class="item_price">{{ number_format($detail->price * $detail->quantity) }}円</b>
                                 </div>
                             </div>
                         </div>
                     </li>
                     @endforeach
                 </ul>
+                @php
+                    $taxAmount = (int) round($order->total_price * 1.1) - $order->total_price;
+                @endphp
                 <div class="lmf-order_total">
-                    <b class="label">小計</b><span class="quantity">[{{ $order->details->sum('quantity') }}点]</span><b class="item_price">{{ number_format((int) round($order->total_price * 1.1)) }}円<small class="tax">(税込)</small></b>
+                    <b class="label">小計</b><span class="quantity">[{{ $order->details->sum('quantity') }}点]</span><b class="item_price">{{ number_format($order->total_price) }}円</b>
                 </div>
+                <div class="lmf-order_costs">
+					<p>送料：{{ number_format($order->shipping_fee ?? 0) }}円<br>
+						消費税：{{ number_format($taxAmount) }}円</p>
+				</div>
                 <div class="lmf-order_total">
-                    <b class="label">送料</b><span class="quantity"></span><b class="item_price">{{ number_format($order->shipping_fee ?? 0) }}円</b>
-                </div>
-                <div class="lmf-order_total">
-                    <b class="label">合計</b><span class="quantity"></span><b class="item_price">{{ number_format((int) round($order->total_price * 1.1) + ($order->shipping_fee ?? 0)) }}円<small class="tax">(税込)</small></b>
+                    <b class="label">合計</b><span class="quantity"></span><b class="item_price">{{ number_format((int) round($order->total_price * 1.1) + ($order->shipping_fee ?? 0)) }}円</b>
                 </div>
                 @if($order->status == 1) {{-- 代理店未処理 --}}
                 <p class="lmf-btn_box btn_small btn_dgy">
