@@ -49,15 +49,17 @@
 						<div class="attn">送料は注文後に確定します</div>
 					</div>
 					@php
-						$subTotal = $products->sum(fn($p) => ($p->price ?? 0) * ($p->quantity ?? 1));
-						$taxAmount = $grandTotalTaxIncluded - $subTotal;
+					$taxAmount = $grandTotalTaxIncluded - $totalPrice;
 					@endphp
-					<div class="lmf-order_costs">
-					<p>送料：未確定<br>
-						消費税：<span class="tax_price">{{ number_format($taxAmount) }}</span>円</p>
-				</div>
 					<div class="lmf-order_total">
-						<b class="label">合計</b><span class="quantity">[{{$totalQuantity}}点]</span><b class="item_price grand_total_price">{{ number_format($subTotal) }}円</b>
+						<b class="label">小計</b><span class="quantity">[{{$totalQuantity}}点]</span><b class="item_price sub_total_price">{{ number_format($totalPrice) }}円</b>
+					</div>
+					<div class="lmf-order_costs">
+						<p>送料：未確定<br>
+							消費税：<span class="tax_price">{{ number_format($taxAmount) }}</span>円</p>
+					</div>
+					<div class="lmf-order_total">
+						<b class="label">合計</b><span class="quantity">[{{$totalQuantity}}点]</span><b class="item_price grand_total_price">{{ number_format($grandTotalTaxIncluded) }}円</b>
 					</div>
 					<div class="lmf-btn_box btn_gy">
 						<button type="button">追加注文</button>
@@ -195,7 +197,8 @@
 
 			$('.lmf-order_total .quantity').text("[" + totalQuantity + "点]");
 			$('.shipping_price').text(shippingFee.toLocaleString() + "円");
-			$('.grand_total_price').text(total.toLocaleString() + "円");
+			$('.sub_total_price').text(total.toLocaleString() + "円");
+			$('.grand_total_price').text(grandTotalTaxIncluded.toLocaleString() + "円");
 			$('.tax_price').text(taxAmount.toLocaleString());
 		}
 
