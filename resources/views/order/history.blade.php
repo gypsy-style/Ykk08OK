@@ -3,7 +3,7 @@
 @section('content')
 <div class="lmf-container">
 	<div class="lmf-title_block tall">
-		<h1 class="title">注文履歴.</h1>
+		<h1 class="title">注文履歴</h1>
 	</div>
 	<main class="lmf-main_contents">
 		<section class="lmf-content" id="order-history">
