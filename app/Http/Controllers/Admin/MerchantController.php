@@ -43,6 +43,7 @@ class MerchantController extends Controller
             'postal_code2' => 'required|string|max:4',
             'address' => 'required|string|max:255',
             'phone' => 'required|string|max:15',
+            'bank_account_name' => 'nullable|string|max:1000',
             'user_id' => [
                 'required',
                 'integer',
@@ -84,6 +85,7 @@ class MerchantController extends Controller
                 'postal_code2' => 'required|string|max:4',
                 'address' => 'required|string|max:255',
                 'phone' => 'required|string|max:15',
+                'bank_account_name' => 'nullable|string|max:1000',
                 'user_id' => [
                     'required',
                     'integer',

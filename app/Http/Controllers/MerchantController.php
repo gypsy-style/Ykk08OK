@@ -52,6 +52,7 @@ class MerchantController extends Controller
                 'address' => 'required|string|max:255',
                 'phone' => 'required|string|max:15',
                 'campaign_code' => 'nullable|string|max:255',
+                'bank_account_name' => 'nullable|string|max:1000',
             ]);
 
             // 会員ランクは agency/admin の create/edit からのみ更新できる仕様
@@ -85,6 +86,7 @@ class MerchantController extends Controller
                 'postal_code2' => 'required|string|size:4',
                 'address' => 'required|string|max:255',
                 'phone' => 'required|string|max:15',
+                'bank_account_name' => 'nullable|string|max:1000',
                 'user_id' => [
                     'required',
                     'exists:users,id',

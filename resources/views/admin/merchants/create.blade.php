@@ -49,8 +49,10 @@
                 <dt><label for="price">電話番号</label></dt>
                 <dd><input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone') }}" required></dd>
 
+                <dt><label for="bank_account_name">振込み口座名</label></dt>
+                <dd><textarea class="form-control" id="bank_account_name" name="bank_account_name" rows="4">{{ old('bank_account_name') }}</textarea></dd>
 
-            
+
             </dl>
 
             <p class="lma-btn_box">

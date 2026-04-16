@@ -28,6 +28,7 @@ class Merchant extends Model
         'address',
         'phone',
         'contact_person',
+        'bank_account_name',
         'user_id',
     ];
 

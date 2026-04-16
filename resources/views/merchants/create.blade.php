@@ -36,6 +36,8 @@
                         <dd><input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone') }}" required></dd>
                         <dt>キャンペーンコード（任意）</dt>
                         <dd><input type="text" name="campaign_code" id="campaign_code" class="form-control" value="{{ old('campaign_code') }}"></dd>
+                        <dt>振込み口座名（任意）</dt>
+                        <dd><textarea name="bank_account_name" id="bank_account_name" class="form-control" rows="4">{{ old('bank_account_name') }}</textarea></dd>
                         <p class="lmf-btn_box btn_small"><input type="submit" value="サロン登録"></p>
                 </div>
                 <input type="hidden" name="user_id" id="user_id" class="form-control" value="{{ old('user_id') }}" required>

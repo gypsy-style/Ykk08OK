@@ -32,6 +32,9 @@
                     <dt>キャンペーンコード（任意）</dt>
                     <dd><input type="text" name="campaign_code" id="campaign_code" class="form-control" value="{{ old('campaign_code', $merchant->campaign_code) }}"></dd>
 
+                    <dt>振込み口座名（任意）</dt>
+                    <dd><textarea name="bank_account_name" id="bank_account_name" class="form-control" rows="4">{{ old('bank_account_name', $merchant->bank_account_name) }}</textarea></dd>
+
                     <p class="lmf-btn_box btn_small"><input type="submit" value="サロン編集"></p>
                     
 				</div>
