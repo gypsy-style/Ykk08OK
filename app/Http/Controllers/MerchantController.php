@@ -317,6 +317,7 @@ class MerchantController extends Controller
             'postal_code' => $merchant->postal_code1 . '-' . $merchant->postal_code2,
             'address' => $merchant->address,
             'phone' => $merchant->phone,
+            'bank_account_name' => $merchant->bank_account_name,
             'agency_name' => optional($merchant->agency)->name,
         ]);
     }

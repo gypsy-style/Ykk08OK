@@ -18,6 +18,9 @@
                 <div class="lma-user_box {{ $merchant->status == 2 ? 'tbd' : '' }}">
                     <div class="user_info">
                         <h3 class="name">{{ $merchant->name }}</h3>
+                        @if($merchant->bank_account_name)
+                        <p class="sub" style="font-size: 0.8em; color: #888;">振込み口座名: {{ $merchant->bank_account_name }}</p>
+                        @endif
                     </div>
                     <div class="lma-btn_box btn_list">
                         <a href="{{ route('agencies.merchants.edit', $merchant->id) }}" class="btn btn-sm btn-warning">編集</a>

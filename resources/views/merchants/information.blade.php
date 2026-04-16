@@ -21,6 +21,8 @@
                         <dd id="address"></dd>
                         <dt>電話番号</dt>
                         <dd id="phone"></dd>
+                        <dt>振込み口座名</dt>
+                        <dd id="bank_account_name"></dd>
                     </dl>
                     <p class="lmf-btn_box btn_dgy btn_small" id="edit_link" style="display:none;"><a href="">登録情報を修正する</a></p>
                 </div>

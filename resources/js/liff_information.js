@@ -82,6 +82,7 @@ function updateMerchantInformation(data) {
 
     document.getElementById('address').textContent = data.address || 'N/A';
     document.getElementById('phone').textContent = data.phone || 'N/A';
+    document.getElementById('bank_account_name').textContent = data.bank_account_name || 'N/A';
 
     // 編集画面のURLを生成
     const merchantId = data.merchant_id;

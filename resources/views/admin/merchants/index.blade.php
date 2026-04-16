@@ -17,6 +17,9 @@
                     <div class="user_info">
                         <h3 class="name">{{ $merchant->name }}</h3>
                         <p class="sub" style="font-size: 0.8em; color: #888;">{{ $merchant->agency->name ?? '代理店未設定' }}　会員ランク{{ $merchant->member_rank ?? '-' }}</p>
+                        @if($merchant->bank_account_name)
+                        <p class="sub" style="font-size: 0.8em; color: #888;">振込み口座名: {{ $merchant->bank_account_name }}</p>
+                        @endif
                     </div>
                     <div class="lma-btn_box btn_list">
                         <a href="{{ route('admin.merchants.edit', $merchant->id) }}" class="btn btn-primary btn-sm">編集</a>
