@@ -22,7 +22,7 @@
                         <dt>電話番号</dt>
                         <dd id="phone"></dd>
                         <dt>振込み口座名</dt>
-                        <dd id="bank_account_name"></dd>
+                        <dd id="bank_account_name" style="white-space: pre-line;"></dd>
                     </dl>
                     <p class="lmf-btn_box btn_dgy btn_small" id="edit_link" style="display:none;"><a href="">登録情報を修正する</a></p>
                 </div>

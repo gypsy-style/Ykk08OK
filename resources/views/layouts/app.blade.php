@@ -35,6 +35,8 @@
 
 	<!-- ■ splide ■ -->
 
+	<!-- カスタムCSS -->
+	<style>{!! \App\Models\Setting::getValue('custom_css', '') !!}</style>
 
 </head>
 

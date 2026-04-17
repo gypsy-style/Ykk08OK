@@ -60,6 +60,9 @@
                         <li class="log {{ request()->routeIs('admin.logs.index') ? 'current' : '' }}">
                             <a href="{{ route('admin.logs.index') }}"><span class="text">ログ一覧</span></a>
                         </li>
+                        <li class="setting {{ request()->routeIs('admin.settings.*') ? 'current' : '' }}">
+                            <a href="{{ route('admin.settings.custom_css') }}"><span class="text">設定</span></a>
+                        </li>
                         @endif
                     </ul>
                 </div>
