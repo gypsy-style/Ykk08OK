@@ -13,6 +13,7 @@
         border-radius: 4px;
         height: 500px;
         font-size: 14px;
+        line-height: 1.2;
     }
     .css-error-list {
         margin-top: 10px;
