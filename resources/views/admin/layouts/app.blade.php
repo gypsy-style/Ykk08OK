@@ -16,6 +16,7 @@
     <script>
         const BASE_URL = "{{ config('app.url') }}";
     </script>
+    @stack('head')
 </head>
 
 <body class="lma-point_body lma-orderlist_body">
