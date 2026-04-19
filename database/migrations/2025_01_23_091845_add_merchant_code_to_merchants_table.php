@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasColumn('merchants', 'merchant_code')) {
+            return;
+        }
         Schema::table('merchants', function (Blueprint $table) {
             $table->string('merchant_code')->after('name')->nullable()->comment('店舗コード');
         });

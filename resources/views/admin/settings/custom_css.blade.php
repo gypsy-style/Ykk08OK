@@ -46,6 +46,7 @@
         <div class="lma-setting_nav" style="margin-bottom: 20px;">
             <ul style="display: flex; gap: 10px; list-style: none; padding: 0;">
                 <li><a href="{{ route('admin.settings.custom_css') }}" style="font-weight: bold;">カスタムCSS</a></li>
+                <li><a href="{{ route('admin.settings.privacy_policy') }}">プライバシーポリシー</a></li>
             </ul>
         </div>
 

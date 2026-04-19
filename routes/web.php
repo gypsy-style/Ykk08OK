@@ -39,6 +39,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// プライバシーポリシー（公開ページ・認証不要）
+Route::get('/privacy-policy', function () {
+    $privacyPolicy = \App\Models\Setting::getValue('privacy_policy', '');
+    return view('privacy_policy', compact('privacyPolicy'));
+})->name('privacy_policy');
+
 // 注文画面
 Route::get('/order/list', [UserOrderController::class, 'list'])->name('order.list');
 Route::match(['get', 'post'], '/order/register', [UserOrderController::class, 'register'])->name('order.register');
@@ -115,6 +121,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // 設定
         Route::get('settings/custom-css', [AdminSettingController::class, 'customCss'])->name('settings.custom_css');
         Route::post('settings/custom-css', [AdminSettingController::class, 'updateCustomCss'])->name('settings.update_custom_css');
+        Route::get('settings/privacy-policy', [AdminSettingController::class, 'privacyPolicy'])->name('settings.privacy_policy');
+        Route::post('settings/privacy-policy', [AdminSettingController::class, 'updatePrivacyPolicy'])->name('settings.update_privacy_policy');
 
     });
 });

@@ -15,9 +15,15 @@ return new class extends Migration
     {
         Schema::table('products', function (Blueprint $table) {
             // 会員ランク別の価格（未設定なら従来のpriceを使用するためNULL許可）
-            $table->integer('price_1')->nullable()->after('price');
-            $table->integer('price_2')->nullable()->after('price_1');
-            $table->integer('price_3')->nullable()->after('price_2');
+            if (!Schema::hasColumn('products', 'price_1')) {
+                $table->integer('price_1')->nullable()->after('price');
+            }
+            if (!Schema::hasColumn('products', 'price_2')) {
+                $table->integer('price_2')->nullable()->after('price_1');
+            }
+            if (!Schema::hasColumn('products', 'price_3')) {
+                $table->integer('price_3')->nullable()->after('price_2');
+            }
         });
     }
 

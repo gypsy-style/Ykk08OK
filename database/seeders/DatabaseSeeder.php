@@ -18,8 +18,10 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             AgencySeeder::class,
             ProductSeeder::class,
-            MerchantSeeder::class,
-            UserSeeder::class,
+            // 以下は既存スキーマと不整合（UserSeederはusers.agency_id未定義、MerchantSeederはuser_id必須だが未設定等）。
+            // 修正後に有効化する。
+            // UserSeeder::class,
+            // MerchantSeeder::class,
         ]);
     }
 }

@@ -27,4 +27,24 @@ class SettingController extends Controller
 
         return redirect()->route('admin.settings.custom_css')->with('success', 'カスタムCSSを保存しました。');
     }
+
+    public function privacyPolicy()
+    {
+        $privacyPolicy = Setting::getValue('privacy_policy', '');
+        return view('admin.settings.privacy_policy', compact('privacyPolicy'));
+    }
+
+    public function updatePrivacyPolicy(Request $request)
+    {
+        $request->validate([
+            'privacy_policy' => 'nullable|string|max:200000',
+        ]);
+
+        Setting::updateOrCreate(
+            ['key' => 'privacy_policy'],
+            ['value' => $request->input('privacy_policy')]
+        );
+
+        return redirect()->route('admin.settings.privacy_policy')->with('success', 'プライバシーポリシーを保存しました。');
+    }
 }

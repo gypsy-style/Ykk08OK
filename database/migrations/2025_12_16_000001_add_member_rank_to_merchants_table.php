@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasColumn('merchants', 'member_rank')) {
+            return;
+        }
         Schema::table('merchants', function (Blueprint $table) {
             $table->integer('member_rank')->default(1)->after('status'); // 会員ランク（1〜3）
         });

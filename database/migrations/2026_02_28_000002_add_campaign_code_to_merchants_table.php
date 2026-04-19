@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasColumn('merchants', 'campaign_code')) {
+            return;
+        }
         Schema::table('merchants', function (Blueprint $table) {
             $table->string('campaign_code', 255)->nullable()->after('merchant_code');
         });
