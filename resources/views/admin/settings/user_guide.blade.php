@@ -90,15 +90,6 @@
         </div>
     </div>
     <div class="lma-content_block store_edit">
-        <div class="lma-setting_nav" style="margin-bottom: 20px;">
-            <ul style="display: flex; gap: 10px; list-style: none; padding: 0;">
-                <li><a href="{{ route('admin.settings.custom_css') }}">カスタムCSS</a></li>
-                <li><a href="{{ route('admin.settings.privacy_policy') }}">プライバシーポリシー</a></li>
-                <li><a href="{{ route('admin.settings.user_guide') }}" style="font-weight: bold;">ご利用ガイド</a></li>
-                <li><a href="{{ route('admin.settings.commercial_law') }}">特定商取引法</a></li>
-            </ul>
-        </div>
-
         @if(session('success'))
             <div class="alert alert-success" style="background: #d4edda; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
                 {{ session('success') }}
@@ -108,8 +99,11 @@
         <form action="{{ route('admin.settings.update_user_guide') }}" method="POST" id="userGuideForm">
             @csrf
             <dl class="lma-form_box">
-                <dt><label for="user_guide">ご利用ガイド</label></dt>
+                <dt>
+                    @include('admin.settings._nav', ['active' => 'user_guide'])
+                </dt>
                 <dd>
+                    <label for="user_guide" style="display:block; margin-bottom:6px; font-weight:bold;">ご利用ガイド</label>
                     <textarea class="form-control" id="user_guide" name="user_guide">{{ old('user_guide', $userGuide) }}</textarea>
                 </dd>
             </dl>

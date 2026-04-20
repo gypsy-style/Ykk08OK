@@ -90,15 +90,6 @@
         </div>
     </div>
     <div class="lma-content_block store_edit">
-        <div class="lma-setting_nav" style="margin-bottom: 20px;">
-            <ul style="display: flex; gap: 10px; list-style: none; padding: 0;">
-                <li><a href="{{ route('admin.settings.custom_css') }}">カスタムCSS</a></li>
-                <li><a href="{{ route('admin.settings.privacy_policy') }}" style="font-weight: bold;">プライバシーポリシー</a></li>
-                <li><a href="{{ route('admin.settings.user_guide') }}">ご利用ガイド</a></li>
-                <li><a href="{{ route('admin.settings.commercial_law') }}">特定商取引法</a></li>
-            </ul>
-        </div>
-
         @if(session('success'))
             <div class="alert alert-success" style="background: #d4edda; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
                 {{ session('success') }}
@@ -108,8 +99,11 @@
         <form action="{{ route('admin.settings.update_privacy_policy') }}" method="POST" id="privacyPolicyForm">
             @csrf
             <dl class="lma-form_box">
-                <dt><label for="privacy_policy">プライバシーポリシー</label></dt>
+                <dt>
+                    @include('admin.settings._nav', ['active' => 'privacy_policy'])
+                </dt>
                 <dd>
+                    <label for="privacy_policy" style="display:block; margin-bottom:6px; font-weight:bold;">プライバシーポリシー</label>
                     <textarea class="form-control" id="privacy_policy" name="privacy_policy">{{ old('privacy_policy', $privacyPolicy) }}</textarea>
                 </dd>
             </dl>
