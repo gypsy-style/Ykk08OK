@@ -47,4 +47,44 @@ class SettingController extends Controller
 
         return redirect()->route('admin.settings.privacy_policy')->with('success', 'プライバシーポリシーを保存しました。');
     }
+
+    public function userGuide()
+    {
+        $userGuide = Setting::getValue('user_guide', '');
+        return view('admin.settings.user_guide', compact('userGuide'));
+    }
+
+    public function updateUserGuide(Request $request)
+    {
+        $request->validate([
+            'user_guide' => 'nullable|string|max:200000',
+        ]);
+
+        Setting::updateOrCreate(
+            ['key' => 'user_guide'],
+            ['value' => $request->input('user_guide')]
+        );
+
+        return redirect()->route('admin.settings.user_guide')->with('success', 'ご利用ガイドを保存しました。');
+    }
+
+    public function commercialLaw()
+    {
+        $commercialLaw = Setting::getValue('commercial_law', '');
+        return view('admin.settings.commercial_law', compact('commercialLaw'));
+    }
+
+    public function updateCommercialLaw(Request $request)
+    {
+        $request->validate([
+            'commercial_law' => 'nullable|string|max:200000',
+        ]);
+
+        Setting::updateOrCreate(
+            ['key' => 'commercial_law'],
+            ['value' => $request->input('commercial_law')]
+        );
+
+        return redirect()->route('admin.settings.commercial_law')->with('success', '特定商取引法を保存しました。');
+    }
 }

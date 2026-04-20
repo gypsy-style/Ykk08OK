@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', '管理画面 [プライバシーポリシー]')
+@section('title', '管理画面 [ご利用ガイド]')
 
 @push('head')
 <style>
@@ -93,8 +93,8 @@
         <div class="lma-setting_nav" style="margin-bottom: 20px;">
             <ul style="display: flex; gap: 10px; list-style: none; padding: 0;">
                 <li><a href="{{ route('admin.settings.custom_css') }}">カスタムCSS</a></li>
-                <li><a href="{{ route('admin.settings.privacy_policy') }}" style="font-weight: bold;">プライバシーポリシー</a></li>
-                <li><a href="{{ route('admin.settings.user_guide') }}">ご利用ガイド</a></li>
+                <li><a href="{{ route('admin.settings.privacy_policy') }}">プライバシーポリシー</a></li>
+                <li><a href="{{ route('admin.settings.user_guide') }}" style="font-weight: bold;">ご利用ガイド</a></li>
                 <li><a href="{{ route('admin.settings.commercial_law') }}">特定商取引法</a></li>
             </ul>
         </div>
@@ -105,17 +105,17 @@
             </div>
         @endif
 
-        <form action="{{ route('admin.settings.update_privacy_policy') }}" method="POST" id="privacyPolicyForm">
+        <form action="{{ route('admin.settings.update_user_guide') }}" method="POST" id="userGuideForm">
             @csrf
             <dl class="lma-form_box">
-                <dt><label for="privacy_policy">プライバシーポリシー</label></dt>
+                <dt><label for="user_guide">ご利用ガイド</label></dt>
                 <dd>
-                    <textarea class="form-control" id="privacy_policy" name="privacy_policy">{{ old('privacy_policy', $privacyPolicy) }}</textarea>
+                    <textarea class="form-control" id="user_guide" name="user_guide">{{ old('user_guide', $userGuide) }}</textarea>
                 </dd>
             </dl>
 
-            @if($errors->has('privacy_policy'))
-                <p style="color: red;">{{ $errors->first('privacy_policy') }}</p>
+            @if($errors->has('user_guide'))
+                <p style="color: red;">{{ $errors->first('user_guide') }}</p>
             @endif
 
             <p class="lma-btn_box">
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let editorInstance = null;
 
     ClassicEditor
-        .create(document.querySelector('#privacy_policy'), {
+        .create(document.querySelector('#user_guide'), {
             toolbar: {
                 items: [
                     'heading', '|',
@@ -163,9 +163,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error(error);
         });
 
-    document.getElementById('privacyPolicyForm').addEventListener('submit', function() {
+    document.getElementById('userGuideForm').addEventListener('submit', function() {
         if (editorInstance) {
-            document.getElementById('privacy_policy').value = editorInstance.getData();
+            document.getElementById('user_guide').value = editorInstance.getData();
         }
     });
 });

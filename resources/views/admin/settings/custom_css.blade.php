@@ -47,6 +47,8 @@
             <ul style="display: flex; gap: 10px; list-style: none; padding: 0;">
                 <li><a href="{{ route('admin.settings.custom_css') }}" style="font-weight: bold;">カスタムCSS</a></li>
                 <li><a href="{{ route('admin.settings.privacy_policy') }}">プライバシーポリシー</a></li>
+                <li><a href="{{ route('admin.settings.user_guide') }}">ご利用ガイド</a></li>
+                <li><a href="{{ route('admin.settings.commercial_law') }}">特定商取引法</a></li>
             </ul>
         </div>
 

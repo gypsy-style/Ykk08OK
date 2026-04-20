@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', '管理画面 [プライバシーポリシー]')
+@section('title', '管理画面 [特定商取引法]')
 
 @push('head')
 <style>
@@ -93,9 +93,9 @@
         <div class="lma-setting_nav" style="margin-bottom: 20px;">
             <ul style="display: flex; gap: 10px; list-style: none; padding: 0;">
                 <li><a href="{{ route('admin.settings.custom_css') }}">カスタムCSS</a></li>
-                <li><a href="{{ route('admin.settings.privacy_policy') }}" style="font-weight: bold;">プライバシーポリシー</a></li>
+                <li><a href="{{ route('admin.settings.privacy_policy') }}">プライバシーポリシー</a></li>
                 <li><a href="{{ route('admin.settings.user_guide') }}">ご利用ガイド</a></li>
-                <li><a href="{{ route('admin.settings.commercial_law') }}">特定商取引法</a></li>
+                <li><a href="{{ route('admin.settings.commercial_law') }}" style="font-weight: bold;">特定商取引法</a></li>
             </ul>
         </div>
 
@@ -105,17 +105,17 @@
             </div>
         @endif
 
-        <form action="{{ route('admin.settings.update_privacy_policy') }}" method="POST" id="privacyPolicyForm">
+        <form action="{{ route('admin.settings.update_commercial_law') }}" method="POST" id="commercialLawForm">
             @csrf
             <dl class="lma-form_box">
-                <dt><label for="privacy_policy">プライバシーポリシー</label></dt>
+                <dt><label for="commercial_law">特定商取引法</label></dt>
                 <dd>
-                    <textarea class="form-control" id="privacy_policy" name="privacy_policy">{{ old('privacy_policy', $privacyPolicy) }}</textarea>
+                    <textarea class="form-control" id="commercial_law" name="commercial_law">{{ old('commercial_law', $commercialLaw) }}</textarea>
                 </dd>
             </dl>
 
-            @if($errors->has('privacy_policy'))
-                <p style="color: red;">{{ $errors->first('privacy_policy') }}</p>
+            @if($errors->has('commercial_law'))
+                <p style="color: red;">{{ $errors->first('commercial_law') }}</p>
             @endif
 
             <p class="lma-btn_box">
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let editorInstance = null;
 
     ClassicEditor
-        .create(document.querySelector('#privacy_policy'), {
+        .create(document.querySelector('#commercial_law'), {
             toolbar: {
                 items: [
                     'heading', '|',
@@ -163,9 +163,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error(error);
         });
 
-    document.getElementById('privacyPolicyForm').addEventListener('submit', function() {
+    document.getElementById('commercialLawForm').addEventListener('submit', function() {
         if (editorInstance) {
-            document.getElementById('privacy_policy').value = editorInstance.getData();
+            document.getElementById('commercial_law').value = editorInstance.getData();
         }
     });
 });

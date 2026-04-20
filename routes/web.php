@@ -45,6 +45,18 @@ Route::get('/privacy-policy', function () {
     return view('privacy_policy', compact('privacyPolicy'));
 })->name('privacy_policy');
 
+// ご利用ガイド（公開ページ・認証不要）
+Route::get('/user-guide', function () {
+    $userGuide = \App\Models\Setting::getValue('user_guide', '');
+    return view('user_guide', compact('userGuide'));
+})->name('user_guide');
+
+// 特定商取引法（公開ページ・認証不要）
+Route::get('/commercial-law', function () {
+    $commercialLaw = \App\Models\Setting::getValue('commercial_law', '');
+    return view('commercial_law', compact('commercialLaw'));
+})->name('commercial_law');
+
 // 注文画面
 Route::get('/order/list', [UserOrderController::class, 'list'])->name('order.list');
 Route::match(['get', 'post'], '/order/register', [UserOrderController::class, 'register'])->name('order.register');
@@ -123,6 +135,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('settings/custom-css', [AdminSettingController::class, 'updateCustomCss'])->name('settings.update_custom_css');
         Route::get('settings/privacy-policy', [AdminSettingController::class, 'privacyPolicy'])->name('settings.privacy_policy');
         Route::post('settings/privacy-policy', [AdminSettingController::class, 'updatePrivacyPolicy'])->name('settings.update_privacy_policy');
+        Route::get('settings/user-guide', [AdminSettingController::class, 'userGuide'])->name('settings.user_guide');
+        Route::post('settings/user-guide', [AdminSettingController::class, 'updateUserGuide'])->name('settings.update_user_guide');
+        Route::get('settings/commercial-law', [AdminSettingController::class, 'commercialLaw'])->name('settings.commercial_law');
+        Route::post('settings/commercial-law', [AdminSettingController::class, 'updateCommercialLaw'])->name('settings.update_commercial_law');
 
     });
 });
