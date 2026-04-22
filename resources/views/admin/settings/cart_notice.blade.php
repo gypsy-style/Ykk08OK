@@ -70,21 +70,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/css/css.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/htmlmixed/htmlmixed.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closetag.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchtags.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var editor = CodeMirror.fromTextArea(document.getElementById('cart_notice'), {
+    var ta = document.getElementById('cart_notice');
+    if (!ta || typeof CodeMirror === 'undefined') {
+        console.error('CodeMirror or textarea not found');
+        return;
+    }
+
+    var editor = CodeMirror.fromTextArea(ta, {
         mode: 'htmlmixed',
         theme: 'monokai',
         lineNumbers: true,
-        autoCloseTags: true,
-        matchTags: { bothTags: true },
         indentUnit: 2,
         tabSize: 2,
         indentWithTabs: false,
         lineWrapping: true
     });
+
+    // レイアウト確定後にリフレッシュ（dd幅確定前に描画されると黒いブロックになる対策）
+    setTimeout(function() { editor.refresh(); }, 50);
 
     document.getElementById('cartNoticeForm').addEventListener('submit', function() {
         editor.save();
