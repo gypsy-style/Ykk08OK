@@ -3,80 +3,22 @@
 @section('title', '管理画面 [カート画面のお知らせ]')
 
 @push('head')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/monokai.min.css">
 <style>
-    .ck-editor__editable_inline {
-        min-height: 500px;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-    .ck.ck-editor {
+    .CodeMirror {
         border: 1px solid #ccc;
         border-radius: 4px;
-    }
-
-    /* エディタ内で見出し・段落スタイルを実表示に反映 */
-    .ck-content h1 {
-        font-size: 2em;
-        font-weight: 700;
-        line-height: 1.3;
-        margin: 0.67em 0;
-    }
-    .ck-content h2 {
-        font-size: 1.5em;
-        font-weight: 700;
-        line-height: 1.3;
-        margin: 0.75em 0;
-    }
-    .ck-content h3 {
-        font-size: 1.25em;
-        font-weight: 700;
-        line-height: 1.35;
-        margin: 0.83em 0;
-    }
-    .ck-content h4 {
-        font-size: 1.1em;
-        font-weight: 700;
+        height: 500px;
+        font-size: 14px;
         line-height: 1.4;
-        margin: 1em 0;
     }
-    .ck-content p {
-        font-size: 1em;
-        line-height: 1.6;
-        margin: 0.5em 0;
-    }
-    .ck-content ul,
-    .ck-content ol {
-        padding-left: 1.5em;
-        margin: 0.5em 0;
-    }
-    .ck-content ul,
-    .ck-content ul li {
-        list-style: disc outside;
-    }
-    .ck-content ol,
-    .ck-content ol li {
-        list-style: decimal outside;
-    }
-    .ck-content ul ul,
-    .ck-content ul ul li {
-        list-style: circle outside;
-    }
-    .ck-content ul ul ul,
-    .ck-content ul ul ul li {
-        list-style: square outside;
-    }
-    .ck-content ol ol,
-    .ck-content ol ol li {
-        list-style: lower-alpha outside;
-    }
-    .ck-content ol ol ol,
-    .ck-content ol ol ol li {
-        list-style: lower-roman outside;
-    }
-    .ck-content blockquote {
-        border-left: 4px solid #ccc;
-        margin: 1em 0;
-        padding: 0.5em 1em;
+    .cart-notice-help {
+        margin: 8px 0 0;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-left: 3px solid #1e6bd6;
+        font-size: 12px;
         color: #555;
     }
 </style>
@@ -103,8 +45,12 @@
                     @include('admin.settings._nav', ['active' => 'cart_notice'])
                 </dt>
                 <dd>
-                    <label for="cart_notice" style="display:block; margin-bottom:6px; font-weight:bold;">カート画面のお知らせ</label>
+                    <label for="cart_notice" style="display:block; margin-bottom:6px; font-weight:bold;">カート画面のお知らせ（HTML入力）</label>
                     <textarea class="form-control" id="cart_notice" name="cart_notice">{{ old('cart_notice', $cartNotice) }}</textarea>
+                    <p class="cart-notice-help">
+                        HTMLタグをそのまま入力できます（例: <code>&lt;p&gt;</code>, <code>&lt;a href="..."&gt;</code>, <code>&lt;div class="..."&gt;</code> など）。<br>
+                        入力内容はカート画面の <code>.lmf-order_postage</code> 内にそのまま出力されます。
+                    </p>
                 </dd>
             </dl>
 
@@ -119,48 +65,29 @@
     </div>
 </section>
 
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closetag.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchtags.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    let editorInstance = null;
-
-    ClassicEditor
-        .create(document.querySelector('#cart_notice'), {
-            toolbar: {
-                items: [
-                    'heading', '|',
-                    'bold', 'italic', 'underline', 'link', '|',
-                    'bulletedList', 'numberedList', '|',
-                    'outdent', 'indent', '|',
-                    'blockQuote', 'insertTable', '|',
-                    'undo', 'redo'
-                ]
-            },
-            language: 'ja',
-            heading: {
-                options: [
-                    { model: 'paragraph', title: '段落', class: 'ck-heading_paragraph' },
-                    { model: 'heading1', view: 'h1', title: '見出し1', class: 'ck-heading_heading1' },
-                    { model: 'heading2', view: 'h2', title: '見出し2', class: 'ck-heading_heading2' },
-                    { model: 'heading3', view: 'h3', title: '見出し3', class: 'ck-heading_heading3' },
-                    { model: 'heading4', view: 'h4', title: '見出し4', class: 'ck-heading_heading4' }
-                ]
-            },
-            table: {
-                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
-            }
-        })
-        .then(function(editor) {
-            editorInstance = editor;
-        })
-        .catch(function(error) {
-            console.error(error);
-        });
+    var editor = CodeMirror.fromTextArea(document.getElementById('cart_notice'), {
+        mode: 'htmlmixed',
+        theme: 'monokai',
+        lineNumbers: true,
+        autoCloseTags: true,
+        matchTags: { bothTags: true },
+        indentUnit: 2,
+        tabSize: 2,
+        indentWithTabs: false,
+        lineWrapping: true
+    });
 
     document.getElementById('cartNoticeForm').addEventListener('submit', function() {
-        if (editorInstance) {
-            document.getElementById('cart_notice').value = editorInstance.getData();
-        }
+        editor.save();
     });
 });
 </script>
