@@ -139,6 +139,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('settings/user-guide', [AdminSettingController::class, 'updateUserGuide'])->name('settings.update_user_guide');
         Route::get('settings/commercial-law', [AdminSettingController::class, 'commercialLaw'])->name('settings.commercial_law');
         Route::post('settings/commercial-law', [AdminSettingController::class, 'updateCommercialLaw'])->name('settings.update_commercial_law');
+        Route::get('settings/cart-notice', [AdminSettingController::class, 'cartNotice'])->name('settings.cart_notice');
+        Route::post('settings/cart-notice', [AdminSettingController::class, 'updateCartNotice'])->name('settings.update_cart_notice');
 
     });
 });

@@ -40,13 +40,19 @@
 						@endforeach
 					</ul>
 					<div class="lmf-order_postage">
-						<div class="lmf-title_sub">送料について</div>
-						<ul class="lmf-postage_list">
+						{{-- 以下、元のコンテンツをコメントアウト --}}
+						{{-- <div class="lmf-title_sub">送料について</div> --}}
+						{{-- <ul class="lmf-postage_list">
 							<li><em class="name">アマテラス</em><span class="postage">3本以上で送料無料</span></li>
 							<li><em class="name">ツクヨミ100g</em><span class="postage">5本以上で送料無料</span></li>
 							<li><em class="name">ツクヨミ300g</em><span class="postage">3本以上で送料無料</span></li>
-						</ul>
-						<div class="attn">送料は注文後に確定します</div>
+						</ul> --}}
+						{{-- <div class="attn">送料は注文後に確定します</div> --}}
+
+						@php($cartNotice = \App\Models\Setting::getValue('cart_notice', ''))
+						@if (trim(strip_tags($cartNotice)) !== '')
+							<div class="lmf-cart_notice">{!! $cartNotice !!}</div>
+						@endif
 					</div>
 					@php
 					$taxAmount = $grandTotalTaxIncluded - $totalPrice;

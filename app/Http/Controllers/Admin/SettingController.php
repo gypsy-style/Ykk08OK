@@ -87,4 +87,24 @@ class SettingController extends Controller
 
         return redirect()->route('admin.settings.commercial_law')->with('success', '特定商取引法を保存しました。');
     }
+
+    public function cartNotice()
+    {
+        $cartNotice = Setting::getValue('cart_notice', '');
+        return view('admin.settings.cart_notice', compact('cartNotice'));
+    }
+
+    public function updateCartNotice(Request $request)
+    {
+        $request->validate([
+            'cart_notice' => 'nullable|string|max:200000',
+        ]);
+
+        Setting::updateOrCreate(
+            ['key' => 'cart_notice'],
+            ['value' => $request->input('cart_notice')]
+        );
+
+        return redirect()->route('admin.settings.cart_notice')->with('success', 'カート画面のお知らせを保存しました。');
+    }
 }

@@ -5,6 +5,7 @@
     <li><a href="{{ route('admin.settings.privacy_policy') }}" @if($active === 'privacy_policy') class="is-active" @endif>プライバシーポリシー</a></li>
     <li><a href="{{ route('admin.settings.user_guide') }}" @if($active === 'user_guide') class="is-active" @endif>ご利用ガイド</a></li>
     <li><a href="{{ route('admin.settings.commercial_law') }}" @if($active === 'commercial_law') class="is-active" @endif>特定商取引法</a></li>
+    <li><a href="{{ route('admin.settings.cart_notice') }}" @if($active === 'cart_notice') class="is-active" @endif>カート画面のお知らせ</a></li>
 </ul>
 <style>
     .lma-setting_vnav {
