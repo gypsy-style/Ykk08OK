@@ -76,10 +76,17 @@
 					</div>
 					<div class="records_table">
 						<dl class="records_list">
-							<dt>売上</dt>
-							<dd><div class="inner"><span class="num">{{ $headquartersProcessed->order_count }}件</span><em class="price">{{ number_format($headquartersProcessed->total_price ?? 0) }}円</em></div></dd>
+							@forelse ($productSales as $row)
+								<dt style="width:inherit;">{{ $row->product_name }}</dt>
+								<dd><div class="inner"><span class="num">{{ (int) $row->total_quantity }}件</span><em class="price">{{ number_format($row->total_amount ?? 0) }}円</em></div></dd>
+							@empty
+								<dt>売上</dt>
+								<dd><div class="inner"><span class="num">0件</span><em class="price">0円</em></div></dd>
+							@endforelse
 							<dt>送料</dt>
-							<dd><div class="inner"><span class="num">{{$shippingFeeCount}}件</span><em class="price">{{ number_format($headquartersProcessed->shipping_fee ?? 0) }}円</em></div></dd>
+							<dd><div class="inner"><span class="num">{{ $shippingFeeCount }}件</span><em class="price">{{ number_format($headquartersProcessed->shipping_fee ?? 0) }}円</em></div></dd>
+							<dt>合計</dt>
+							<dd><div class="inner"><span class="num"></span><em class="price">{{ number_format(((int) $productSales->sum('total_amount')) + ((int) ($headquartersProcessed->shipping_fee ?? 0))) }}円</em></div></dd>
 						</dl>
 					</div>
 				</div>
@@ -87,8 +94,9 @@
 			</div>
 			<div class="lma-content_block nobg">
 				<ul class="lma-pnavi_list clearfix">
+				<li class="next"><a href="{{ route('admin.dashboard', ['month' => $prevMonth]) }}">先月</a></li>
 					<li class="prev"><a href="{{ route('admin.dashboard', ['month' => $nextMonth]) }}">次月</a></li>
-					<li class="next"><a href="{{ route('admin.dashboard', ['month' => $prevMonth]) }}">先月</a></li>
+					
 				</ul>
 			</div>
 		</section>

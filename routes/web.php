@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\MerchantController as AdminMerchantController;
 use App\Http\Controllers\Admin\LogController as AdminLogController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
+use App\Http\Controllers\Admin\SalesController as AdminSalesController;
 use App\Http\Controllers\Agency\DashboardController as AgencyDashboardController;
 use App\Http\Controllers\Agency\MerchantController as AgencyMerchantController; 
 use App\Http\Controllers\Agency\AuthController as AgencyAuthController;
@@ -129,6 +130,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // ログ一覧
         Route::get('logs', [AdminLogController::class, 'index'])->name('logs.index');
+
+        // 売上管理
+        Route::get('sales', [AdminSalesController::class, 'index'])->name('sales.index');
 
         // 設定
         Route::get('settings/custom-css', [AdminSettingController::class, 'customCss'])->name('settings.custom_css');

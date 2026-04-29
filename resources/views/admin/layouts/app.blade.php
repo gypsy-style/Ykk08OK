@@ -45,6 +45,9 @@
                         <li class="order {{ request()->routeIs('admin.orders.index') ? 'current' : '' }}">
                             <a href="{{ route('admin.orders.index') }}"><span class="text">受注管理</span></a>
                         </li>
+                        <li class="sales {{ request()->routeIs('admin.sales.index') ? 'current' : '' }}">
+                            <a href="{{ route('admin.sales.index') }}"><span class="text">売上管理</span></a>
+                        </li>
                         @if(auth('admin')->user()->permission === 1)
                         <li class="store {{ request()->routeIs('admin.agencies.index') ? 'current' : '' }}">
                             <a href="{{ route('admin.agencies.index') }}"><span class="text">代理店管理</span></a>
