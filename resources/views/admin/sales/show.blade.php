@@ -13,7 +13,7 @@
     <div class="lma-content_block order_detail">
         <dl class="lma-orderinfo_list">
             <dt>受注月</dt>
-            <dd>{{ \Carbon\Carbon::parse($month . '-01')->format('Y年m月') }}（{{ $monthOrderCount }}件 / 合計 {{ number_format($monthGrandTotal) }}円）</dd>
+            <dd>{{ \Carbon\Carbon::parse($month . '-01')->format('Y年m月') }}</dd>
             <dt>発注店舗</dt>
             <dd>{{ $merchant->name }}</dd>
             <dt>住所</dt>
