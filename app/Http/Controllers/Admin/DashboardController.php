@@ -9,6 +9,9 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    /** 売上集計対象のステータス（保留=4以外の確定注文） */
+    private const SALES_STATUSES = [2, 3, 5, 6];
+
     public function index(Request $request)
     {
         $month = $request->query('month', Carbon::now()->format('Y-m'));
@@ -31,22 +34,22 @@ class DashboardController extends Controller
 
         $headquartersProcessed = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
-            ->where('status', 2)
+            ->whereIn('status', self::SALES_STATUSES)
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
             ->first();
 
         // shipping_fee が 0以上の件数を取得
         $shippingFeeCount = DB::table('orders')
             ->where('shipping_fee', '>', 0)
-            ->where('status', 2)
+            ->whereIn('status', self::SALES_STATUSES)
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
             ->count();
 
-        // 商品別の月別売上集計（status=2: 本部処理済み）
+        // 商品別の月別売上集計
         $productSales = DB::table('order_details as od')
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
-            ->where('o.status', 2)
+            ->whereIn('o.status', self::SALES_STATUSES)
             ->whereRaw('DATE_FORMAT(o.created_at, "%Y-%m") = ?', [$month])
             ->groupBy('p.id', 'p.product_name')
             ->orderByDesc(DB::raw('SUM(od.quantity * od.price)'))
