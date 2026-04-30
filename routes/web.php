@@ -133,6 +133,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // 売上管理
         Route::get('sales', [AdminSalesController::class, 'index'])->name('sales.index');
+        Route::get('sales/{merchant}', [AdminSalesController::class, 'show'])->name('sales.show');
 
         // 設定
         Route::get('settings/custom-css', [AdminSettingController::class, 'customCss'])->name('settings.custom_css');

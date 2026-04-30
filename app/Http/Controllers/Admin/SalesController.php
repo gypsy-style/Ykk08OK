@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Merchant;
+use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -75,6 +77,87 @@ class SalesController extends Controller
             'headquartersProcessed',
             'shippingFeeCount',
             'grandTotal',
+            'month',
+            'prevMonth',
+            'nextMonth'
+        ));
+    }
+
+    public function show($merchantId, Request $request)
+    {
+        $merchant = Merchant::with('agency')->findOrFail($merchantId);
+
+        $month = $request->query('month', Carbon::now()->format('Y-m'));
+        $currentDate = Carbon::parse($month . '-01');
+        $prevMonth = $currentDate->copy()->subMonth()->format('Y-m');
+        $nextMonth = $currentDate->copy()->addMonth()->format('Y-m');
+
+        // 月内のこの店舗の注文を全件取得
+        $orders = Order::with('details.product')
+            ->where('merchant_id', $merchant->id)
+            ->whereIn('status', self::SALES_STATUSES)
+            ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 月内全注文を商品ごとに合算
+        $productAgg = [];
+        $monthSubtotal = 0;
+        $monthShippingFee = 0;
+        foreach ($orders as $order) {
+            $monthSubtotal += (int) ($order->total_price ?? 0);
+            $monthShippingFee += (int) ($order->shipping_fee ?? 0);
+            foreach ($order->details as $detail) {
+                $pid = $detail->product_id;
+                if (!isset($productAgg[$pid])) {
+                    $productAgg[$pid] = [
+                        'name' => optional($detail->product)->product_name ?? '',
+                        'quantity' => 0,
+                        'amount' => 0,
+                    ];
+                }
+                $productAgg[$pid]['quantity'] += (int) $detail->quantity;
+                $productAgg[$pid]['amount'] += (int) round($detail->price * $detail->quantity);
+            }
+        }
+        uasort($productAgg, function ($a, $b) {
+            return $b['amount'] <=> $a['amount'];
+        });
+
+        $monthTaxAmount = (int) round($monthSubtotal * 1.1) - $monthSubtotal;
+        $monthGrandTotal = (int) round($monthSubtotal * 1.1) + $monthShippingFee;
+        $monthTotalQuantity = array_sum(array_column($productAgg, 'quantity'));
+        $monthOrderCount = $orders->count();
+
+        // 合算コピー用テキスト
+        $lines = [];
+        $lines[] = $merchant->name ?? '';
+        if ($merchant->postal_code1 && $merchant->postal_code2) {
+            $lines[] = $merchant->postal_code1 . '-' . $merchant->postal_code2;
+        }
+        $lines[] = $merchant->address ?? '';
+        $lines[] = $merchant->phone ?? '';
+        $lines[] = '';
+        // $lines[] = Carbon::parse($month . '-01')->format('Y年m月') . ' 受注合算（' . $monthOrderCount . '件）';
+        foreach ($productAgg as $row) {
+            $lines[] = $row['name'] . '×' . $row['quantity'] . '個 ' . number_format($row['amount']) . '円';
+        }
+        $lines[] = '送料 ' . number_format($monthShippingFee) . '円';
+        $lines[] = '消費税 ' . number_format($monthTaxAmount) . '円';
+        $lines[] = '合計 ' . $monthTotalQuantity . '個 ' . number_format($monthGrandTotal) . '円';
+        $copyText = implode("\n", $lines);
+
+        return view('admin.sales.show', compact(
+            'merchant',
+            'orders',
+            'productAgg',
+            'monthSubtotal',
+            'monthShippingFee',
+            'monthTaxAmount',
+            'monthGrandTotal',
+            'monthTotalQuantity',
+            'monthOrderCount',
+            'copyText',
             'month',
             'prevMonth',
             'nextMonth'

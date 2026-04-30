@@ -141,8 +141,8 @@ class MerchantController extends Controller
 
     public function show($id)
     {
-        $agency = Merchant::findOrFail($id);
-        return view('admin.agencies.show', compact('agency'));
+        // 加盟店の月別売上は admin.sales.show へ移動
+        return redirect()->route('admin.sales.show', ['merchant' => $id]);
     }
 
     public function destroy($id)

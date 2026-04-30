@@ -34,7 +34,7 @@
                     </dd>
                     <dt>合計</dt>
                     <dd>
-                        <div class="inner"><em class="price">{{ number_format($grandTotal) }}円</em></div>
+                        <div class="inner"><span class="num"></span><em class="price">{{ number_format($grandTotal) }}円</em></div>
                     </dd>
                 </dl>
             </div>
@@ -54,7 +54,7 @@
                         </div>
                         <div class="lma-select_box"></div>
                         <div class="lma-btn_box btn_list">
-                            <a href="{{ route('admin.merchants.show', $m->merchant_id) }}" class="">詳細</a>
+                            <a href="{{ route('admin.sales.show', ['merchant' => $m->merchant_id, 'month' => $month]) }}" class="">詳細</a>
                         </div>
                     </div>
                 </li>
