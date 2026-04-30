@@ -51,7 +51,6 @@
                         <div class="user_info">
                             <h3 class="name">{{ $m->merchant_name }}</h3>
                             <p class="line_id">{{ $m->agency_name ?? '代理店未設定' }}　会員ランク{{ $m->member_rank ?? '-' }}</p>
-                            <p class="line_id">{{ $m->order_count }}件 / {{ number_format($m->total_amount ?? 0) }}円</p>
                         </div>
                         <div class="lma-select_box"></div>
                         <div class="lma-btn_box btn_list">
