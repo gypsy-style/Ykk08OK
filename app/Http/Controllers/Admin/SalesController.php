@@ -41,6 +41,24 @@ class SalesController extends Controller
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
             ->count();
 
+        // 月内に売上があった店舗一覧（status=2）
+        $merchantSales = DB::table('orders as o')
+            ->join('merchants as m', 'm.id', '=', 'o.merchant_id')
+            ->leftJoin('agencies as a', 'a.id', '=', 'm.agency_id')
+            ->where('o.status', 2)
+            ->whereRaw('DATE_FORMAT(o.created_at, "%Y-%m") = ?', [$month])
+            ->groupBy('m.id', 'm.name', 'm.member_rank', 'a.name')
+            ->orderByDesc(DB::raw('SUM(o.total_price + o.shipping_fee)'))
+            ->select(
+                'm.id as merchant_id',
+                'm.name as merchant_name',
+                'm.member_rank',
+                'a.name as agency_name',
+                DB::raw('COUNT(o.id) as order_count'),
+                DB::raw('SUM(o.total_price + o.shipping_fee) as total_amount')
+            )
+            ->get();
+
         $currentDate = Carbon::parse($month . '-01');
         $prevMonth = $currentDate->copy()->subMonth()->format('Y-m');
         $nextMonth = $currentDate->copy()->addMonth()->format('Y-m');
@@ -50,6 +68,7 @@ class SalesController extends Controller
 
         return view('admin.sales.index', compact(
             'productSales',
+            'merchantSales',
             'headquartersProcessed',
             'shippingFeeCount',
             'grandTotal',

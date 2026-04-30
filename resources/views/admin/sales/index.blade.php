@@ -18,19 +18,57 @@
             <div class="records_table">
                 <dl class="records_list">
                     @forelse ($productSales as $row)
-                        <dt style="width:inherit;">{{ $row->product_name }}</dt>
-                        <dd><div class="inner"><span class="num">{{ (int) $row->total_quantity }}件</span><em class="price">{{ number_format($row->total_amount ?? 0) }}円</em></div></dd>
+                    <dt style="width:inherit;">{{ $row->product_name }}</dt>
+                    <dd>
+                        <div class="inner"><span class="num">{{ (int) $row->total_quantity }}件</span><em class="price">{{ number_format($row->total_amount ?? 0) }}円</em></div>
+                    </dd>
                     @empty
-                        <dt>売上</dt>
-                        <dd><div class="inner"><span class="num">0件</span><em class="price">0円</em></div></dd>
+                    <dt>売上</dt>
+                    <dd>
+                        <div class="inner"><span class="num">0件</span><em class="price">0円</em></div>
+                    </dd>
                     @endforelse
                     <dt>送料</dt>
-                    <dd><div class="inner"><span class="num">{{ $shippingFeeCount }}件</span><em class="price">{{ number_format($headquartersProcessed->shipping_fee ?? 0) }}円</em></div></dd>
+                    <dd>
+                        <div class="inner"><span class="num">{{ $shippingFeeCount }}件</span><em class="price">{{ number_format($headquartersProcessed->shipping_fee ?? 0) }}円</em></div>
+                    </dd>
                     <dt>合計</dt>
-                    <dd><div class="inner"><em class="price">{{ number_format($grandTotal) }}円</em></div></dd>
+                    <dd>
+                        <div class="inner"><em class="price">{{ number_format($grandTotal) }}円</em></div>
+                    </dd>
                 </dl>
             </div>
+
         </div>
+
+    </div>
+
+    <div class="lma-content_block staff nobg">
+        <ul class="lma-user_list store">
+            @forelse ($merchantSales as $m)
+                <li>
+                    <div class="lma-user_box">
+                        <div class="user_info">
+                            <h3 class="name">{{ $m->merchant_name }}</h3>
+                            <p class="line_id">{{ $m->agency_name ?? '代理店未設定' }}　会員ランク{{ $m->member_rank ?? '-' }}</p>
+                            <p class="line_id">{{ $m->order_count }}件 / {{ number_format($m->total_amount ?? 0) }}円</p>
+                        </div>
+                        <div class="lma-select_box"></div>
+                        <div class="lma-btn_box btn_list">
+                            <a href="{{ route('admin.merchants.show', $m->merchant_id) }}" class="">詳細</a>
+                        </div>
+                    </div>
+                </li>
+            @empty
+                <li>
+                    <div class="lma-user_box">
+                        <div class="user_info">
+                            <p class="line_id">この月に売上があった店舗はありません。</p>
+                        </div>
+                    </div>
+                </li>
+            @endforelse
+        </ul>
     </div>
 
     <div class="lma-content_block nobg" style="width:100%;">
