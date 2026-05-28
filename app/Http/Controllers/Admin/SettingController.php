@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
@@ -106,5 +107,45 @@ class SettingController extends Controller
         );
 
         return redirect()->route('admin.settings.cart_notice')->with('success', 'カート画面のお知らせを保存しました。');
+    }
+
+    public function companyInfo()
+    {
+        $companyName = Setting::getValue('company_name', '');
+        $companyDetail = Setting::getValue('company_detail', '');
+        $companySeal = Setting::getValue('company_seal', '');
+        $companyBankInfo = Setting::getValue('company_bank_info', '');
+
+        return view('admin.settings.company_info', compact(
+            'companyName',
+            'companyDetail',
+            'companySeal',
+            'companyBankInfo'
+        ));
+    }
+
+    public function updateCompanyInfo(Request $request)
+    {
+        $request->validate([
+            'company_name' => 'nullable|string|max:255',
+            'company_detail' => 'nullable|string|max:5000',
+            'company_seal' => 'nullable|image|max:5120',
+            'company_bank_info' => 'nullable|string|max:5000',
+        ]);
+
+        Setting::updateOrCreate(['key' => 'company_name'], ['value' => $request->input('company_name')]);
+        Setting::updateOrCreate(['key' => 'company_detail'], ['value' => $request->input('company_detail')]);
+        Setting::updateOrCreate(['key' => 'company_bank_info'], ['value' => $request->input('company_bank_info')]);
+
+        if ($request->hasFile('company_seal')) {
+            $existing = Setting::getValue('company_seal', '');
+            if ($existing) {
+                Storage::disk('public')->delete($existing);
+            }
+            $path = $request->file('company_seal')->store('images', 'public');
+            Setting::updateOrCreate(['key' => 'company_seal'], ['value' => $path]);
+        }
+
+        return redirect()->route('admin.settings.company_info')->with('success', '会社情報を保存しました。');
     }
 }

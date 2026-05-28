@@ -133,6 +133,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // 売上管理
         Route::get('sales', [AdminSalesController::class, 'index'])->name('sales.index');
+        Route::get('sales/{merchant}/invoice', [AdminSalesController::class, 'invoice'])->name('sales.invoice');
         Route::get('sales/{merchant}', [AdminSalesController::class, 'show'])->name('sales.show');
 
         // 設定
@@ -146,6 +147,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('settings/commercial-law', [AdminSettingController::class, 'updateCommercialLaw'])->name('settings.update_commercial_law');
         Route::get('settings/cart-notice', [AdminSettingController::class, 'cartNotice'])->name('settings.cart_notice');
         Route::post('settings/cart-notice', [AdminSettingController::class, 'updateCartNotice'])->name('settings.update_cart_notice');
+        Route::get('settings/company-info', [AdminSettingController::class, 'companyInfo'])->name('settings.company_info');
+        Route::post('settings/company-info', [AdminSettingController::class, 'updateCompanyInfo'])->name('settings.update_company_info');
 
     });
 });

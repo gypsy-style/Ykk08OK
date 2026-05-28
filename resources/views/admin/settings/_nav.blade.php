@@ -6,6 +6,7 @@
     <li><a href="{{ route('admin.settings.user_guide') }}" @if($active === 'user_guide') class="is-active" @endif>ご利用ガイド</a></li>
     <li><a href="{{ route('admin.settings.commercial_law') }}" @if($active === 'commercial_law') class="is-active" @endif>特定商取引法</a></li>
     <li><a href="{{ route('admin.settings.cart_notice') }}" @if($active === 'cart_notice') class="is-active" @endif>カート画面のお知らせ</a></li>
+    <li><a href="{{ route('admin.settings.company_info') }}" @if($active === 'company_info') class="is-active" @endif>会社情報</a></li>
 </ul>
 <style>
     .lma-setting_vnav {

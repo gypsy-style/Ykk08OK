@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Merchant;
 use App\Models\Order;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -161,6 +162,69 @@ class SalesController extends Controller
             'month',
             'prevMonth',
             'nextMonth'
+        ));
+    }
+
+    public function invoice($merchantId, Request $request)
+    {
+        $merchant = Merchant::with('agency')->findOrFail($merchantId);
+
+        $month = $request->query('month', Carbon::now()->format('Y-m'));
+
+        $orders = Order::with('details.product')
+            ->where('merchant_id', $merchant->id)
+            ->whereIn('status', self::SALES_STATUSES)
+            ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
+            ->get();
+
+        $productAgg = [];
+        $monthSubtotal = 0;
+        $monthShippingFee = 0;
+        foreach ($orders as $order) {
+            $monthSubtotal += (int) ($order->total_price ?? 0);
+            $monthShippingFee += (int) ($order->shipping_fee ?? 0);
+            foreach ($order->details as $detail) {
+                $pid = $detail->product_id;
+                if (!isset($productAgg[$pid])) {
+                    $productAgg[$pid] = [
+                        'name' => optional($detail->product)->product_name ?? '',
+                        'quantity' => 0,
+                        'amount' => 0,
+                        'unit_price' => (int) round($detail->price),
+                    ];
+                }
+                $productAgg[$pid]['quantity'] += (int) $detail->quantity;
+                $productAgg[$pid]['amount'] += (int) round($detail->price * $detail->quantity);
+            }
+        }
+        uasort($productAgg, function ($a, $b) {
+            return $b['amount'] <=> $a['amount'];
+        });
+
+        $monthTaxAmount = (int) round($monthSubtotal * 1.1) - $monthSubtotal;
+        $monthGrandTotal = (int) round($monthSubtotal * 1.1) + $monthShippingFee;
+
+        $invoiceDate = Carbon::parse($month . '-01')->addMonth();
+        $invoiceNumber = $merchant->id . $invoiceDate->format('ymd');
+
+        $companyName = Setting::getValue('company_name', '');
+        $companyDetail = Setting::getValue('company_detail', '');
+        $companySeal = Setting::getValue('company_seal', '');
+        $companyBankInfo = Setting::getValue('company_bank_info', '');
+
+        return view('admin.sales.invoice', compact(
+            'merchant',
+            'productAgg',
+            'monthShippingFee',
+            'monthTaxAmount',
+            'monthGrandTotal',
+            'invoiceDate',
+            'invoiceNumber',
+            'month',
+            'companyName',
+            'companyDetail',
+            'companySeal',
+            'companyBankInfo'
         ));
     }
 }

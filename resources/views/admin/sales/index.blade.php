@@ -54,6 +54,7 @@
                         </div>
                         <div class="lma-select_box"></div>
                         <div class="lma-btn_box btn_list">
+                            <a href="{{ route('admin.sales.invoice', ['merchant' => $m->merchant_id, 'month' => $month]) }}" target="_blank" rel="noopener" class="">PDFを表示</a>
                             <a href="{{ route('admin.sales.show', ['merchant' => $m->merchant_id, 'month' => $month]) }}" class="">詳細</a>
                         </div>
                     </div>
