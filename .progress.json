@@ -1,9 +1,9 @@
 {
   "project": "Ykk08OK",
   "status": "waiting_user",
-  "progress": 95,
-  "current_step": "カード型一覧＋PDF表示ページ実装・ローカル確認済み。デプロイ可否の確認待ち",
+  "progress": 90,
+  "current_step": "管理画面（ユーザー・加盟店）の絞り込み実装・ローカル確認済み。コミット/push待ち",
   "need_human_check": true,
-  "last_message": "請求書一覧をカード型（月表示＋PDFを表示ボタン）に変更し、PDF表示ページ（PDF保存ボタン付き）を実装。ローカルで動作確認OK。本番デプロイ（push＋public/buildアップロード）の可否確認待ち。",
-  "updated_at": "2026-07-19T12:55:00+09:00"
+  "last_message": "ユーザー一覧（キーワード・リッチメニュー）、加盟店一覧（キーワード・代理店・ステータス・会員ランク）の絞り込みを実装しローカル確認OK。PHP/Bladeのみの変更なのでpushだけで本番反映可能。",
+  "updated_at": "2026-07-19T13:20:00+09:00"
 }

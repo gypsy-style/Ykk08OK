@@ -17,9 +17,21 @@ class UserController extends Controller
     /**
      * ユーザー一覧表示
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::select('id', 'name', 'line_id', 'richmenu_id')->paginate(10); // name, line_id のみ取得
+        $query = User::select('id', 'name', 'line_id', 'richmenu_id'); // name, line_id のみ取得
+
+        if ($keyword = $request->query('keyword')) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('line_id', 'like', "%{$keyword}%");
+            });
+        }
+        if ($richmenuId = $request->query('richmenu_id')) {
+            $query->where('richmenu_id', $richmenuId);
+        }
+
+        $users = $query->paginate(10)->withQueryString();
         return view('admin.users.index', compact('users'));
     }
 

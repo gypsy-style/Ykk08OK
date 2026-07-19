@@ -9,6 +9,49 @@
             <h2>加盟店一覧</h2>
         </div>
     </div>
+
+    <!-- フィルタリングフォーム -->
+    <div class="lma-content_block log">
+        <form method="GET" action="{{ route('admin.merchants.index') }}" class="filter-form">
+            <div class="lma-filter">
+                <div class="lma-filter__item">
+                    <label for="keyword">キーワード:</label>
+                    <input type="text" name="keyword" id="keyword" value="{{ request('keyword') }}" placeholder="店舗名・サロンコード">
+                </div>
+                <div class="lma-filter__item">
+                    <label for="agency_id">代理店:</label>
+                    <select name="agency_id" id="agency_id">
+                        <option value="">すべて</option>
+                        @foreach($agencies as $agency)
+                        <option value="{{ $agency->id }}" {{ request('agency_id') == $agency->id ? 'selected' : '' }}>{{ $agency->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="lma-filter__item">
+                    <label for="status">ステータス:</label>
+                    <select name="status" id="status">
+                        <option value="">すべて</option>
+                        <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>有効</option>
+                        <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>無効</option>
+                    </select>
+                </div>
+                <div class="lma-filter__item">
+                    <label for="member_rank">会員ランク:</label>
+                    <select name="member_rank" id="member_rank">
+                        <option value="">すべて</option>
+                        @foreach([1, 2, 3] as $rank)
+                        <option value="{{ $rank }}" {{ request('member_rank') == $rank ? 'selected' : '' }}>{{ $rank }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="lma-filter__item">
+                    <button type="submit" class="btn btn-primary">フィルター</button>
+                    <a href="{{ route('admin.merchants.index') }}" class="btn btn-secondary">リセット</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <div class="lma-content_block staff nobg">
         <ul class="lma-user_list store">
             @foreach($merchants as $merchant)

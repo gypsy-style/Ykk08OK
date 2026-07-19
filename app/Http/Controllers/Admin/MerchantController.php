@@ -15,10 +15,29 @@ use Illuminate\Validation\Rule;
 
 class MerchantController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $merchants = Merchant::with('agency')->orderBy('created_at', 'desc')->get();
-        return view('admin.merchants.index', compact('merchants'));
+        $query = Merchant::with('agency')->orderBy('created_at', 'desc');
+
+        if ($keyword = $request->query('keyword')) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('merchant_code', 'like', "%{$keyword}%");
+            });
+        }
+        if ($agencyId = $request->query('agency_id')) {
+            $query->where('agency_id', $agencyId);
+        }
+        if ($status = $request->query('status')) {
+            $query->where('status', $status);
+        }
+        if ($memberRank = $request->query('member_rank')) {
+            $query->where('member_rank', $memberRank);
+        }
+
+        $merchants = $query->get();
+        $agencies = Agency::all();
+        return view('admin.merchants.index', compact('merchants', 'agencies'));
     }
 
     public function create()

@@ -13,6 +13,32 @@ $richmenuOptions = config('app.richmenus');
             <h2>ユーザー一覧</h2>
         </div>
     </div>
+
+    <!-- フィルタリングフォーム -->
+    <div class="lma-content_block log">
+        <form method="GET" action="{{ route('admin.users.index') }}" class="filter-form">
+            <div class="lma-filter">
+                <div class="lma-filter__item">
+                    <label for="keyword">キーワード:</label>
+                    <input type="text" name="keyword" id="keyword" value="{{ request('keyword') }}" placeholder="名前・LINE ID">
+                </div>
+                <div class="lma-filter__item">
+                    <label for="richmenu_id">リッチメニュー:</label>
+                    <select name="richmenu_id" id="richmenu_id">
+                        <option value="">すべて</option>
+                        @foreach($richmenuOptions as $key => $value)
+                        <option value="{{ $key }}" {{ request('richmenu_id') == $key ? 'selected' : '' }}>{{ $key }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="lma-filter__item">
+                    <button type="submit" class="btn btn-primary">フィルター</button>
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">リセット</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <div class="lma-content_block staff nobg">
         <ul class="lma-user_list store">
             @foreach($users as $user)
