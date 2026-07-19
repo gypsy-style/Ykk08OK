@@ -27,6 +27,7 @@
                     <p class="lmf-btn_box btn_dgy btn_small" id="edit_link" style="display:none;"><a href="">登録情報を修正する</a></p>
                 </div>
                 <p class="lmf-btn_box member_list" style="display:none;"><a href="{{ route('merchants.member_list') }}">登録スタッフ一覧</a></p>
+                <p class="lmf-btn_box invoice_list" style="display:none;"><a href="{{ route('merchants.invoices') }}">請求書</a></p>
             </section>
         </main>
 </div>

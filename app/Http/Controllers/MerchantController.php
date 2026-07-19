@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Merchant;
 use App\Models\MerchantMember;
+use App\Models\Order;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -12,6 +14,9 @@ use Illuminate\Validation\Rule;
 
 class MerchantController extends Controller
 {
+    /** 売上集計対象のステータス（保留=4以外の確定注文） */
+    private const SALES_STATUSES = [2, 3, 5, 6];
+
     // 店舗一覧表示
     public function index()
     {
@@ -223,6 +228,85 @@ class MerchantController extends Controller
     public function memberList()
     {
         return view('merchants.member_list');
+    }
+
+    public function invoices()
+    {
+        return view('merchants.invoices');
+    }
+
+    public function getInvoiceList(Request $request)
+    {
+        $accessToken = $request->input('access_token');
+        $profile = $this->getLineProfile($accessToken);
+        if (!$profile) {
+            return response()->json(['error' => 'User not found or invalid token'], 404);
+        }
+        $line_id = $profile['line_id'];
+
+        $user = User::where('line_id', $line_id)->first();
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // オーナーの店舗のみ請求書を閲覧可能
+        $merchant = Merchant::where('user_id', $user->id)->first();
+        if (!$merchant) {
+            return response()->json(['error' => 'Merchant not found'], 404);
+        }
+
+        $orders = Order::with('details.product')
+            ->where('merchant_id', $merchant->id)
+            ->whereIn('status', self::SALES_STATUSES)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 月毎に集計
+        $monthlyInvoices = [];
+        foreach ($orders as $order) {
+            $month = $order->created_at->format('Y-m');
+            if (!isset($monthlyInvoices[$month])) {
+                $monthlyInvoices[$month] = [
+                    'subtotal' => 0,
+                    'shipping_fee' => 0,
+                    'order_count' => 0,
+                    'products' => [],
+                ];
+            }
+            $monthlyInvoices[$month]['subtotal'] += (int) ($order->total_price ?? 0);
+            $monthlyInvoices[$month]['shipping_fee'] += (int) ($order->shipping_fee ?? 0);
+            $monthlyInvoices[$month]['order_count']++;
+            foreach ($order->details as $detail) {
+                $pid = $detail->product_id;
+                if (!isset($monthlyInvoices[$month]['products'][$pid])) {
+                    $monthlyInvoices[$month]['products'][$pid] = [
+                        'name' => optional($detail->product)->product_name ?? '',
+                        'quantity' => 0,
+                        'amount' => 0,
+                        'unit_price' => (int) round($detail->price),
+                    ];
+                }
+                $monthlyInvoices[$month]['products'][$pid]['quantity'] += (int) $detail->quantity;
+                $monthlyInvoices[$month]['products'][$pid]['amount'] += (int) round($detail->price * $detail->quantity);
+            }
+        }
+
+        foreach ($monthlyInvoices as $month => &$invoice) {
+            uasort($invoice['products'], function ($a, $b) {
+                return $b['amount'] <=> $a['amount'];
+            });
+            $invoice['tax'] = (int) round($invoice['subtotal'] * 1.1) - $invoice['subtotal'];
+            $invoice['grand_total'] = (int) round($invoice['subtotal'] * 1.1) + $invoice['shipping_fee'];
+            $invoiceDate = Carbon::parse($month . '-01')->addMonth();
+            $invoice['invoice_date'] = $invoiceDate;
+            $invoice['invoice_number'] = $merchant->id . $invoiceDate->format('ymd');
+            $invoice['label'] = Carbon::parse($month . '-01')->format('Y年n月分');
+        }
+        unset($invoice);
+
+        $html = view('merchants.partials.invoice_list', compact('monthlyInvoices', 'merchant'))->render();
+
+        return response()->json(['html' => $html, 'merchant_id' => $merchant->id]);
     }
 
     public function getMemberList(Request $request)
