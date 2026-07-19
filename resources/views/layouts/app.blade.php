@@ -11,6 +11,7 @@
 	OR Request::is('merchants/information')
 	OR Request::is('merchants/member_list')
 	OR Request::is('merchants/add_member')
+	OR Request::is('merchants/invoices')
 	)
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 	@endif

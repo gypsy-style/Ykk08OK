@@ -70,6 +70,7 @@ Route::post('/api/order/history', [UserOrderController::class, 'getOrderHistory'
 Route::post('/api/merchant/member_list', [UserMerchantController::class, 'getMemberList']);
 Route::post('/api/merchant/member_rank', [UserOrderController::class, 'getMemberRank']);
 Route::post('/api/merchant/invoice_list', [UserMerchantController::class, 'getInvoiceList']);
+Route::post('/api/merchant/invoice', [UserMerchantController::class, 'getInvoice']);
 Route::post('/api/order/cancel', [UserOrderController::class, 'cancel'])->name('order.cancel');
 
 
@@ -87,6 +88,7 @@ Route::post('/merchants/store_member', [UserMerchantController::class, 'storeMem
 Route::get('/merchants/information', [UserMerchantController::class, 'information'])->name('merchants.information');
 Route::get('/merchants/member_list', [UserMerchantController::class, 'memberList'])->name('merchants.member_list');
 Route::get('/merchants/invoices', [UserMerchantController::class, 'invoices'])->name('merchants.invoices');
+Route::get('/merchants/invoice', [UserMerchantController::class, 'invoicePdf'])->name('merchants.invoice');
 Route::delete('/merchants/member/{id}', [UserMerchantController::class, 'destroy_member'])->name('merchant.member.destroy');
 
 Route::post('/get-user-id', [UserController::class, 'getUserId']);

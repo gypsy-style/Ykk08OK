@@ -6,25 +6,31 @@ async function main() {
         // LIFF IDを定義（envなどから設定できるようにするのが望ましい）
         const liffId = window.LIFF_ID_MERCHANT_INFORMATION;
 
-        if (!liffId) {
-            throw new Error('LIFF IDが設定されていません。');
-        }
+        let accessToken;
+        if (window.LIFF_MOCK) {
+            // ローカル確認用：LIFF認証をスキップ
+            accessToken = 'dummy_local';
+        } else {
+            if (!liffId) {
+                throw new Error('LIFF IDが設定されていません。');
+            }
 
-        // LIFFの初期化
-        await liff.init({ liffId });
-        console.log('LIFFが正常に初期化されました。');
+            // LIFFの初期化
+            await liff.init({ liffId });
+            console.log('LIFFが正常に初期化されました。');
 
-        // ユーザーがログインしていない場合はログイン処理を開始
-        if (!liff.isLoggedIn()) {
-            console.log('ログインが必要です。リダイレクトします...');
-            liff.login();
-            return; // ログイン後に処理が再開される
-        }
+            // ユーザーがログインしていない場合はログイン処理を開始
+            if (!liff.isLoggedIn()) {
+                console.log('ログインが必要です。リダイレクトします...');
+                liff.login();
+                return; // ログイン後に処理が再開される
+            }
 
-        // ユーザーのアクセストークンを取得
-        const accessToken = liff.getAccessToken();
-        if (!accessToken) {
-            throw new Error('アクセストークンが取得できませんでした。');
+            // ユーザーのアクセストークンを取得
+            accessToken = liff.getAccessToken();
+            if (!accessToken) {
+                throw new Error('アクセストークンが取得できませんでした。');
+            }
         }
         console.log('アクセストークン:', accessToken);
 
@@ -49,7 +55,9 @@ async function main() {
 async function fetchMerchantInformation(accessToken) {
     console.log(accessToken);
     try {
-        const response = await fetch('/ykk08ok/get-merchant-information', {
+        // ローカル（モック時）は /ykk08ok プレフィックスなしで動作する
+        const apiBase = window.LIFF_MOCK ? '' : '/ykk08ok';
+        const response = await fetch(`${apiBase}/get-merchant-information`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Merchant;
 use App\Models\MerchantMember;
 use App\Models\Order;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -307,6 +308,98 @@ class MerchantController extends Controller
         $html = view('merchants.partials.invoice_list', compact('monthlyInvoices', 'merchant'))->render();
 
         return response()->json(['html' => $html, 'merchant_id' => $merchant->id]);
+    }
+
+    public function invoicePdf(Request $request)
+    {
+        $month = $request->query('month', Carbon::now()->format('Y-m'));
+        return view('merchants.invoice_pdf', compact('month'));
+    }
+
+    public function getInvoice(Request $request)
+    {
+        $accessToken = $request->input('access_token');
+        $month = $request->input('month');
+        if (!preg_match('/^\d{4}-\d{2}$/', $month ?? '')) {
+            return response()->json(['error' => 'Invalid month'], 400);
+        }
+
+        $profile = $this->getLineProfile($accessToken);
+        if (!$profile) {
+            return response()->json(['error' => 'User not found or invalid token'], 404);
+        }
+
+        $user = User::where('line_id', $profile['line_id'])->first();
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // オーナーの店舗のみ請求書を閲覧可能
+        $merchant = Merchant::where('user_id', $user->id)->first();
+        if (!$merchant) {
+            return response()->json(['error' => 'Merchant not found'], 404);
+        }
+
+        $orders = Order::with('details.product')
+            ->where('merchant_id', $merchant->id)
+            ->whereIn('status', self::SALES_STATUSES)
+            ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
+            ->get();
+
+        $productAgg = [];
+        $monthSubtotal = 0;
+        $monthShippingFee = 0;
+        foreach ($orders as $order) {
+            $monthSubtotal += (int) ($order->total_price ?? 0);
+            $monthShippingFee += (int) ($order->shipping_fee ?? 0);
+            foreach ($order->details as $detail) {
+                $pid = $detail->product_id;
+                if (!isset($productAgg[$pid])) {
+                    $productAgg[$pid] = [
+                        'name' => optional($detail->product)->product_name ?? '',
+                        'quantity' => 0,
+                        'amount' => 0,
+                        'unit_price' => (int) round($detail->price),
+                    ];
+                }
+                $productAgg[$pid]['quantity'] += (int) $detail->quantity;
+                $productAgg[$pid]['amount'] += (int) round($detail->price * $detail->quantity);
+            }
+        }
+        uasort($productAgg, function ($a, $b) {
+            return $b['amount'] <=> $a['amount'];
+        });
+
+        $monthTaxAmount = (int) round($monthSubtotal * 1.1) - $monthSubtotal;
+        $monthGrandTotal = (int) round($monthSubtotal * 1.1) + $monthShippingFee;
+
+        $invoiceDate = Carbon::parse($month . '-01')->addMonth();
+        $invoiceNumber = $merchant->id . $invoiceDate->format('ymd');
+
+        $companyName = Setting::getValue('company_name', '');
+        $companyDetail = Setting::getValue('company_detail', '');
+        $companySeal = Setting::getValue('company_seal', '');
+        $companyBankInfo = Setting::getValue('company_bank_info', '');
+
+        $html = view('merchants.partials.invoice_pdf', compact(
+            'merchant',
+            'productAgg',
+            'monthShippingFee',
+            'monthTaxAmount',
+            'monthGrandTotal',
+            'invoiceDate',
+            'invoiceNumber',
+            'month',
+            'companyName',
+            'companyDetail',
+            'companySeal',
+            'companyBankInfo'
+        ))->render();
+
+        return response()->json([
+            'html' => $html,
+            'pdf_filename' => 'invoice_' . $merchant->id . '_' . $invoiceDate->format('Ymd'),
+        ]);
     }
 
     public function getMemberList(Request $request)

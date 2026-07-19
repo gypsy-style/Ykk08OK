@@ -1,0 +1,9 @@
+{
+  "project": "Ykk08OK",
+  "status": "waiting_user",
+  "progress": 95,
+  "current_step": "カード型一覧＋PDF表示ページ実装・ローカル確認済み。デプロイ可否の確認待ち",
+  "need_human_check": true,
+  "last_message": "請求書一覧をカード型（月表示＋PDFを表示ボタン）に変更し、PDF表示ページ（PDF保存ボタン付き）を実装。ローカルで動作確認OK。本番デプロイ（push＋public/buildアップロード）の可否確認待ち。",
+  "updated_at": "2026-07-19T12:55:00+09:00"
+}

@@ -15,6 +15,9 @@ return [
     'merchant_information_liff_id' => env('LIFF_ID_MERCHANT_INFORMATION'),
     'member_list_liff_id' => env('LIFF_ID_MEMBER_LIST'),
 
+    // ローカル確認用：trueでフロントのLIFF認証をスキップし dummy_ トークンを送る
+    'liff_mock' => env('LIFF_MOCK', false),
+
     'richmenu_id1' => env('RICHMENU_ID_1'),
     'richmenu_id2' => env('RICHMENU_ID_2'),
     'richmenu_id3' => env('RICHMENU_ID_3'),
