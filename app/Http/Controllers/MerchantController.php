@@ -256,9 +256,11 @@ class MerchantController extends Controller
             return response()->json(['error' => 'Merchant not found'], 404);
         }
 
+        // 当月は未確定のため前月までを対象とする
         $orders = Order::with('details.product')
             ->where('merchant_id', $merchant->id)
             ->whereIn('status', self::SALES_STATUSES)
+            ->where('created_at', '<', Carbon::now()->startOfMonth())
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -322,6 +324,10 @@ class MerchantController extends Controller
         $month = $request->input('month');
         if (!preg_match('/^\d{4}-\d{2}$/', $month ?? '')) {
             return response()->json(['error' => 'Invalid month'], 400);
+        }
+        // 当月は未確定のため表示しない
+        if ($month >= Carbon::now()->format('Y-m')) {
+            return response()->json(['error' => '当月の請求書はまだ確定していません'], 400);
         }
 
         $profile = $this->getLineProfile($accessToken);

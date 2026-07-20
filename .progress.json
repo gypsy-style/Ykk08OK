@@ -1,9 +1,9 @@
 {
   "project": "Ykk08OK",
   "status": "waiting_user",
-  "progress": 90,
-  "current_step": "管理画面（ユーザー・加盟店）の絞り込み実装・ローカル確認済み。コミット/push待ち",
+  "progress": 95,
+  "current_step": "当月除外の仕様変更を実装・検証済み。コミット/push待ち",
   "need_human_check": true,
-  "last_message": "ユーザー一覧（キーワード・リッチメニュー）、加盟店一覧（キーワード・代理店・ステータス・会員ランク）の絞り込みを実装しローカル確認OK。PHP/Bladeのみの変更なのでpushだけで本番反映可能。",
-  "updated_at": "2026-07-19T13:20:00+09:00"
+  "last_message": "請求書は当月（未確定）を除外する仕様に変更。一覧は前月まで表示、当月以降のURL直接アクセスは400。tinkerで検証OK。管理画面絞り込みと合わせて未コミットの変更あり。",
+  "updated_at": "2026-07-20T10:00:00+09:00"
 }
