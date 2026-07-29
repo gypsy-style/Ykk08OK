@@ -4,19 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\Merchant;
 use App\Models\MerchantMember;
-use App\Models\Order;
 use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use App\Services\InvoiceService;
 use App\Services\LineRichMenuService;
 use Illuminate\Validation\Rule;
 
 class MerchantController extends Controller
 {
-    /** 売上集計対象のステータス（保留=4以外の確定注文） */
-    private const SALES_STATUSES = [2, 3, 5, 6];
+    /** @var InvoiceService */
+    private $invoiceService;
+
+    public function __construct(InvoiceService $invoiceService)
+    {
+        $this->invoiceService = $invoiceService;
+    }
 
     // 店舗一覧表示
     public function index()
@@ -257,55 +262,7 @@ class MerchantController extends Controller
         }
 
         // 当月は未確定のため前月までを対象とする
-        $orders = Order::with('details.product')
-            ->where('merchant_id', $merchant->id)
-            ->whereIn('status', self::SALES_STATUSES)
-            ->where('created_at', '<', Carbon::now()->startOfMonth())
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // 月毎に集計
-        $monthlyInvoices = [];
-        foreach ($orders as $order) {
-            $month = $order->created_at->format('Y-m');
-            if (!isset($monthlyInvoices[$month])) {
-                $monthlyInvoices[$month] = [
-                    'subtotal' => 0,
-                    'shipping_fee' => 0,
-                    'order_count' => 0,
-                    'products' => [],
-                ];
-            }
-            $monthlyInvoices[$month]['subtotal'] += (int) ($order->total_price ?? 0);
-            $monthlyInvoices[$month]['shipping_fee'] += (int) ($order->shipping_fee ?? 0);
-            $monthlyInvoices[$month]['order_count']++;
-            foreach ($order->details as $detail) {
-                $pid = $detail->product_id;
-                if (!isset($monthlyInvoices[$month]['products'][$pid])) {
-                    $monthlyInvoices[$month]['products'][$pid] = [
-                        'name' => optional($detail->product)->product_name ?? '',
-                        'quantity' => 0,
-                        'amount' => 0,
-                        'unit_price' => (int) round($detail->price),
-                    ];
-                }
-                $monthlyInvoices[$month]['products'][$pid]['quantity'] += (int) $detail->quantity;
-                $monthlyInvoices[$month]['products'][$pid]['amount'] += (int) round($detail->price * $detail->quantity);
-            }
-        }
-
-        foreach ($monthlyInvoices as $month => &$invoice) {
-            uasort($invoice['products'], function ($a, $b) {
-                return $b['amount'] <=> $a['amount'];
-            });
-            $invoice['tax'] = (int) round($invoice['subtotal'] * 1.1) - $invoice['subtotal'];
-            $invoice['grand_total'] = (int) round($invoice['subtotal'] * 1.1) + $invoice['shipping_fee'];
-            $invoiceDate = Carbon::parse($month . '-01')->addMonth();
-            $invoice['invoice_date'] = $invoiceDate;
-            $invoice['invoice_number'] = $merchant->id . $invoiceDate->format('ymd');
-            $invoice['label'] = Carbon::parse($month . '-01')->format('Y年n月分');
-        }
-        unset($invoice);
+        $monthlyInvoices = $this->invoiceService->monthlyBreakdown($merchant);
 
         $html = view('merchants.partials.invoice_list', compact('monthlyInvoices', 'merchant'))->render();
 
@@ -346,41 +303,14 @@ class MerchantController extends Controller
             return response()->json(['error' => 'Merchant not found'], 404);
         }
 
-        $orders = Order::with('details.product')
-            ->where('merchant_id', $merchant->id)
-            ->whereIn('status', self::SALES_STATUSES)
-            ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
-            ->get();
+        $invoice = $this->invoiceService->forMonth($merchant, $month);
 
-        $productAgg = [];
-        $monthSubtotal = 0;
-        $monthShippingFee = 0;
-        foreach ($orders as $order) {
-            $monthSubtotal += (int) ($order->total_price ?? 0);
-            $monthShippingFee += (int) ($order->shipping_fee ?? 0);
-            foreach ($order->details as $detail) {
-                $pid = $detail->product_id;
-                if (!isset($productAgg[$pid])) {
-                    $productAgg[$pid] = [
-                        'name' => optional($detail->product)->product_name ?? '',
-                        'quantity' => 0,
-                        'amount' => 0,
-                        'unit_price' => (int) round($detail->price),
-                    ];
-                }
-                $productAgg[$pid]['quantity'] += (int) $detail->quantity;
-                $productAgg[$pid]['amount'] += (int) round($detail->price * $detail->quantity);
-            }
-        }
-        uasort($productAgg, function ($a, $b) {
-            return $b['amount'] <=> $a['amount'];
-        });
-
-        $monthTaxAmount = (int) round($monthSubtotal * 1.1) - $monthSubtotal;
-        $monthGrandTotal = (int) round($monthSubtotal * 1.1) + $monthShippingFee;
-
-        $invoiceDate = Carbon::parse($month . '-01')->addMonth();
-        $invoiceNumber = $merchant->id . $invoiceDate->format('ymd');
+        $productAgg = $invoice['products'];
+        $monthShippingFee = $invoice['shipping_fee'];
+        $monthTaxAmount = $invoice['tax'];
+        $monthGrandTotal = $invoice['grand_total'];
+        $invoiceDate = $invoice['invoice_date'];
+        $invoiceNumber = $invoice['invoice_number'];
 
         $companyName = Setting::getValue('company_name', '');
         $companyDetail = Setting::getValue('company_detail', '');

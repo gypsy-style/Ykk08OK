@@ -5,6 +5,9 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Services\LineRichMenuService;
 use App\Services\LineFriendService;
+use App\Services\Line\LineSender;
+use App\Services\Line\DirectLineSender;
+use App\Services\Line\HarnessLineSender;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +24,14 @@ class AppServiceProvider extends ServiceProvider
         });
         $this->app->singleton(LineFriendService::class, function ($app) {
             return new LineFriendService();
+        });
+
+        // LINEメッセージの送信経路を config で切り替える
+        $this->app->bind(LineSender::class, function ($app) {
+            if (config('services.line.driver') === 'harness') {
+                return new HarnessLineSender();
+            }
+            return new DirectLineSender();
         });
     }
 

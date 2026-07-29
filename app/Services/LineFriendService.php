@@ -11,7 +11,7 @@ class LineFriendService
 
     public function __construct()
     {
-        $this->accessToken = env('LINE_CHANNEL_ACCESS_TOKEN');
+        $this->accessToken = config('services.line.channel_access_token');
     }
 
     /**

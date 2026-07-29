@@ -15,7 +15,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // 毎月1日 9:00 に前月分の請求書をLINEで送信する
+        $schedule->command('invoice:send-line')
+            ->monthlyOn(1, '09:00')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/invoice-send-line.log'));
     }
 
     /**

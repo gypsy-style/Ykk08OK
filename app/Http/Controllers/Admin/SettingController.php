@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Merchant;
 use App\Models\Setting;
+use App\Models\User;
+use App\Services\InvoiceLineMessageService;
+use App\Services\InvoiceService;
+use App\Services\LineMessageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -147,5 +152,91 @@ class SettingController extends Controller
         }
 
         return redirect()->route('admin.settings.company_info')->with('success', '会社情報を保存しました。');
+    }
+
+    public function invoiceLine(InvoiceLineMessageService $messageService, InvoiceService $invoiceService)
+    {
+        $invoiceLineEnabled = $messageService->isEnabled();
+        $invoiceLineMessage = $messageService->template();
+        $placeholders = InvoiceLineMessageService::placeholders();
+        $invoiceUrl = $invoiceService->invoiceUrl();
+        $targetMerchantIds = Setting::getValue(InvoiceLineMessageService::KEY_TARGET_IDS, '');
+        $targetMerchants = Merchant::whereIn('id', $messageService->targetMerchantIds())->get();
+
+        return view('admin.settings.invoice_line', compact(
+            'invoiceLineEnabled',
+            'invoiceLineMessage',
+            'placeholders',
+            'invoiceUrl',
+            'targetMerchantIds',
+            'targetMerchants'
+        ));
+    }
+
+    public function updateInvoiceLine(Request $request)
+    {
+        $request->validate([
+            'invoice_line_message' => 'required|string|max:4000',
+            'invoice_line_target_merchant_ids' => 'nullable|string|max:255|regex:/^[0-9,\s]*$/',
+        ], [
+            'invoice_line_message.required' => 'メッセージ本文を入力してください。',
+            'invoice_line_message.max' => 'メッセージ本文は4000文字以内で入力してください。',
+            'invoice_line_target_merchant_ids.regex' => 'テスト対象の加盟店IDは半角数字とカンマで入力してください。',
+        ]);
+
+        Setting::updateOrCreate(
+            ['key' => InvoiceLineMessageService::KEY_ENABLED],
+            ['value' => $request->boolean('invoice_line_enabled') ? '1' : '0']
+        );
+        Setting::updateOrCreate(
+            ['key' => InvoiceLineMessageService::KEY_MESSAGE],
+            ['value' => $request->input('invoice_line_message')]
+        );
+        Setting::updateOrCreate(
+            ['key' => InvoiceLineMessageService::KEY_TARGET_IDS],
+            ['value' => trim((string) $request->input('invoice_line_target_merchant_ids'))]
+        );
+
+        return redirect()->route('admin.settings.invoice_line')->with('success', '請求書LINE通知の設定を保存しました。');
+    }
+
+    /**
+     * 入力中の本文をサンプル値で自分のLINEへテスト送信する
+     */
+    public function testInvoiceLine(
+        Request $request,
+        InvoiceLineMessageService $messageService,
+        InvoiceService $invoiceService,
+        LineMessageService $lineMessageService
+    ) {
+        $request->validate([
+            'invoice_line_message' => 'required|string|max:4000',
+            'line_id' => 'required|string|max:255',
+        ], [
+            'invoice_line_message.required' => 'メッセージ本文を入力してください。',
+            'line_id.required' => '送信先のLINEユーザーIDを入力してください。',
+        ]);
+
+        $lineId = trim($request->input('line_id'));
+
+        // 未登録のLINE IDへ誤爆しないよう、登録済みユーザーに限定する
+        if (!User::where('line_id', $lineId)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'そのLINEユーザーIDは登録されていません。',
+            ], 422);
+        }
+
+        $body = $messageService->renderSample(
+            $request->input('invoice_line_message'),
+            $invoiceService->invoiceUrl()
+        );
+
+        $result = $lineMessageService->sendMessage($lineId, $body);
+
+        return response()->json([
+            'success' => ($result['status'] ?? '') === 'success',
+            'message' => $result['message'] ?? '',
+        ]);
     }
 }

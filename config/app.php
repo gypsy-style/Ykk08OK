@@ -14,6 +14,8 @@ return [
     'add_member_liff_id' => env('LIFF_ID_ADD_MEMBER'),
     'merchant_information_liff_id' => env('LIFF_ID_MERCHANT_INFORMATION'),
     'member_list_liff_id' => env('LIFF_ID_MEMBER_LIST'),
+    // 請求書一覧用。未設定の場合は登録情報のLIFF IDにフォールバックする
+    'invoice_liff_id' => env('LIFF_ID_MERCHANT_INVOICE'),
 
     // ローカル確認用：trueでフロントのLIFF認証をスキップし dummy_ トークンを送る
     'liff_mock' => env('LIFF_MOCK', false),

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class LineRichMenuService
 {
@@ -11,7 +12,7 @@ class LineRichMenuService
 
     public function __construct()
     {
-        $this->accessToken = env('LINE_CHANNEL_ACCESS_TOKEN');
+        $this->accessToken = config('services.line.channel_access_token');
     }
 
     /**
@@ -23,6 +24,12 @@ class LineRichMenuService
      */
     public function switchRichMenu($userId, $richMenuId)
     {
+        // リッチメニュー制御を LINE Harness 側へ寄せている場合、本アプリからは操作しない
+        if (config('services.line.richmenu_driver') === 'harness') {
+            Log::info('RichMenu switch skipped (harness driver)', ['userId' => $userId, 'richMenuId' => $richMenuId]);
+            return ['status' => 'skipped', 'message' => 'リッチメニュー制御はLINE Harness側に委譲されています'];
+        }
+
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->accessToken,
             'Content-Type' => 'application/json',

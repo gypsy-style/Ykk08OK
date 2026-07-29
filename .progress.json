@@ -1,9 +1,9 @@
 {
   "project": "Ykk08OK",
   "status": "waiting_user",
-  "progress": 95,
-  "current_step": "当月除外の仕様変更を実装・検証済み。コミット/push待ち",
+  "progress": 85,
+  "current_step": "段階公開用の絞り込み機能まで実装完了。本番デプロイ手順の確認待ち（未コミット）",
   "need_human_check": true,
-  "last_message": "請求書は当月（未確定）を除外する仕様に変更。一覧は前月まで表示、当月以降のURL直接アクセスは400。tinkerで検証OK。管理画面絞り込みと合わせて未コミットの変更あり。",
-  "updated_at": "2026-07-20T10:00:00+09:00"
+  "last_message": "請求書LINE自動送信＋段階公開用の対象加盟店絞り込みを実装・検証済み。本番反映には (1) デプロイ後の config:clear (2) エックスサーバーのcron登録 (3) LIFF_ID_MERCHANT_INVOICE発行 (4) 8/1前に絞り込みへテスト加盟店IDを設定 が必要。コミット可否の判断待ち。",
+  "updated_at": "2026-07-29T16:00:00+09:00"
 }

@@ -59,6 +59,14 @@ class Merchant extends Model
         return $this->hasMany(User::class);
     }
 
+    /**
+     * 店舗のオーナー（merchants.user_id）
+     */
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function agency()
     {
         return $this->belongsTo(Agency::class);

@@ -2,21 +2,22 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use App\Services\Line\LineSender;
 
 class LineMessageService
 {
-    private $lineApiUrl = 'https://api.line.me/v2/bot/message/push';
-    private $accessToken;
+    /** @var LineSender */
+    private $sender;
 
-    public function __construct()
+    public function __construct(LineSender $sender)
     {
-        $this->accessToken = env('LINE_CHANNEL_ACCESS_TOKEN');
+        $this->sender = $sender;
     }
 
     /**
      * 指定したユーザーにプッシュメッセージを送信する
+     *
+     * 実際の送信経路は config('services.line.driver') で決まる。
      *
      * @param string $userId
      * @param string $message
@@ -24,24 +25,6 @@ class LineMessageService
      */
     public function sendMessage($userId, $message)
     {
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->accessToken,
-            'Content-Type' => 'application/json',
-        ])->post($this->lineApiUrl, [
-            'to' => $userId,
-            'messages' => [
-                [
-                    'type' => 'text',
-                    'text' => $message,
-                ],
-            ],
-        ]);
-
-        if ($response->successful()) {
-            return ['status' => 'success', 'message' => 'メッセージを送信しました'];
-        } else {
-            Log::error('LINE push message failed', ['userId' => $userId, 'details' => $response->json()]);
-            return ['status' => 'error', 'message' => 'メッセージの送信に失敗しました', 'details' => $response->json()];
-        }
+        return $this->sender->sendText($userId, $message);
     }
 }
