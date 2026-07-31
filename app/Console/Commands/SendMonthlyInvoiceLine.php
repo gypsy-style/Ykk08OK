@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use App\Models\InvoiceLineSend;
 use App\Models\Merchant;
 use App\Services\InvoiceLineMessageService;
+use App\Services\InvoiceLineSender;
 use App\Services\InvoiceService;
-use App\Services\LineMessageService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +26,7 @@ class SendMonthlyInvoiceLine extends Command
     public function handle(
         InvoiceService $invoiceService,
         InvoiceLineMessageService $messageService,
-        LineMessageService $lineMessageService
+        InvoiceLineSender $sender
     ) {
         $month = $this->option('month') ?: Carbon::now()->subMonth()->format('Y-m');
         $dryRun = (bool) $this->option('dry-run');
@@ -54,9 +54,7 @@ class SendMonthlyInvoiceLine extends Command
             return 0;
         }
 
-        $template = $messageService->template();
-        $invoiceUrl = $invoiceService->invoiceUrl();
-        if ($invoiceUrl === '') {
+        if ($invoiceService->invoiceUrl() === '') {
             $this->warn('請求書ページのLIFF IDが未設定です。{invoice_url} は空文字で送信されます。');
         }
 
@@ -81,20 +79,6 @@ class SendMonthlyInvoiceLine extends Command
         $this->info("対象月: {$month} / 加盟店数: {$merchants->count()}" . ($dryRun ? '（dry-run）' : ''));
 
         foreach ($merchants as $merchant) {
-            $lineId = $overrideLineId ?: optional($merchant->owner)->line_id;
-            if (!$lineId) {
-                $this->line("  [skip] {$merchant->id} {$merchant->name} : オーナーのLINE IDが未登録");
-                $skipped++;
-                continue;
-            }
-
-            $invoice = $invoiceService->forMonth($merchant, $month);
-            if ($invoice['order_count'] === 0) {
-                $this->line("  [skip] {$merchant->id} {$merchant->name} : 対象月の注文なし");
-                $skipped++;
-                continue;
-            }
-
             // テスト送信は本番の送信履歴を参照しない
             $already = !$overrideLineId && InvoiceLineSend::where('merchant_id', $merchant->id)
                 ->where('month', $month)
@@ -106,44 +90,40 @@ class SendMonthlyInvoiceLine extends Command
                 continue;
             }
 
-            $body = $messageService->render($template, $merchant, $invoice, $invoiceUrl);
-
             if ($dryRun) {
+                $lineId = $overrideLineId ?: optional($merchant->owner)->line_id;
+                if (!$lineId) {
+                    $this->line("  [skip] {$merchant->id} {$merchant->name} : オーナーのLINE IDが未登録");
+                    $skipped++;
+                    continue;
+                }
+
+                $invoice = $invoiceService->forMonth($merchant, $month);
+                if ($invoice['order_count'] === 0) {
+                    $this->line("  [skip] {$merchant->id} {$merchant->name} : 対象月の注文なし");
+                    $skipped++;
+                    continue;
+                }
+
                 $this->line("  [dry-run] {$merchant->id} {$merchant->name} → {$lineId}");
                 $this->line('  ----------------');
-                $this->line($body);
+                $this->line($sender->buildBody($merchant, $invoice));
                 $this->line('  ----------------');
                 $sent++;
                 continue;
             }
 
-            $result = $lineMessageService->sendMessage($lineId, $body);
-            $success = ($result['status'] ?? '') === 'success';
+            $result = $sender->send($merchant, $month, $overrideLineId);
 
-            // テスト送信で履歴を残すと、本番実行時に該当加盟店がスキップされてしまう
-            if (!$overrideLineId) {
-                InvoiceLineSend::updateOrCreate(
-                    ['merchant_id' => $merchant->id, 'month' => $month],
-                    [
-                        'line_id' => $lineId,
-                        'status' => $success ? 'success' : 'failed',
-                        'error' => $success ? null : ($result['message'] ?? '送信に失敗しました'),
-                        'sent_at' => $success ? Carbon::now() : null,
-                    ]
-                );
-            }
-
-            if ($success) {
+            if ($result['success']) {
                 $this->info("  [sent] {$merchant->id} {$merchant->name}");
                 $sent++;
+            } elseif ($result['skipped']) {
+                $this->line("  [skip] {$merchant->id} {$merchant->name} : {$result['message']}");
+                $skipped++;
             } else {
                 // 1件失敗しても後続の加盟店の送信は継続する
-                $this->error("  [fail] {$merchant->id} {$merchant->name} : " . ($result['message'] ?? ''));
-                Log::error('請求書LINE送信に失敗', [
-                    'merchant_id' => $merchant->id,
-                    'month' => $month,
-                    'result' => $result,
-                ]);
+                $this->error("  [fail] {$merchant->id} {$merchant->name} : {$result['message']}");
                 $failed++;
             }
         }
