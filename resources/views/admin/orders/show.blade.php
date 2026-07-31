@@ -78,7 +78,7 @@ default: return $action;
 					</tr>
 					<!-- 消費税 -->
 					<tr>
-						<th>消費税</th>
+						<th>消費税（10%）</th>
 						<td></td>
 						<td>{{ number_format($taxAmount) }}円</td>
 					</tr>

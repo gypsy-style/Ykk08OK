@@ -39,7 +39,7 @@
                             <td>{{ number_format($monthShippingFee) }}円</td>
                         </tr>
                         <tr>
-                            <th>消費税</th>
+                            <th>消費税（10%）</th>
                             <td></td>
                             <td>{{ number_format($monthTaxAmount) }}円</td>
                         </tr>

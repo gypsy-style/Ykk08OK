@@ -80,7 +80,7 @@
                 </div>
                 <div class="lmf-order_costs">
 					<p>送料：{{ number_format($order->shipping_fee ?? 0) }}円<br>
-						消費税：{{ number_format($taxAmount) }}円</p>
+						消費税（10%）：{{ number_format($taxAmount) }}円</p>
 				</div>
                 <div class="lmf-order_total">
                     <b class="label">合計</b><span class="quantity"></span><b class="item_price">{{ number_format((int) round($order->total_price * 1.1) + ($order->shipping_fee ?? 0)) }}円</b>

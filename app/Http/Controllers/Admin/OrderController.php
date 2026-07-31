@@ -93,7 +93,7 @@ class OrderController extends Controller
         }
         $taxAmount = (int) round(($order->total_price ?? 0) * 1.1) - ($order->total_price ?? 0);
         $lines[] = '送料' . ($order->shipping_fee ?? 0) . '円';
-        $lines[] = '消費税' . number_format($taxAmount) . '円';
+        $lines[] = '消費税（10%）' . number_format($taxAmount) . '円';
         $lines[] = '合計' . $totalQty . '個' . number_format((int) round(($order->total_price ?? 0) * 1.1) + ($order->shipping_fee ?? 0)) . '円';
         $copyText = implode("\n", $lines);
 

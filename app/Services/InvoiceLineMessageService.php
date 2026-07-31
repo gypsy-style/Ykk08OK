@@ -31,7 +31,7 @@ class InvoiceLineMessageService
             '{month}' => '請求対象月（例: 2026-06）',
             '{order_count}' => '対象月の注文件数',
             '{subtotal}' => '小計（税抜）',
-            '{tax}' => '消費税',
+            '{tax}' => '消費税（10%）',
             '{shipping_fee}' => '送料',
             '{total}' => 'ご請求金額（税込・送料込）',
             '{invoice_url}' => '請求書ページのURL',

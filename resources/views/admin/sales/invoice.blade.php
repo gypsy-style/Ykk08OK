@@ -215,7 +215,7 @@ button {
 
   <table class="summary">
     <tr>
-      <td>消費税</td>
+      <td>消費税（10%）</td>
       <td>￥{{ number_format($monthTaxAmount) }}</td>
     </tr>
     <tr>

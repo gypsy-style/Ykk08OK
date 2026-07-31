@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\InvoiceLineSend;
 use App\Models\Merchant;
+use App\Models\MerchantPaymentConfirmation;
 use App\Models\Order;
 use App\Models\Setting;
+use App\Services\InvoiceLineSender;
+use App\Services\InvoiceService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SalesController extends Controller
@@ -15,7 +20,7 @@ class SalesController extends Controller
     /** 売上集計対象のステータス（保留=4以外の確定注文） */
     private const SALES_STATUSES = [2, 3, 5, 6];
 
-    public function index(Request $request)
+    public function index(Request $request, InvoiceService $invoiceService)
     {
         $month = $request->query('month', Carbon::now()->format('Y-m'));
 
@@ -72,6 +77,16 @@ class SalesController extends Controller
         $grandTotal = ((int) $productSales->sum('total_amount'))
             + ((int) ($headquartersProcessed->shipping_fee ?? 0));
 
+        // 表示中の月の振込確認・送信履歴（加盟店IDで引けるようにする）
+        $isFixedMonth = $invoiceService->isFixedMonth($month);
+        $paymentConfirmations = MerchantPaymentConfirmation::where('month', $month)
+            ->get()
+            ->keyBy('merchant_id');
+        $invoiceSends = InvoiceLineSend::where('month', $month)
+            ->where('status', 'success')
+            ->get()
+            ->keyBy('merchant_id');
+
         return view('admin.sales.index', compact(
             'productSales',
             'merchantSales',
@@ -80,7 +95,10 @@ class SalesController extends Controller
             'grandTotal',
             'month',
             'prevMonth',
-            'nextMonth'
+            'nextMonth',
+            'isFixedMonth',
+            'paymentConfirmations',
+            'invoiceSends'
         ));
     }
 
@@ -144,7 +162,7 @@ class SalesController extends Controller
             $lines[] = $row['name'] . '×' . $row['quantity'] . '個 ' . number_format($row['amount']) . '円';
         }
         $lines[] = '送料 ' . number_format($monthShippingFee) . '円';
-        $lines[] = '消費税 ' . number_format($monthTaxAmount) . '円';
+        $lines[] = '消費税（10%） ' . number_format($monthTaxAmount) . '円';
         $lines[] = '合計 ' . $monthTotalQuantity . '個 ' . number_format($monthGrandTotal) . '円';
         $copyText = implode("\n", $lines);
 
@@ -226,5 +244,64 @@ class SalesController extends Controller
             'companySeal',
             'companyBankInfo'
         ));
+    }
+
+    /**
+     * 振込確認のON/OFFを切り替える
+     *
+     * 行があれば確認済み。もう一度押されたら行を消す。
+     */
+    public function togglePaymentConfirm($merchantId, Request $request, InvoiceService $invoiceService)
+    {
+        $merchant = Merchant::findOrFail($merchantId);
+        $month = (string) $request->input('month');
+
+        if (!$invoiceService->isFixedMonth($month)) {
+            return response()->json(['message' => '当月の振込確認はできません。'], 400);
+        }
+
+        $existing = MerchantPaymentConfirmation::where('merchant_id', $merchant->id)
+            ->where('month', $month)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+            return response()->json(['confirmed' => false, 'confirmed_at' => null]);
+        }
+
+        $confirmation = MerchantPaymentConfirmation::create([
+            'merchant_id' => $merchant->id,
+            'month' => $month,
+            'admin_id' => Auth::guard('admin')->id(),
+            'confirmed_at' => Carbon::now(),
+        ]);
+
+        return response()->json([
+            'confirmed' => true,
+            'confirmed_at' => $confirmation->confirmed_at->format('n/j'),
+        ]);
+    }
+
+    /**
+     * 請求書の案内をオーナーのLINEへ送信する
+     *
+     * 送信内容と履歴の扱いは月次バッチと同じ（InvoiceLineSender）。
+     */
+    public function sendInvoiceLine($merchantId, Request $request, InvoiceService $invoiceService, InvoiceLineSender $sender)
+    {
+        $merchant = Merchant::with('owner')->findOrFail($merchantId);
+        $month = (string) $request->input('month');
+
+        if (!$invoiceService->isFixedMonth($month)) {
+            return response()->json(['success' => false, 'message' => '当月の請求書はまだ確定していません。'], 400);
+        }
+
+        $result = $sender->send($merchant, $month);
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'sent_at' => $result['sent_at'] ? $result['sent_at']->format('n/j') : null,
+        ]);
     }
 }
