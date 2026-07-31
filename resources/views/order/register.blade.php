@@ -64,7 +64,7 @@
 					</div>
 					<div class="lmf-order_costs">
 						<p>送料：未確定<br>
-							消費税：<span class="tax_price">{{ number_format($taxAmount) }}</span>円</p>
+							消費税（10%）：<span class="tax_price">{{ number_format($taxAmount) }}</span>円</p>
 					</div>
 					<div class="lmf-order_total">
 						<b class="label">合計</b><span class="quantity">[{{$totalQuantity}}点]</span><b class="item_price grand_total_price">{{ number_format($grandTotalTaxIncluded) }}円</b>

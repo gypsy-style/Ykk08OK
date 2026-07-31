@@ -144,7 +144,7 @@ class SalesController extends Controller
             $lines[] = $row['name'] . '×' . $row['quantity'] . '個 ' . number_format($row['amount']) . '円';
         }
         $lines[] = '送料 ' . number_format($monthShippingFee) . '円';
-        $lines[] = '消費税 ' . number_format($monthTaxAmount) . '円';
+        $lines[] = '消費税（10%） ' . number_format($monthTaxAmount) . '円';
         $lines[] = '合計 ' . $monthTotalQuantity . '個 ' . number_format($monthGrandTotal) . '円';
         $copyText = implode("\n", $lines);
 
