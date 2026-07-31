@@ -1,9 +1,9 @@
 {
   "project": "Ykk08OK",
   "status": "waiting_user",
-  "progress": 85,
-  "current_step": "段階公開用の絞り込み機能まで実装完了。本番デプロイ手順の確認待ち（未コミット）",
+  "progress": 30,
+  "current_step": "admin/sales の振込確認・請求書送信の設計ドキュメントを作成しコミット（8066d2c）。ユーザーのレビュー待ち",
   "need_human_check": true,
-  "last_message": "請求書LINE自動送信＋段階公開用の対象加盟店絞り込みを実装・検証済み。本番反映には (1) デプロイ後の config:clear (2) エックスサーバーのcron登録 (3) LIFF_ID_MERCHANT_INVOICE発行 (4) 8/1前に絞り込みへテスト加盟店IDを設定 が必要。コミット可否の判断待ち。",
-  "updated_at": "2026-07-29T16:00:00+09:00"
+  "last_message": "設計を docs/superpowers/specs/2026-07-31-admin-sales-payment-confirm-design.md に保存済み。確認OKなら実装計画の作成に進みます。／別件（請求書ボタンが出ない）調査更新：先の『全てstatus=1』は画像の読み違いで撤回。正しくは user_id=7 / merchant_id=5 の注文7件のstatusは 9,6,6,6,9,6,6 で、確定分(6)は 2026-04/05/06 の3ヶ月あり一覧は本来3件出るはず＝データ側は正常。本番HTMLにinvoice_listの<p>あり・配信JSはローカルビルドと一致・cache-controlはno-cacheでHTMLキャッシュ説も弱い。残る最有力は liff_information.js:103 の userId==merchantUserId が偽（テスト中のLINEアカウントがオーナーでない）。実機スクショで『登録情報を修正する』『登録スタッフ一覧』は表示されており merchants.user_id=7 と一致＝オーナー判定はOK、請求書だけ出ない。LINEのUAでcurlしても本番HTMLは invoice_list を返すためサーバー側は白。注目点：スクショの端末時刻が18:54で、public/build 再アップロード(22:24)より前の可能性が高い。今の本番で再テストしてもらうよう依頼中。",
+  "updated_at": "2026-07-31T23:59:00+09:00"
 }
