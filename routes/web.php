@@ -139,6 +139,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('sales', [AdminSalesController::class, 'index'])->name('sales.index');
         Route::get('sales/{merchant}/invoice', [AdminSalesController::class, 'invoice'])->name('sales.invoice');
         Route::get('sales/{merchant}', [AdminSalesController::class, 'show'])->name('sales.show');
+        Route::post('sales/{merchant}/payment-confirm', [AdminSalesController::class, 'togglePaymentConfirm'])->name('sales.payment_confirm');
+        Route::post('sales/{merchant}/send-invoice', [AdminSalesController::class, 'sendInvoiceLine'])->name('sales.send_invoice');
 
         // 設定
         Route::get('settings/custom-css', [AdminSettingController::class, 'customCss'])->name('settings.custom_css');
