@@ -53,6 +53,9 @@ class OrderController extends Controller
             $statusCounts = DB::table('orders')
             ->select('status', DB::raw('COUNT(*) as count'))
             ->whereIn('status', [2, 3, 4, 5, 6, 9]) // 対象とするステータス
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->groupBy('status')
             ->pluck('count', 'status') // 結果を 'status' => 'count' の形式で取得
             ->toArray();
