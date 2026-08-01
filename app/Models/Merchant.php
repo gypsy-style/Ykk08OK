@@ -22,6 +22,7 @@ class Merchant extends Model
         'merchant_code',
         'campaign_code',
         'status',
+        'is_test',
         'member_rank',
         'postal_code1',
         'postal_code2',
@@ -34,6 +35,7 @@ class Merchant extends Model
 
     protected $casts = [
         'member_rank' => 'integer',
+        'is_test' => 'boolean',
     ];
 
     protected static function booted()
