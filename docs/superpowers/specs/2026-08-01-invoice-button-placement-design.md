@@ -70,10 +70,10 @@
 
 ### 3. 集計サービス（`app/Services/InvoiceService.php`）
 
-請求書の有無を判定するメソッドを追加する。
+請求書の有無を判定するメソッドを追加する。戻り値の型宣言は付けない（同ファイルの既存メソッドに合わせる）。
 
 ```php
-public function hasInvoice(Merchant $merchant): bool
+public function hasInvoice(Merchant $merchant)
 {
     return Order::where('merchant_id', $merchant->id)
         ->whereIn('status', self::SALES_STATUSES)
