@@ -56,7 +56,7 @@
                             $confirmation = $paymentConfirmations[$m->merchant_id] ?? null;
                             $send = $invoiceSends[$m->merchant_id] ?? null;
                         @endphp
-                        <div class="lma-select_box">
+                        <div class="lma-select_box" style="flex:0 0 auto;white-space:nowrap;margin-left:.5em;">
                             @if ($isFixedMonth)
                                 <label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
                                     <input type="checkbox" class="js-payment-confirm" data-merchant="{{ $m->merchant_id }}" {{ $confirmation ? 'checked' : '' }}>
@@ -70,11 +70,9 @@
                             <a href="{{ route('admin.sales.show', ['merchant' => $m->merchant_id, 'month' => $month]) }}" class="">詳細</a>
                             @if ($isFixedMonth)
                                 <a href="#" class="js-send-invoice" data-merchant="{{ $m->merchant_id }}" data-sent="{{ $send ? '1' : '' }}">請求書を送信</a>
+                                <p class="js-send-status" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin:4px 0 0;">{{ $send && $send->sent_at ? '送信済 ' . $send->sent_at->format('n/j') : '' }}</p>
                             @endif
                         </div>
-                        @if ($isFixedMonth)
-                            <p class="js-send-status" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin:4px 0 0;width:100%;text-align:right;">{{ $send && $send->sent_at ? '送信済 ' . $send->sent_at->format('n/j') : '' }}</p>
-                        @endif
                     </div>
                 </li>
             @empty
