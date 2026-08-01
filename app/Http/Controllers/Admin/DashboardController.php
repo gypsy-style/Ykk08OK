@@ -26,6 +26,9 @@ class DashboardController extends Controller
         $statusCounts = DB::table('orders')
             ->select('status', DB::raw('COUNT(*) as count'))
             ->whereIn('status', [2, 3, 4, 5, 6, 9]) // 対象とするステータス
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->groupBy('status')
             ->pluck('count', 'status') // 結果を 'status' => 'count' の形式で取得
             ->toArray();
@@ -36,6 +39,9 @@ class DashboardController extends Controller
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
             ->whereIn('status', self::SALES_STATUSES)
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->first();
 
         // shipping_fee が 0以上の件数を取得
@@ -43,6 +49,9 @@ class DashboardController extends Controller
             ->where('shipping_fee', '>', 0)
             ->whereIn('status', self::SALES_STATUSES)
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->count();
 
         // 商品別の月別売上集計
@@ -51,6 +60,9 @@ class DashboardController extends Controller
             ->join('products as p', 'p.id', '=', 'od.product_id')
             ->whereIn('o.status', self::SALES_STATUSES)
             ->whereRaw('DATE_FORMAT(o.created_at, "%Y-%m") = ?', [$month])
+            ->whereNotIn('o.merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->groupBy('p.id', 'p.product_name')
             ->orderByDesc(DB::raw('SUM(od.quantity * od.price)'))
             ->select(

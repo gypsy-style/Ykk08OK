@@ -35,12 +35,18 @@ class OrderController extends Controller
         $agenciesProcessed = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price')
             ->where('status', 2)
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->first();
 
         // 本部処理済みの受注
         $headquartersProcessed = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price')
             ->where('status', 3)
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->first();
 
             // 各statusの件数を取得
