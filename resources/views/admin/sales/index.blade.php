@@ -52,11 +52,31 @@
                             <h3 class="name">{{ $m->merchant_name }}</h3>
                             <p class="line_id">{{ $m->agency_name ?? '代理店未設定' }}　会員ランク{{ $m->member_rank ?? '-' }}</p>
                         </div>
-                        <div class="lma-select_box"></div>
+                        <div class="lma-select_box">
+                            @if ($isFixedMonth)
+                                @php
+                                    $confirmation = $paymentConfirmations[$m->merchant_id] ?? null;
+                                @endphp
+                                <label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+                                    <input type="checkbox" class="js-payment-confirm" data-merchant="{{ $m->merchant_id }}" {{ $confirmation ? 'checked' : '' }}>
+                                    振込確認
+                                </label>
+                                <span class="js-confirm-label" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin-left:6px;">{{ $confirmation ? '確認済 ' . $confirmation->confirmed_at->format('n/j') : '' }}</span>
+                            @endif
+                        </div>
                         <div class="lma-btn_box btn_list">
                             <a href="{{ route('admin.sales.invoice', ['merchant' => $m->merchant_id, 'month' => $month]) }}" target="_blank" rel="noopener" class="">PDFを表示</a>
                             <a href="{{ route('admin.sales.show', ['merchant' => $m->merchant_id, 'month' => $month]) }}" class="">詳細</a>
+                            @if ($isFixedMonth)
+                                @php
+                                    $send = $invoiceSends[$m->merchant_id] ?? null;
+                                @endphp
+                                <a href="#" class="js-send-invoice" data-merchant="{{ $m->merchant_id }}" data-sent="{{ $send ? '1' : '' }}">請求書を送信</a>
+                            @endif
                         </div>
+                        @if ($isFixedMonth)
+                            <p class="js-send-status" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin:4px 0 0;width:100%;text-align:right;">{{ $send && $send->sent_at ? '送信済 ' . $send->sent_at->format('n/j') : '' }}</p>
+                        @endif
                     </div>
                 </li>
             @empty
@@ -78,4 +98,77 @@
         </ul>
     </div>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    var month = @json($month);
+    var confirmUrl = @json(route('admin.sales.payment_confirm', ['merchant' => '__ID__']));
+    var sendUrl = @json(route('admin.sales.send_invoice', ['merchant' => '__ID__']));
+
+    function post(url, onDone) {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ month: month })
+        })
+        .then(function (res) { return res.json().then(function (json) { return { ok: res.ok, json: json }; }); })
+        .then(function (result) { onDone(result.ok, result.json); })
+        .catch(function () { onDone(false, { message: '通信に失敗しました。' }); });
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('.js-payment-confirm'), function (box) {
+        box.addEventListener('change', function () {
+            var id = box.dataset.merchant;
+            var label = document.querySelector('.js-confirm-label[data-merchant="' + id + '"]');
+            var wanted = box.checked;
+            box.disabled = true;
+
+            post(confirmUrl.replace('__ID__', id), function (ok, json) {
+                box.disabled = false;
+                if (!ok) {
+                    // 保存できなかったので見た目を元に戻す
+                    box.checked = !wanted;
+                    label.style.color = '#d64545';
+                    label.textContent = json.message || '保存に失敗しました。';
+                    return;
+                }
+                label.style.color = '#666';
+                label.textContent = json.confirmed ? '確認済 ' + json.confirmed_at : '';
+            });
+        });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('.js-send-invoice'), function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            var id = btn.dataset.merchant;
+            var status = document.querySelector('.js-send-status[data-merchant="' + id + '"]');
+
+            if (btn.dataset.sent && !window.confirm('この加盟店にはすでに送信済みです。再送しますか？')) {
+                return;
+            }
+
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.5';
+            status.style.color = '#666';
+            status.textContent = '送信中...';
+
+            post(sendUrl.replace('__ID__', id), function (ok, json) {
+                btn.style.pointerEvents = '';
+                btn.style.opacity = '';
+                var success = ok && json.success;
+                status.style.color = success ? '#2f855a' : '#d64545';
+                status.textContent = success ? '送信済 ' + json.sent_at : (json.message || '送信に失敗しました。');
+                if (success) {
+                    btn.dataset.sent = '1';
+                }
+            });
+        });
+    });
+});
+</script>
 @endsection
