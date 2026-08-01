@@ -29,6 +29,9 @@ class SalesController extends Controller
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
             ->whereIn('o.status', self::SALES_STATUSES)
+            ->whereNotIn('o.merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->whereRaw('DATE_FORMAT(o.created_at, "%Y-%m") = ?', [$month])
             ->groupBy('p.id', 'p.product_name')
             ->orderByDesc(DB::raw('SUM(od.quantity * od.price)'))
@@ -43,12 +46,18 @@ class SalesController extends Controller
         $headquartersProcessed = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
             ->whereIn('status', self::SALES_STATUSES)
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
             ->first();
 
         $shippingFeeCount = DB::table('orders')
             ->where('shipping_fee', '>', 0)
             ->whereIn('status', self::SALES_STATUSES)
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
             ->count();
 
@@ -58,12 +67,13 @@ class SalesController extends Controller
             ->leftJoin('agencies as a', 'a.id', '=', 'm.agency_id')
             ->whereIn('o.status', self::SALES_STATUSES)
             ->whereRaw('DATE_FORMAT(o.created_at, "%Y-%m") = ?', [$month])
-            ->groupBy('m.id', 'm.name', 'm.member_rank', 'a.name')
+            ->groupBy('m.id', 'm.name', 'm.member_rank', 'm.is_test', 'a.name')
             ->orderByDesc(DB::raw('SUM(o.total_price + o.shipping_fee)'))
             ->select(
                 'm.id as merchant_id',
                 'm.name as merchant_name',
                 'm.member_rank',
+                'm.is_test as is_test',
                 'a.name as agency_name',
                 DB::raw('COUNT(o.id) as order_count'),
                 DB::raw('SUM(o.total_price + o.shipping_fee) as total_amount')

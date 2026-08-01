@@ -49,7 +49,7 @@
                 <li>
                     <div class="lma-user_box">
                         <div class="user_info">
-                            <h3 class="name">{{ $m->merchant_name }}</h3>
+                            <h3 class="name">{{ $m->merchant_name }}@if ($m->is_test)<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:#f60;color:#fff;font-size:11px;vertical-align:middle;">テスト</span>@endif</h3>
                             <p class="line_id">{{ $m->agency_name ?? '代理店未設定' }}　会員ランク{{ $m->member_rank ?? '-' }}</p>
                         </div>
                         @php
