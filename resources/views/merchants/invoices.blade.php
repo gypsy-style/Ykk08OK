@@ -19,7 +19,7 @@
 @endsection
 @push('scripts')
 <script>
-    window.LIFF_ID = "{{ config('app.merchant_information_liff_id') }}";
+    window.LIFF_ID = "{{ config('app.invoice_liff_id') ?: config('app.merchant_information_liff_id') }}";
     window.LIFF_MOCK = {{ config('app.liff_mock') ? 'true' : 'false' }};
 </script>
 @vite(['resources/js/liff_invoice_list.js'])
