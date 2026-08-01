@@ -52,11 +52,12 @@
                             <h3 class="name">{{ $m->merchant_name }}</h3>
                             <p class="line_id">{{ $m->agency_name ?? '代理店未設定' }}　会員ランク{{ $m->member_rank ?? '-' }}</p>
                         </div>
+                        @php
+                            $confirmation = $paymentConfirmations[$m->merchant_id] ?? null;
+                            $send = $invoiceSends[$m->merchant_id] ?? null;
+                        @endphp
                         <div class="lma-select_box">
                             @if ($isFixedMonth)
-                                @php
-                                    $confirmation = $paymentConfirmations[$m->merchant_id] ?? null;
-                                @endphp
                                 <label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
                                     <input type="checkbox" class="js-payment-confirm" data-merchant="{{ $m->merchant_id }}" {{ $confirmation ? 'checked' : '' }}>
                                     振込確認
@@ -68,9 +69,6 @@
                             <a href="{{ route('admin.sales.invoice', ['merchant' => $m->merchant_id, 'month' => $month]) }}" target="_blank" rel="noopener" class="">PDFを表示</a>
                             <a href="{{ route('admin.sales.show', ['merchant' => $m->merchant_id, 'month' => $month]) }}" class="">詳細</a>
                             @if ($isFixedMonth)
-                                @php
-                                    $send = $invoiceSends[$m->merchant_id] ?? null;
-                                @endphp
                                 <a href="#" class="js-send-invoice" data-merchant="{{ $m->merchant_id }}" data-sent="{{ $send ? '1' : '' }}">請求書を送信</a>
                             @endif
                         </div>
