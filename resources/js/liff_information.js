@@ -105,8 +105,10 @@ function updateMerchantInformation(data) {
          document.querySelector('.lmf-btn_box.btn_dgy.btn_small').style.display = 'block';
          // 「登録スタッフ一覧」ボタンを表示
          document.querySelector('.lmf-btn_box.member_list').style.display = 'block';
-         // 「請求書」ボタンを表示
-         document.querySelector('.lmf-btn_box.invoice_list').style.display = 'block';
+         // 「請求書」ボタンは確定済みの請求書がある場合のみ表示
+         if (data.has_invoice) {
+             document.querySelector('.lmf-btn_box.invoice_list').style.display = 'block';
+         }
     }
 }
 
