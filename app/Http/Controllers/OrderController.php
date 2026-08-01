@@ -311,8 +311,10 @@ class OrderController extends Controller
             // 注文作成のログを記録
             $this->activityLogService->logOrderCreated($order);
 
-            // メール通知
-            $this->emailNotificationService->sendOrderNotification($order);
+            // メール通知（テスト加盟店の注文では代理店に通知しない）
+            if (!optional($order->merchant)->is_test) {
+                $this->emailNotificationService->sendOrderNotification($order);
+            }
 
             DB::commit();
 
