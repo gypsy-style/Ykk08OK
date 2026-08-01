@@ -1,9 +1,9 @@
 {
   "project": "Ykk08OK",
   "status": "waiting_user",
-  "progress": 80,
-  "current_step": "Task 3 レビュー完了 — 結果を確認してください",
+  "progress": 45,
+  "current_step": "設計ドキュメントを書き出してコミット済み。ユーザーのレビュー待ち",
   "need_human_check": true,
-  "last_message": "Task 3（commit bca7c96）のコードレビューが完了しました。Important 1件（月形式のバリデーション欠如）、Minor 1件（route 配置順）を検出。Spec は全要件を満たしています。",
-  "updated_at": "2026-08-01T09:20:00+09:00"
+  "last_message": "テスト加盟店フラグの設計を docs/superpowers/specs/2026-08-01-test-merchant-flag-design.md に書き出し、000ab8a でコミットしました。内容を確認して、問題なければ実装計画の作成に進みます。",
+  "updated_at": "2026-08-01T13:40:00+09:00"
 }
