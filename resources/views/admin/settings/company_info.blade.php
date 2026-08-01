@@ -114,6 +114,17 @@
                                 @endif
                             </div>
                         </div>
+
+                        <div class="row">
+                            <div class="label">お支払い<br>について</div>
+                            <div class="field">
+                                <textarea name="company_payment_note" placeholder="・支払期限：当月15日まで&#10;・15日が土日祝日の場合は、直前の営業日まで&#10;・振込手数料はご負担頂きますようお願い致します。">{{ old('company_payment_note', $companyPaymentNote) }}</textarea>
+                                <p style="margin:6px 0 0; font-size:12px; color:#666;">請求書の右下に表示されます。空欄の場合は非表示になります。</p>
+                                @if($errors->has('company_payment_note'))
+                                    <p style="color:red; margin-top:4px;">{{ $errors->first('company_payment_note') }}</p>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </dd>
             </dl>

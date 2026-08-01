@@ -120,12 +120,14 @@ class SettingController extends Controller
         $companyDetail = Setting::getValue('company_detail', '');
         $companySeal = Setting::getValue('company_seal', '');
         $companyBankInfo = Setting::getValue('company_bank_info', '');
+        $companyPaymentNote = Setting::getValue('company_payment_note', '');
 
         return view('admin.settings.company_info', compact(
             'companyName',
             'companyDetail',
             'companySeal',
-            'companyBankInfo'
+            'companyBankInfo',
+            'companyPaymentNote'
         ));
     }
 
@@ -136,11 +138,13 @@ class SettingController extends Controller
             'company_detail' => 'nullable|string|max:5000',
             'company_seal' => 'nullable|image|max:5120',
             'company_bank_info' => 'nullable|string|max:5000',
+            'company_payment_note' => 'nullable|string|max:5000',
         ]);
 
         Setting::updateOrCreate(['key' => 'company_name'], ['value' => $request->input('company_name')]);
         Setting::updateOrCreate(['key' => 'company_detail'], ['value' => $request->input('company_detail')]);
         Setting::updateOrCreate(['key' => 'company_bank_info'], ['value' => $request->input('company_bank_info')]);
+        Setting::updateOrCreate(['key' => 'company_payment_note'], ['value' => $request->input('company_payment_note')]);
 
         if ($request->hasFile('company_seal')) {
             $existing = Setting::getValue('company_seal', '');

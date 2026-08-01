@@ -239,10 +239,12 @@ class SalesController extends Controller
         $companyDetail = Setting::getValue('company_detail', '');
         $companySeal = Setting::getValue('company_seal', '');
         $companyBankInfo = Setting::getValue('company_bank_info', '');
+        $companyPaymentNote = Setting::getValue('company_payment_note', '');
 
         return view('admin.sales.invoice', compact(
             'merchant',
             'productAgg',
+            'monthSubtotal',
             'monthShippingFee',
             'monthTaxAmount',
             'monthGrandTotal',
@@ -252,7 +254,8 @@ class SalesController extends Controller
             'companyName',
             'companyDetail',
             'companySeal',
-            'companyBankInfo'
+            'companyBankInfo',
+            'companyPaymentNote'
         ));
     }
 

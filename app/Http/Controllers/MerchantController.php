@@ -306,6 +306,7 @@ class MerchantController extends Controller
         $invoice = $this->invoiceService->forMonth($merchant, $month);
 
         $productAgg = $invoice['products'];
+        $monthSubtotal = $invoice['subtotal'];
         $monthShippingFee = $invoice['shipping_fee'];
         $monthTaxAmount = $invoice['tax'];
         $monthGrandTotal = $invoice['grand_total'];
@@ -316,10 +317,12 @@ class MerchantController extends Controller
         $companyDetail = Setting::getValue('company_detail', '');
         $companySeal = Setting::getValue('company_seal', '');
         $companyBankInfo = Setting::getValue('company_bank_info', '');
+        $companyPaymentNote = Setting::getValue('company_payment_note', '');
 
-        $html = view('merchants.partials.invoice_pdf', compact(
+        $html = view('partials.invoice_pdf', compact(
             'merchant',
             'productAgg',
+            'monthSubtotal',
             'monthShippingFee',
             'monthTaxAmount',
             'monthGrandTotal',
@@ -329,7 +332,8 @@ class MerchantController extends Controller
             'companyName',
             'companyDetail',
             'companySeal',
-            'companyBankInfo'
+            'companyBankInfo',
+            'companyPaymentNote'
         ))->render();
 
         return response()->json([
