@@ -269,12 +269,14 @@ class SalesController extends Controller
             return response()->json(['confirmed' => false, 'confirmed_at' => null]);
         }
 
-        $confirmation = MerchantPaymentConfirmation::create([
-            'merchant_id' => $merchant->id,
-            'month' => $month,
-            'admin_id' => Auth::guard('admin')->id(),
-            'confirmed_at' => Carbon::now(),
-        ]);
+        // 同時ダブルクリックで unique 制約違反が起きても 500 にしない
+        $confirmation = MerchantPaymentConfirmation::firstOrCreate(
+            ['merchant_id' => $merchant->id, 'month' => $month],
+            [
+                'admin_id' => Auth::guard('admin')->id(),
+                'confirmed_at' => Carbon::now(),
+            ]
+        );
 
         return response()->json([
             'confirmed' => true,
@@ -300,6 +302,7 @@ class SalesController extends Controller
 
         return response()->json([
             'success' => $result['success'],
+            'skipped' => $result['skipped'],
             'message' => $result['message'],
             'sent_at' => $result['sent_at'] ? $result['sent_at']->format('n/j') : null,
         ]);

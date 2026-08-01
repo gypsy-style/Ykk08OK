@@ -73,15 +73,34 @@ class InvoiceLineSender
 
         // テスト送信で履歴を残すと、本番実行時に該当加盟店がスキップされてしまう
         if (!$overrideLineId) {
-            InvoiceLineSend::updateOrCreate(
-                ['merchant_id' => $merchant->id, 'month' => $month],
-                [
-                    'line_id' => $lineId,
-                    'status' => $success ? 'success' : 'failed',
-                    'error' => $success ? null : ($result['message'] ?? '送信に失敗しました'),
-                    'sent_at' => $sentAt,
-                ]
-            );
+            if ($success) {
+                // 成功時は既存行（failed 含む）を上書き
+                InvoiceLineSend::updateOrCreate(
+                    ['merchant_id' => $merchant->id, 'month' => $month],
+                    [
+                        'line_id' => $lineId,
+                        'status' => 'success',
+                        'error' => null,
+                        'sent_at' => $sentAt,
+                    ]
+                );
+            } else {
+                // 失敗時：既に success 行があれば上書きしない（再送失敗で成功記録を消さない）
+                $existing = InvoiceLineSend::where('merchant_id', $merchant->id)
+                    ->where('month', $month)
+                    ->first();
+                if (!$existing || $existing->status !== 'success') {
+                    InvoiceLineSend::updateOrCreate(
+                        ['merchant_id' => $merchant->id, 'month' => $month],
+                        [
+                            'line_id' => $lineId,
+                            'status' => 'failed',
+                            'error' => $result['message'] ?? '送信に失敗しました',
+                            'sent_at' => null,
+                        ]
+                    );
+                }
+            }
         }
 
         if (!$success) {

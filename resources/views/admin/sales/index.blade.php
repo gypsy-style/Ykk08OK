@@ -62,7 +62,7 @@
                                     <input type="checkbox" class="js-payment-confirm" data-merchant="{{ $m->merchant_id }}" {{ $confirmation ? 'checked' : '' }}>
                                     振込確認
                                 </label>
-                                <span class="js-confirm-label" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin-left:6px;">{{ $confirmation ? '確認済 ' . $confirmation->confirmed_at->format('n/j') : '' }}</span>
+                                <span class="js-confirm-label" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin-left:6px;">{{ $confirmation && $confirmation->confirmed_at ? '確認済 ' . $confirmation->confirmed_at->format('n/j') : '' }}</span>
                             @endif
                         </div>
                         <div class="lma-btn_box btn_list">
@@ -159,10 +159,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 btn.style.pointerEvents = '';
                 btn.style.opacity = '';
                 var success = ok && json.success;
-                status.style.color = success ? '#2f855a' : '#d64545';
-                status.textContent = success ? '送信済 ' + json.sent_at : (json.message || '送信に失敗しました。');
+                var skipped = ok && json.skipped;
                 if (success) {
+                    status.style.color = '#2f855a';
+                    status.textContent = '送信済 ' + json.sent_at;
                     btn.dataset.sent = '1';
+                } else if (skipped) {
+                    status.style.color = '#666';
+                    status.textContent = json.message || 'スキップしました。';
+                } else {
+                    status.style.color = '#d64545';
+                    status.textContent = json.message || '送信に失敗しました。';
                 }
             });
         });
