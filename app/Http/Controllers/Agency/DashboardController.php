@@ -46,7 +46,7 @@ class DashboardController extends Controller
         $nextMonth = $currentDate->addMonths(2)->format('Y-m');
         // ダッシュボード用のデータを取得する場合
         $data = [
-            'merchantCount' => \App\Models\Merchant::where('agency_id', $agencyId)->count(),
+            'merchantCount' => \App\Models\Merchant::where('agency_id', $agencyId)->where('is_test', 0)->count(),
             'todayOrderCount' => $todayOrders->order_count ?? 0, // 注文件数
             'todayTotalPriceSum' => $todayOrders->total_price_sum ?? 0, // 合計金額
         ];

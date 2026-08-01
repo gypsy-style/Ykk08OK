@@ -19,7 +19,7 @@ class DashboardController extends Controller
         // ダッシュボード用のデータを取得する場合
         $data = [
             'agencyCount' => \App\Models\Agency::count(),
-            'merchantCount' => \App\Models\Merchant::count(),
+            'merchantCount' => \App\Models\Merchant::where('is_test', 0)->count(),
         ];
 
         // 各statusの件数を取得

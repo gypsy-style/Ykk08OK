@@ -23,7 +23,7 @@ class MerchantController extends Controller
         $agencyId = auth('agencies')->user()->id;
 
         // agency_idで絞り込みを追加
-        $merchants = Merchant::where('agency_id', $agencyId)->get();
+        $merchants = Merchant::where('agency_id', $agencyId)->where('is_test', 0)->get();
 
         return view('agencies.merchants.index', compact('merchants'));
     }
