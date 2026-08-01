@@ -99,6 +99,9 @@ class ExportController extends Controller
             // データ取得
             $orders = Order::with(['merchant', 'agency', 'details.product'])
                 ->where('status', 3)
+                ->whereNotIn('merchant_id', function ($q) {
+                    $q->select('id')->from('merchants')->where('is_test', 1);
+                })
                 ->get();
             // dd($orders);
 
