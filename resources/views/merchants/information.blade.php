@@ -7,6 +7,7 @@
     </div>
     <main class="lmf-main_contents">
             <section class="lmf-content">
+                <p class="lmf-btn_box invoice_list btn_top" style="display:none;"><a href="{{ route('merchants.invoices') }}">請求書</a></p>
                 <div class="lmf-info_block lmf-white_block">
                     <dl class="lmf-info_list">
                     <dt>代理店名</dt>
@@ -27,7 +28,6 @@
                     <p class="lmf-btn_box btn_dgy btn_small" id="edit_link" style="display:none;"><a href="">登録情報を修正する</a></p>
                 </div>
                 <p class="lmf-btn_box member_list" style="display:none;"><a href="{{ route('merchants.member_list') }}">登録スタッフ一覧</a></p>
-                <p class="lmf-btn_box invoice_list" style="display:none;"><a href="{{ route('merchants.invoices') }}">請求書</a></p>
             </section>
         </main>
 </div>
