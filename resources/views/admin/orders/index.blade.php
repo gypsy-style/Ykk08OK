@@ -103,7 +103,7 @@
                         @endif
                         <p class="data">{{ $order->formatted_date }}</p>
                         <h3 class="company">{{ $order->agency->name ?? '---' }}</h3>
-                        <h4 class="store">{{ $order->merchant->name ?? '---' }}</h4>
+                        <h4 class="store">{{ $order->merchant->name ?? '---' }}@if (optional($order->merchant)->is_test)<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:#f60;color:#fff;font-size:11px;vertical-align:middle;">テスト</span>@endif</h4>
                         @if($order->last_status_change)
                         <p class="status-change-date {{ $order->isUrgent() ? 'urgent-date' : '' }}">{{ $order->last_status_change['text'] }}</p>
                         @endif
