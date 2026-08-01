@@ -432,6 +432,7 @@ class MerchantController extends Controller
             'phone' => $merchant->phone,
             'bank_account_name' => $merchant->bank_account_name,
             'agency_name' => optional($merchant->agency)->name,
+            'has_invoice' => $this->invoiceService->hasInvoice($merchant),
         ]);
     }
 }

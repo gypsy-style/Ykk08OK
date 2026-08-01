@@ -48,6 +48,20 @@ class InvoiceService
     }
 
     /**
+     * 確定済み（前月まで）の請求書が1件でもあるか
+     *
+     * @param Merchant $merchant
+     * @return bool
+     */
+    public function hasInvoice(Merchant $merchant)
+    {
+        return Order::where('merchant_id', $merchant->id)
+            ->whereIn('status', self::SALES_STATUSES)
+            ->where('created_at', '<', Carbon::now()->startOfMonth())
+            ->exists();
+    }
+
+    /**
      * 指定月の集計を返す（注文が無い場合も 0 埋めの配列を返す）
      *
      * @param Merchant $merchant
