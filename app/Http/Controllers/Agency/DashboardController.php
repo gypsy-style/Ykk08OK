@@ -16,12 +16,18 @@ class DashboardController extends Controller
         $agencyId = auth('agencies')->user()->id;
         $todayOrders = DB::table('orders')
             ->whereDate('created_at', now()->toDateString())
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->selectRaw('COUNT(*) as order_count, SUM(total_price) as total_price_sum')
             ->first();
 
         $headquartersProcessed = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
             ->where('agency_id', $agencyId)
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
             ->first();
 
@@ -29,6 +35,9 @@ class DashboardController extends Controller
         $shippingFeeCount = DB::table('orders')
             ->where('shipping_fee', '>', 0)
             ->where('agency_id', $agencyId)
+            ->whereNotIn('merchant_id', function ($q) {
+                $q->select('id')->from('merchants')->where('is_test', 1);
+            })
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
             ->count();
 
