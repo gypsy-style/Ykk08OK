@@ -11,7 +11,7 @@ body {
   max-width: 760px;
   margin: auto;
   background: #fff;
-  padding: 40px 42px 34px;
+  padding: 22px 42px 34px;
   color: #333;
   box-sizing: border-box;
   font-size: 13px;
@@ -117,12 +117,12 @@ body {
   height: auto;
 }
 
-.inv-section {
+.invoice .inv-section {
   font-size: 15px;
   font-weight: bold;
   border-left: 4px solid #1b3a6b;
   padding-left: 9px;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
 table {
@@ -188,9 +188,8 @@ table {
   padding-left: 30px;
 }
 
-.inv-foot_note_title {
-  font-weight: bold;
-  margin-bottom: 8px !important;
+.inv-foot .inv-section {
+  font-size: 19px;
 }
 
 .inv-thanks {

@@ -85,7 +85,7 @@
   </div>
   @if($companyPaymentNote)
   <div class="inv-foot_note">
-    <p class="inv-foot_note_title">お支払いについて</p>
+    <p class="inv-section">お支払いについて</p>
     <p>{!! nl2br(e($companyPaymentNote)) !!}</p>
   </div>
   @endif
