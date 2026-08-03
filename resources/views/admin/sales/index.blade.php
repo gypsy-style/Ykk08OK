@@ -66,10 +66,10 @@
                             @endif
                         </div>
                         <div class="lma-btn_box btn_list">
-                            <a href="{{ route('admin.sales.show', ['merchant' => $m->merchant_id, 'month' => $month]) }}" class="lgy">詳細</a>
+                            <a href="{{ route('admin.sales.show', ['merchant' => $m->merchant_id, 'month' => $month]) }}" class="lgy">@include('admin.sales.partials.btn_icon', ['icon' => 'detail'])詳細</a>
                             @if ($isFixedMonth)
-                                <a href="{{ route('admin.sales.invoice', ['merchant' => $m->merchant_id, 'month' => $month]) }}" target="_blank" rel="noopener" class="lgy">請求書を確認</a>
-                                <a href="#" class="js-send-invoice" data-merchant="{{ $m->merchant_id }}" data-name="{{ $m->merchant_name }}" data-sent="{{ $send ? '1' : '' }}">LINEで送信</a>
+                                <a href="{{ route('admin.sales.invoice', ['merchant' => $m->merchant_id, 'month' => $month]) }}" target="_blank" rel="noopener" class="lgy">@include('admin.sales.partials.btn_icon', ['icon' => 'view'])請求書を確認</a>
+                                <a href="#" class="js-send-invoice" data-merchant="{{ $m->merchant_id }}" data-name="{{ $m->merchant_name }}" data-sent="{{ $send ? '1' : '' }}">@include('admin.sales.partials.btn_icon', ['icon' => 'send'])請求書を送信</a>
                                 <p class="js-send-status" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin:4px 0 0;">{{ $send && $send->sent_at ? '送信済 ' . $send->sent_at->format('n/j') : '' }}</p>
                             @endif
                         </div>
