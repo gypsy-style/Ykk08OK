@@ -66,9 +66,9 @@
                             @endif
                         </div>
                         <div class="lma-btn_box btn_list">
-                            <a href="{{ route('admin.sales.invoice', ['merchant' => $m->merchant_id, 'month' => $month]) }}" target="_blank" rel="noopener" class="">PDFを表示</a>
                             <a href="{{ route('admin.sales.show', ['merchant' => $m->merchant_id, 'month' => $month]) }}" class="">詳細</a>
                             @if ($isFixedMonth)
+                                <a href="{{ route('admin.sales.invoice', ['merchant' => $m->merchant_id, 'month' => $month]) }}" target="_blank" rel="noopener" class="">請求書を表示</a>
                                 <a href="#" class="js-send-invoice" data-merchant="{{ $m->merchant_id }}" data-sent="{{ $send ? '1' : '' }}">請求書を送信</a>
                                 <p class="js-send-status" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin:4px 0 0;">{{ $send && $send->sent_at ? '送信済 ' . $send->sent_at->format('n/j') : '' }}</p>
                             @endif
