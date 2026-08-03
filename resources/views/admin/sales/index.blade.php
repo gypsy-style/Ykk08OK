@@ -46,16 +46,16 @@
     <div class="lma-content_block staff nobg">
         <ul class="lma-user_list store">
             @forelse ($merchantSales as $m)
+                @php
+                    $confirmation = $paymentConfirmations[$m->merchant_id] ?? null;
+                    $send = $invoiceSends[$m->merchant_id] ?? null;
+                @endphp
                 <li>
-                    <div class="lma-user_box">
+                    <div class="lma-user_box{{ $confirmation ? ' tbd' : '' }}">
                         <div class="user_info">
                             <h3 class="name">{{ $m->merchant_name }}@if ($m->is_test)<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:#f60;color:#fff;font-size:11px;vertical-align:middle;">テスト</span>@endif</h3>
                             <p class="line_id">{{ $m->agency_name ?? '代理店未設定' }}　会員ランク{{ $m->member_rank ?? '-' }}</p>
                         </div>
-                        @php
-                            $confirmation = $paymentConfirmations[$m->merchant_id] ?? null;
-                            $send = $invoiceSends[$m->merchant_id] ?? null;
-                        @endphp
                         <div class="lma-select_box" style="flex:0 0 auto;white-space:nowrap;margin-left:.5em;">
                             @if ($isFixedMonth)
                                 <label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
@@ -132,8 +132,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     label.textContent = json.message || '保存に失敗しました。';
                     return;
                 }
-                label.style.color = '#666';
-                label.textContent = json.confirmed ? '確認済 ' + json.confirmed_at : '';
+                // 確認済みは一覧の下へ移動するため、並べ替え済みの状態を読み直す
+                location.reload();
             });
         });
     });

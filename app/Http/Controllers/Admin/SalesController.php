@@ -97,6 +97,13 @@ class SalesController extends Controller
             ->get()
             ->keyBy('merchant_id');
 
+        // 未入金を上に集めたいので、振込確認済みの店舗を末尾へ回す（各グループ内は売上降順のまま）
+        $merchantSales = $merchantSales
+            ->sortBy(function ($m) use ($paymentConfirmations) {
+                return isset($paymentConfirmations[$m->merchant_id]) ? 1 : 0;
+            })
+            ->values();
+
         return view('admin.sales.index', compact(
             'productSales',
             'merchantSales',
