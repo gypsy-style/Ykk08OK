@@ -179,13 +179,17 @@ table {
 }
 
 .inv-foot_bank {
-  flex: 0 0 45%;
+  flex: 1;
 }
 
 .inv-foot_note {
-  flex: 1;
+  flex: 2;
   border-left: 1px solid #ccc;
   padding-left: 30px;
+}
+
+.inv-foot p {
+  font-size: 15px;
 }
 
 .inv-foot .inv-section {
