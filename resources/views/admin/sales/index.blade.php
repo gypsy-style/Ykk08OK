@@ -89,8 +89,8 @@
 
     <div class="lma-content_block nobg" style="width:100%;">
         <ul class="lma-pnavi_list clearfix">
-            <li class="next"><a href="{{ route('admin.sales.index', ['month' => $prevMonth]) }}">先月</a></li>
-            <li class="prev"><a href="{{ route('admin.sales.index', ['month' => $nextMonth]) }}">次月</a></li>
+            <li class="prev"><a href="{{ route('admin.sales.index', ['month' => $prevMonth]) }}">先月</a></li>
+            <li class="next"><a href="{{ route('admin.sales.index', ['month' => $nextMonth]) }}">次月</a></li>
         </ul>
     </div>
 </section>
