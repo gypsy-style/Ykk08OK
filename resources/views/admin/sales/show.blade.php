@@ -66,8 +66,10 @@
 
     <div class="lma-content_block nobg" style="width:100%;">
         <ul class="lma-pnavi_list clearfix">
-            <li class="next"><a href="{{ route('admin.sales.show', ['merchant' => $merchant->id, 'month' => $prevMonth]) }}">先月</a></li>
-            <li class="prev"><a href="{{ route('admin.sales.show', ['merchant' => $merchant->id, 'month' => $nextMonth]) }}">次月</a></li>
+            <li class="prev"><a href="{{ route('admin.sales.show', ['merchant' => $merchant->id, 'month' => $prevMonth]) }}">先月</a></li>
+            @if ($month < now()->format('Y-m'))
+                <li class="next"><a href="{{ route('admin.sales.show', ['merchant' => $merchant->id, 'month' => $nextMonth]) }}">次月</a></li>
+            @endif
         </ul>
     </div>
 

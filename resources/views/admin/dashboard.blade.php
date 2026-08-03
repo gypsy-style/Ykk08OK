@@ -94,8 +94,10 @@
 			</div>
 			<div class="lma-content_block nobg">
 				<ul class="lma-pnavi_list clearfix">
-				<li class="next"><a href="{{ route('admin.dashboard', ['month' => $prevMonth]) }}">先月</a></li>
-					<li class="prev"><a href="{{ route('admin.dashboard', ['month' => $nextMonth]) }}">次月</a></li>
+					<li class="prev"><a href="{{ route('admin.dashboard', ['month' => $prevMonth]) }}">先月</a></li>
+					@if ($month < now()->format('Y-m'))
+						<li class="next"><a href="{{ route('admin.dashboard', ['month' => $nextMonth]) }}">次月</a></li>
+					@endif
 					
 				</ul>
 			</div>
