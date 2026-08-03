@@ -67,13 +67,14 @@ class SalesController extends Controller
             ->leftJoin('agencies as a', 'a.id', '=', 'm.agency_id')
             ->whereIn('o.status', self::SALES_STATUSES)
             ->whereRaw('DATE_FORMAT(o.created_at, "%Y-%m") = ?', [$month])
-            ->groupBy('m.id', 'm.name', 'm.member_rank', 'm.is_test', 'a.name')
+            ->groupBy('m.id', 'm.name', 'm.member_rank', 'm.is_test', 'm.bank_account_name', 'a.name')
             ->orderByDesc(DB::raw('SUM(o.total_price + o.shipping_fee)'))
             ->select(
                 'm.id as merchant_id',
                 'm.name as merchant_name',
                 'm.member_rank',
                 'm.is_test as is_test',
+                'm.bank_account_name',
                 'a.name as agency_name',
                 DB::raw('COUNT(o.id) as order_count'),
                 DB::raw('SUM(o.total_price + o.shipping_fee) as total_amount')

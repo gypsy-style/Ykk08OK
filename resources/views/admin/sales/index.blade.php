@@ -55,6 +55,9 @@
                         <div class="user_info">
                             <h3 class="name">{{ $m->merchant_name }}@if ($m->is_test)<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:#f60;color:#fff;font-size:11px;vertical-align:middle;">テスト</span>@endif</h3>
                             <p class="line_id">{{ $m->agency_name ?? '代理店未設定' }}　会員ランク{{ $m->member_rank ?? '-' }}</p>
+                            @if ($m->bank_account_name)
+                                <p class="line_id" style="white-space:pre-line;">振込み口座名: {{ $m->bank_account_name }}</p>
+                            @endif
                         </div>
                         <div class="lma-select_box" style="flex:0 0 auto;white-space:nowrap;margin-left:.5em;">
                             @if ($isFixedMonth)
