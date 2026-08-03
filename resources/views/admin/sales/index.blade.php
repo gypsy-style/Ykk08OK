@@ -43,6 +43,8 @@
 
     </div>
 
+    @include('admin.sales.partials.month_nav')
+
     <div class="lma-content_block staff nobg">
         <ul class="lma-user_list store">
             @forelse ($merchantSales as $m)
@@ -90,15 +92,7 @@
         </ul>
     </div>
 
-    <div class="lma-content_block nobg" style="width:100%;">
-        <ul class="lma-pnavi_list clearfix">
-            <li class="prev"><a href="{{ route('admin.sales.index', ['month' => $prevMonth]) }}">先月</a></li>
-            {{-- 当月を表示中は次月へ進めない --}}
-            @if ($isFixedMonth)
-                <li class="next"><a href="{{ route('admin.sales.index', ['month' => $nextMonth]) }}">次月</a></li>
-            @endif
-        </ul>
-    </div>
+    @include('admin.sales.partials.month_nav')
 </section>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
