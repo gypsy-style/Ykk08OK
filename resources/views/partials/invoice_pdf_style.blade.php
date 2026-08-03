@@ -196,12 +196,6 @@ table {
   font-size: 19px;
 }
 
-.inv-thanks {
-  text-align: center;
-  margin-top: 30px !important;
-  font-size: 12px;
-}
-
 .btn-area {
   text-align: center;
   margin-bottom: 20px;
@@ -260,10 +254,6 @@ button {
 
   .inv-foot {
     margin-top: 20px;
-  }
-
-  .inv-thanks {
-    margin-top: 22px !important;
   }
 
   .inv-items tr,
