@@ -45,12 +45,17 @@
 
     @include('admin.sales.partials.month_nav')
 
+    @if ($isFixedMonth)
+        @include('admin.sales.partials.reminder')
+    @endif
+
     <div class="lma-content_block staff nobg">
         <ul class="lma-user_list store">
             @forelse ($merchantSales as $m)
                 @php
                     $confirmation = $paymentConfirmations[$m->merchant_id] ?? null;
                     $send = $invoiceSends[$m->merchant_id] ?? null;
+                    $reminder = $reminderSends[$m->merchant_id] ?? null;
                 @endphp
                 <li>
                     <div class="lma-user_box{{ $confirmation ? ' tbd' : '' }}">
@@ -76,6 +81,9 @@
                                 <a href="{{ route('admin.sales.invoice', ['merchant' => $m->merchant_id, 'month' => $month]) }}" target="_blank" rel="noopener" class="lgy">@include('admin.sales.partials.btn_icon', ['icon' => 'view'])請求書を確認</a>
                                 <a href="#" class="js-send-invoice" data-merchant="{{ $m->merchant_id }}" data-name="{{ $m->merchant_name }}" data-sent="{{ $send ? '1' : '' }}">@include('admin.sales.partials.btn_icon', ['icon' => 'send'])請求書を送信</a>
                                 <p class="js-send-status" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin:4px 0 0;">{{ $send && $send->sent_at ? '送信済 ' . $send->sent_at->format('n/j') : '' }}</p>
+                                @if ($reminder && $reminder->sent_at)
+                                    <p style="font-size:12px;color:#d64545;margin:2px 0 0;">督促済 {{ $reminder->sent_at->format('n/j') }}</p>
+                                @endif
                             @endif
                         </div>
                     </div>
