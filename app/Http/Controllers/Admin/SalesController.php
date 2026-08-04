@@ -7,9 +7,12 @@ use App\Models\InvoiceLineSend;
 use App\Models\Merchant;
 use App\Models\MerchantPaymentConfirmation;
 use App\Models\Order;
+use App\Models\PaymentReminderSend;
 use App\Models\Setting;
 use App\Services\InvoiceLineSender;
 use App\Services\InvoiceService;
+use App\Services\PaymentReminderMessageService;
+use App\Services\PaymentReminderSender;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,8 +23,11 @@ class SalesController extends Controller
     /** 売上集計対象のステータス（保留=4以外の確定注文） */
     private const SALES_STATUSES = [2, 3, 5, 6];
 
-    public function index(Request $request, InvoiceService $invoiceService)
-    {
+    public function index(
+        Request $request,
+        InvoiceService $invoiceService,
+        PaymentReminderSender $reminderSender
+    ) {
         $month = $request->query('month', Carbon::now()->format('Y-m'));
 
         // 商品別の月別売上集計
@@ -105,6 +111,45 @@ class SalesController extends Controller
             })
             ->values();
 
+        // 督促ブロック用のデータ（確定月のみ組み立てる）
+        $reminderSends = collect();
+        $reminderTargets = [];
+        $reminderMessage = '';
+        $reminderPreview = '';
+        $reminderPlaceholders = PaymentReminderMessageService::placeholders();
+
+        if ($isFixedMonth) {
+            $reminderSends = PaymentReminderSend::where('month', $month)
+                ->where('status', 'success')
+                ->get()
+                ->keyBy('merchant_id');
+
+            foreach ($merchantSales as $m) {
+                if (isset($paymentConfirmations[$m->merchant_id])) {
+                    continue;
+                }
+                $send = $reminderSends[$m->merchant_id] ?? null;
+                $reminderTargets[] = [
+                    'merchant_id' => (int) $m->merchant_id,
+                    'merchant_name' => $m->merchant_name,
+                    'reminded_at' => $send && $send->sent_at ? $send->sent_at->format('n/j') : null,
+                ];
+            }
+
+            $reminderMessage = app(PaymentReminderMessageService::class)->template();
+
+            // 先頭の対象加盟店の実データで、実際に送られる文面を作る
+            if (!empty($reminderTargets)) {
+                $first = Merchant::find($reminderTargets[0]['merchant_id']);
+                if ($first) {
+                    $reminderPreview = $reminderSender->buildBody(
+                        $first,
+                        $invoiceService->forMonth($first, $month)
+                    );
+                }
+            }
+        }
+
         return view('admin.sales.index', compact(
             'productSales',
             'merchantSales',
@@ -116,7 +161,12 @@ class SalesController extends Controller
             'nextMonth',
             'isFixedMonth',
             'paymentConfirmations',
-            'invoiceSends'
+            'invoiceSends',
+            'reminderSends',
+            'reminderTargets',
+            'reminderMessage',
+            'reminderPreview',
+            'reminderPlaceholders'
         ));
     }
 
@@ -327,5 +377,53 @@ class SalesController extends Controller
             'message' => $result['message'],
             'sent_at' => $result['sent_at'] ? $result['sent_at']->format('n/j') : null,
         ]);
+    }
+
+    /**
+     * 振込督促をオーナーのLINEへ送信する
+     *
+     * 一斉送信もフロントから1件ずつこのエンドポイントを叩く。
+     */
+    public function sendPaymentReminder(
+        $merchantId,
+        Request $request,
+        InvoiceService $invoiceService,
+        PaymentReminderSender $sender
+    ) {
+        $merchant = Merchant::with('owner')->findOrFail($merchantId);
+        $month = (string) $request->input('month');
+
+        if (!$invoiceService->isFixedMonth($month)) {
+            return response()->json(['success' => false, 'message' => '当月の督促は送信できません。'], 400);
+        }
+
+        $result = $sender->send($merchant, $month);
+
+        return response()->json([
+            'success' => $result['success'],
+            'skipped' => $result['skipped'],
+            'message' => $result['message'],
+            'sent_at' => $result['sent_at'] ? $result['sent_at']->format('n/j') : null,
+        ]);
+    }
+
+    /**
+     * 督促の本文テンプレートを保存する
+     */
+    public function updateReminderMessage(Request $request)
+    {
+        $request->validate([
+            'payment_reminder_message' => 'required|string|max:4000',
+        ], [
+            'payment_reminder_message.required' => '本文を入力してください。',
+            'payment_reminder_message.max' => '本文は4000文字以内で入力してください。',
+        ]);
+
+        Setting::updateOrCreate(
+            ['key' => PaymentReminderMessageService::KEY_MESSAGE],
+            ['value' => $request->input('payment_reminder_message')]
+        );
+
+        return response()->json(['success' => true]);
     }
 }

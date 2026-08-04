@@ -141,6 +141,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('sales/{merchant}', [AdminSalesController::class, 'show'])->name('sales.show');
         Route::post('sales/{merchant}/payment-confirm', [AdminSalesController::class, 'togglePaymentConfirm'])->name('sales.payment_confirm');
         Route::post('sales/{merchant}/send-invoice', [AdminSalesController::class, 'sendInvoiceLine'])->name('sales.send_invoice');
+        Route::post('sales/{merchant}/payment-reminder', [AdminSalesController::class, 'sendPaymentReminder'])->name('sales.payment_reminder');
+        Route::post('sales/payment-reminder-message', [AdminSalesController::class, 'updateReminderMessage'])->name('sales.payment_reminder_message');
 
         // 設定
         Route::get('settings/custom-css', [AdminSettingController::class, 'customCss'])->name('settings.custom_css');
