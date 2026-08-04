@@ -555,15 +555,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 stats.success++;
             } else if (result.ok && result.json.skipped) {
                 stats.skipped++;
-                stats.notes.push(target.merchant_name + '：' + (result.json.message || 'スキップ'));
+                stats.notes.push(escapeHtml(target.merchant_name) + '：' + escapeHtml(result.json.message || 'スキップ'));
             } else {
                 stats.failed++;
-                stats.notes.push(target.merchant_name + '：' + (result.json.message || '送信に失敗しました'));
+                stats.notes.push(escapeHtml(target.merchant_name) + '：' + escapeHtml(result.json.message || '送信に失敗しました'));
             }
         })
         .catch(function () {
             stats.failed++;
-            stats.notes.push(target.merchant_name + '：通信に失敗しました');
+            stats.notes.push(escapeHtml(target.merchant_name) + '：通信に失敗しました');
         })
         .finally(function () {
             // 1件失敗しても止めずに次へ進む
