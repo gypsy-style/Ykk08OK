@@ -163,6 +163,123 @@
         font-size: 13px;
         color: #666;
     }
+    .lma-reminder_modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .45);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .lma-reminder_modal.is-open {
+        display: flex;
+    }
+    .lma-reminder_dialog {
+        background: #fff;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 720px;
+        max-height: 86vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .lma-reminder_dialog_head {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e3e7ec;
+        font-size: 15px;
+        font-weight: bold;
+    }
+    .lma-reminder_dialog_body {
+        padding: 16px 20px;
+        overflow-y: auto;
+    }
+    .lma-reminder_dialog_foot {
+        padding: 14px 20px;
+        border-top: 1px solid #e3e7ec;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    .lma-reminder_warn {
+        margin: 0 0 12px;
+        padding: 10px 12px;
+        background: #fff6e5;
+        border-left: 4px solid #e8a33d;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #6b4b12;
+    }
+    .lma-reminder_targets {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 16px;
+        max-height: 220px;
+        overflow-y: auto;
+        border: 1px solid #e3e7ec;
+        border-radius: 4px;
+    }
+    .lma-reminder_targets li {
+        padding: 7px 12px;
+        font-size: 13px;
+        border-bottom: 1px solid #f0f2f5;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .lma-reminder_targets li:last-child {
+        border-bottom: none;
+    }
+    .lma-reminder_badge {
+        color: #d64545;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    .lma-reminder_body_preview {
+        background: #f8f9fa;
+        border: 1px solid #e3e7ec;
+        border-radius: 4px;
+        padding: 12px;
+        font-size: 13px;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .lma-reminder_progress {
+        margin: 12px 0 0;
+        font-size: 13px;
+        color: #444;
+    }
+    .lma-reminder_result {
+        margin: 12px 0 0;
+        font-size: 13px;
+        line-height: 1.8;
+    }
+    .lma-reminder_cancel {
+        background: #fff;
+        border: 1px solid #c2cbd6;
+        border-radius: 4px;
+        padding: 7px 16px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+    .lma-reminder_exec {
+        background: #d64545;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 7px 18px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+    .lma-reminder_exec:disabled {
+        background: #d9a3a3;
+        cursor: default;
+    }
 </style>
 
 <div class="lma-content_block nobg lma-reminder">
@@ -214,6 +331,42 @@
 </div>
 
 {{-- Task 6: 送信確認モーダルの差し込み位置 --}}
+<div class="lma-reminder_modal" id="js-reminder-modal">
+    <div class="lma-reminder_dialog">
+        <div class="lma-reminder_dialog_head">
+            {{ \Carbon\Carbon::parse($month . '-01')->format('Y年n月') }}分の振込督促を送信します
+        </div>
+        <div class="lma-reminder_dialog_body">
+            @if ($remindedCount > 0)
+                <p class="lma-reminder_warn">
+                    うち <strong>{{ $remindedCount }}件</strong> はすでに督促を送信済みです。もう一度送信されます。
+                </p>
+            @endif
+
+            <p style="margin:0 0 6px; font-weight:bold; font-size:13px;">送信先（{{ count($reminderTargets) }}件）</p>
+            <ul class="lma-reminder_targets">
+                @foreach ($reminderTargets as $t)
+                    <li data-merchant="{{ $t['merchant_id'] }}">
+                        <span>{{ $t['merchant_name'] }}</span>
+                        @if ($t['reminded_at'])
+                            <span class="lma-reminder_badge">督促済 {{ $t['reminded_at'] }}</span>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+
+            <p style="margin:0 0 6px; font-weight:bold; font-size:13px;">送信される文面（例: {{ $reminderTargets[0]['merchant_name'] ?? '' }}）</p>
+            <div class="lma-reminder_body_preview">{{ $reminderPreview }}</div>
+
+            <p class="lma-reminder_progress" id="js-reminder-progress" style="display:none;"></p>
+            <div class="lma-reminder_result" id="js-reminder-result" style="display:none;"></div>
+        </div>
+        <div class="lma-reminder_dialog_foot">
+            <button type="button" class="lma-reminder_cancel" id="js-reminder-cancel">キャンセル</button>
+            <button type="button" class="lma-reminder_exec" id="js-reminder-exec">{{ count($reminderTargets) }}件に送信する</button>
+        </div>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -311,6 +464,123 @@ document.addEventListener('DOMContentLoaded', function () {
         .finally(function () {
             saveBtn.disabled = false;
         });
+    });
+
+    // --- 確認モーダルと順次送信 ---
+    var TARGETS = @json($reminderTargets);
+    var SEND_URL = @json(route('admin.sales.payment_reminder', ['merchant' => '__ID__']));
+    var MONTH = @json($month);
+
+    var openBtn = document.getElementById('js-reminder-open');
+    var modal = document.getElementById('js-reminder-modal');
+    var cancelBtn = document.getElementById('js-reminder-cancel');
+    var execBtn = document.getElementById('js-reminder-exec');
+    var progress = document.getElementById('js-reminder-progress');
+    var resultBox = document.getElementById('js-reminder-result');
+    var sending = false;
+    var finished = false;
+
+    function closeModal() {
+        // 送信中は閉じさせない
+        if (sending) {
+            return;
+        }
+        modal.classList.remove('is-open');
+        // 一度でも送ったら「督促済」表示を反映するため読み直す
+        if (finished) {
+            location.reload();
+        }
+    }
+
+    if (openBtn) {
+        openBtn.addEventListener('click', function () {
+            modal.classList.add('is-open');
+        });
+    }
+
+    cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeModal();
+        }
+    });
+
+    function renderResult(stats) {
+        var html = '<p style="margin:0 0 4px;"><strong>送信完了</strong>　成功 ' + stats.success
+            + '件 / スキップ ' + stats.skipped + '件 / 失敗 ' + stats.failed + '件</p>';
+        if (stats.notes.length > 0) {
+            html += '<ul style="margin:6px 0 0; padding-left:18px; color:#666;">';
+            stats.notes.forEach(function (note) {
+                html += '<li>' + note + '</li>';
+            });
+            html += '</ul>';
+        }
+        resultBox.innerHTML = html;
+        resultBox.style.display = '';
+    }
+
+    function sendAt(index, stats) {
+        if (index >= TARGETS.length) {
+            sending = false;
+            finished = true;
+            progress.textContent = '送信が完了しました。';
+            cancelBtn.textContent = '閉じる';
+            cancelBtn.disabled = false;
+            renderResult(stats);
+            return;
+        }
+
+        var target = TARGETS[index];
+        progress.textContent = '送信中 ' + (index + 1) + ' / ' + TARGETS.length + '（' + target.merchant_name + '）';
+
+        fetch(SEND_URL.replace('__ID__', target.merchant_id), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ month: MONTH })
+        })
+        .then(function (res) { return res.json().then(function (json) { return { ok: res.ok, json: json }; }); })
+        .then(function (result) {
+            if (result.ok && result.json.success) {
+                stats.success++;
+            } else if (result.ok && result.json.skipped) {
+                stats.skipped++;
+                stats.notes.push(target.merchant_name + '：' + (result.json.message || 'スキップ'));
+            } else {
+                stats.failed++;
+                stats.notes.push(target.merchant_name + '：' + (result.json.message || '送信に失敗しました'));
+            }
+        })
+        .catch(function () {
+            stats.failed++;
+            stats.notes.push(target.merchant_name + '：通信に失敗しました');
+        })
+        .finally(function () {
+            // 1件失敗しても止めずに次へ進む
+            sendAt(index + 1, stats);
+        });
+    }
+
+    execBtn.addEventListener('click', function () {
+        if (sending || TARGETS.length === 0) {
+            return;
+        }
+        sending = true;
+        execBtn.disabled = true;
+        cancelBtn.disabled = true;
+        progress.style.display = '';
+        resultBox.style.display = 'none';
+        sendAt(0, { success: 0, skipped: 0, failed: 0, notes: [] });
     });
 });
 </script>
