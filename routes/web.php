@@ -67,6 +67,7 @@ Route::get('/order/detail/{order}', [UserOrderController::class, 'detail'])->nam
 
 // API
 Route::post('/api/order/history', [UserOrderController::class, 'getOrderHistory']);
+Route::post('/api/order/message_failed', [UserOrderController::class, 'logMessageFailed'])->name('order.message_failed');
 Route::post('/api/merchant/member_list', [UserMerchantController::class, 'getMemberList']);
 Route::post('/api/merchant/member_rank', [UserOrderController::class, 'getMemberRank']);
 Route::post('/api/merchant/invoice_list', [UserMerchantController::class, 'getInvoiceList']);

@@ -384,6 +384,17 @@ class OrderController extends Controller
         return view('order.detail', compact('order'));
     }
 
+    public function logMessageFailed(Request $request)
+    {
+        Log::warning('注文完了メッセージのトーク送信に失敗', [
+            'order_id' => $request->input('order_id'),
+            'in_client' => $request->input('in_client'),
+            'error' => Str::limit((string) $request->input('error'), 300),
+        ]);
+
+        return response()->json(['status' => 'ok']);
+    }
+
     public function getOrderHistory(Request $request)
     {
         $data = $request->all();
