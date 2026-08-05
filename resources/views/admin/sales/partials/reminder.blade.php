@@ -3,6 +3,16 @@
     $remindedCount = collect($reminderTargets)->filter(function ($t) {
         return $t['reminded_at'] !== null;
     })->count();
+
+    // @json() に配列リテラルを直接渡すと Blade が引数を途中で切って構文エラーになる
+    $reminderSample = [
+        '{merchant_name}' => 'サンプル商店',
+        '{month_label}' => \Carbon\Carbon::parse($month . '-01')->format('Y年n月分'),
+        '{month}' => $month,
+        '{total}' => '135,000',
+        '{payment_due_date}' => \Carbon\Carbon::parse($month . '-01')->addMonth()->day(15)->format('Y年n月j日'),
+        '{invoice_url}' => 'https://liff.line.me/xxxxxxxxxx-yyyyyyyy',
+    ];
 @endphp
 
 <style>
@@ -371,14 +381,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var MAX_LENGTH = 4000;
-    var SAMPLE = @json([
-        '{merchant_name}' => 'サンプル商店',
-        '{month_label}' => \Carbon\Carbon::parse($month . '-01')->format('Y年n月分'),
-        '{month}' => $month,
-        '{total}' => '135,000',
-        '{payment_due_date}' => \Carbon\Carbon::parse($month . '-01')->addMonth()->day(15)->format('Y年n月j日'),
-        '{invoice_url}' => 'https://liff.line.me/xxxxxxxxxx-yyyyyyyy',
-    ]);
+    var SAMPLE = @json($reminderSample);
 
     var toggle = document.getElementById('js-reminder-toggle');
     var editor = document.getElementById('js-reminder-editor');
