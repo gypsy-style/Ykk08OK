@@ -70,7 +70,6 @@ Route::post('/api/order/history', [UserOrderController::class, 'getOrderHistory'
 Route::post('/api/merchant/member_list', [UserMerchantController::class, 'getMemberList']);
 Route::post('/api/merchant/member_rank', [UserOrderController::class, 'getMemberRank']);
 Route::post('/api/merchant/invoice_list', [UserMerchantController::class, 'getInvoiceList']);
-Route::post('/api/merchant/invoice', [UserMerchantController::class, 'getInvoice']);
 Route::post('/api/order/cancel', [UserOrderController::class, 'cancel'])->name('order.cancel');
 
 

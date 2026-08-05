@@ -18,7 +18,6 @@ export default defineConfig({
                 'resources/js/liff.js',
                 'resources/js/liff_member_list.js',
                 'resources/js/liff_invoice_list.js',
-                'resources/js/liff_invoice_pdf.js',
                 'resources/js/liff_order_register.js',
                 'resources/js/liff_merchant.js',
                 'resources/js/liff_information.js',
