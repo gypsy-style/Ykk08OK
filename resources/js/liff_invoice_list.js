@@ -45,6 +45,20 @@ async function main() {
         const invoiceList = await response.json();
         const invoiceListContainer = document.getElementById('invoice-list');
         invoiceListContainer.innerHTML = invoiceList.html;
+
+        // 請求書ページは外部ブラウザ（Safari / Chrome）で開く。
+        // LIFFブラウザは WKWebView で window.print() が動かず、PDF保存ができないため。
+        invoiceListContainer.addEventListener('click', function (e) {
+            const link = e.target.closest('.js-open-invoice');
+            if (!link) {
+                return;
+            }
+            if (window.LIFF_MOCK || !liff.isInClient()) {
+                return; // 既に外部ブラウザなら通常遷移
+            }
+            e.preventDefault();
+            liff.openWindow({ url: link.href, external: true });
+        });
     } catch (error) {
         console.error('エラーが発生しました:', error);
         const invoiceListContainer = document.getElementById('invoice-list');

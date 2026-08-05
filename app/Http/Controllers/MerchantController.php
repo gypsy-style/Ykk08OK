@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Services\InvoiceService;
 use App\Services\LineRichMenuService;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\URL;
 
 class MerchantController extends Controller
 {
@@ -263,6 +264,16 @@ class MerchantController extends Controller
 
         // 当月は未確定のため前月までを対象とする
         $monthlyInvoices = $this->invoiceService->monthlyBreakdown($merchant);
+
+        // 請求書ページは外部ブラウザで開くため、LIFF認証ではなく署名付きURLで本人確認する。
+        // 一覧を開くたびに再発行されるので有効期限は短くてよい。
+        foreach ($monthlyInvoices as $invoiceMonth => $invoice) {
+            $monthlyInvoices[$invoiceMonth]['url'] = URL::temporarySignedRoute(
+                'merchants.invoice',
+                Carbon::now()->addDay(),
+                ['merchant' => $merchant->id, 'month' => $invoiceMonth]
+            );
+        }
 
         $html = view('merchants.partials.invoice_list', compact('monthlyInvoices', 'merchant'))->render();
 
