@@ -201,6 +201,15 @@ table {
   margin-bottom: 20px;
 }
 
+.btn-note {
+  max-width: 760px;
+  margin: 10px auto 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.6;
+  text-align: center;
+}
+
 button {
   padding: 12px 30px;
   background: #222;

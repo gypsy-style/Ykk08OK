@@ -88,7 +88,9 @@ Route::post('/merchants/store_member', [UserMerchantController::class, 'storeMem
 Route::get('/merchants/information', [UserMerchantController::class, 'information'])->name('merchants.information');
 Route::get('/merchants/member_list', [UserMerchantController::class, 'memberList'])->name('merchants.member_list');
 Route::get('/merchants/invoices', [UserMerchantController::class, 'invoices'])->name('merchants.invoices');
-Route::get('/merchants/invoice', [UserMerchantController::class, 'invoicePdf'])->name('merchants.invoice');
+Route::get('/merchants/invoice/{merchant}/{month}', [UserMerchantController::class, 'invoicePdf'])
+    ->where('month', '[0-9]{4}-[0-9]{2}')
+    ->name('merchants.invoice');
 Route::delete('/merchants/member/{id}', [UserMerchantController::class, 'destroy_member'])->name('merchant.member.destroy');
 
 Route::post('/get-user-id', [UserController::class, 'getUserId']);

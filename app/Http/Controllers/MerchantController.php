@@ -269,10 +269,59 @@ class MerchantController extends Controller
         return response()->json(['html' => $html, 'merchant_id' => $merchant->id]);
     }
 
-    public function invoicePdf(Request $request)
+    public function invoicePdf($merchantId, $month, Request $request)
     {
-        $month = $request->query('month', Carbon::now()->format('Y-m'));
-        return view('merchants.invoice_pdf', compact('month'));
+        if (!$request->hasValidSignature()) {
+            return response()->view('merchants.invoice_expired', [
+                'message' => 'このリンクの有効期限が切れています。LINEの請求書一覧からもう一度開いてください。',
+            ], 403);
+        }
+
+        $merchant = Merchant::findOrFail($merchantId);
+
+        // 当月は未確定のため表示しない
+        if (!$this->invoiceService->isFixedMonth($month)) {
+            return response()->view('merchants.invoice_expired', [
+                'message' => 'この月の請求書はまだ確定していません。',
+            ], 403);
+        }
+
+        $invoice = $this->invoiceService->forMonth($merchant, $month);
+
+        $productAgg = $invoice['products'];
+        $monthSubtotal = $invoice['subtotal'];
+        $monthShippingFee = $invoice['shipping_fee'];
+        $monthTaxAmount = $invoice['tax'];
+        $monthGrandTotal = $invoice['grand_total'];
+        $invoiceDate = $invoice['invoice_date'];
+        $invoiceNumber = $invoice['invoice_number'];
+
+        $companyName = Setting::getValue('company_name', '');
+        $companyDetail = Setting::getValue('company_detail', '');
+        $companySeal = Setting::getValue('company_seal', '');
+        $companyBankInfo = Setting::getValue('company_bank_info', '');
+        $companyPaymentNote = Setting::getValue('company_payment_note', '');
+
+        // 印刷時のファイル名になる
+        $pdfFilename = 'invoice_' . $merchant->id . '_' . $invoiceDate->format('Ymd');
+
+        return view('merchants.invoice_pdf', compact(
+            'merchant',
+            'productAgg',
+            'monthSubtotal',
+            'monthShippingFee',
+            'monthTaxAmount',
+            'monthGrandTotal',
+            'invoiceDate',
+            'invoiceNumber',
+            'month',
+            'companyName',
+            'companyDetail',
+            'companySeal',
+            'companyBankInfo',
+            'companyPaymentNote',
+            'pdfFilename'
+        ));
     }
 
     public function getInvoice(Request $request)
