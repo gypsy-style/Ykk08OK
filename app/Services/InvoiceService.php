@@ -14,11 +14,103 @@ use Carbon\Carbon;
  */
 class InvoiceService
 {
-    /** 売上集計対象のステータス（保留=4以外の確定注文） */
+    /** 旧ルールでの売上集計対象ステータス（保留=4以外の確定注文） */
     public const SALES_STATUSES = [2, 3, 5, 6];
 
     /** 発送済み */
     public const SHIPPED_STATUS = 6;
+
+    /**
+     * 「発送済みのみを請求する」新ルールの適用開始日
+     *
+     * この日以降に作成された注文が新ルールの対象。請求月ではなく注文日で切ることで、
+     * 1件の注文が旧ルールと新ルールの両方に計上される二重請求を防いでいる。
+     */
+    public const SHIPPED_ONLY_FROM = '2026-09-01';
+
+    /**
+     * 請求対象の注文に絞り込む
+     *
+     * 旧ルール（カットオフ前の注文）: 確定注文すべて
+     * 新ルール（カットオフ以降の注文）: 発送済みのみ
+     *
+     * @param mixed $query Eloquent または DB::table のクエリビルダ
+     * @param string $alias テーブル別名（DB::table の join で 'o' などを使っている場合に渡す）
+     * @return mixed
+     */
+    public static function applyInvoiceScope($query, $alias = '')
+    {
+        $p = $alias === '' ? '' : $alias . '.';
+
+        return $query->where(function ($outer) use ($p) {
+            $outer->where(function ($old) use ($p) {
+                $old->where($p . 'created_at', '<', self::SHIPPED_ONLY_FROM)
+                    ->whereIn($p . 'status', self::SALES_STATUSES);
+            })->orWhere(function ($new) use ($p) {
+                $new->where($p . 'created_at', '>=', self::SHIPPED_ONLY_FROM)
+                    ->where($p . 'status', self::SHIPPED_STATUS)
+                    ->whereNotNull($p . 'shipped_at');
+            });
+        });
+    }
+
+    /**
+     * 請求上の計上日を表す SQL 式を返す
+     *
+     * 旧ルールは注文日、新ルールは発送日。埋め込む値はクラス定数のみでユーザー入力を含まない。
+     *
+     * @param string $alias テーブル別名
+     * @return string
+     */
+    private static function billingDateSql($alias = '')
+    {
+        $p = $alias === '' ? '' : $alias . '.';
+
+        return 'IF(' . $p . 'created_at < "' . self::SHIPPED_ONLY_FROM . '", ' . $p . 'created_at, ' . $p . 'shipped_at)';
+    }
+
+    /**
+     * 請求上の計上月で絞り込む
+     *
+     * @param mixed $query
+     * @param string $month YYYY-MM
+     * @param string $alias テーブル別名
+     * @return mixed
+     */
+    public static function applyInvoiceMonth($query, $month, $alias = '')
+    {
+        return $query->whereRaw('DATE_FORMAT(' . self::billingDateSql($alias) . ', "%Y-%m") = ?', [$month]);
+    }
+
+    /**
+     * 請求上の計上日が確定月（前月以前）に入っているものだけに絞り込む
+     *
+     * @param mixed $query
+     * @param string $alias テーブル別名
+     * @return mixed
+     */
+    public static function applyFixedMonths($query, $alias = '')
+    {
+        return $query->whereRaw(
+            self::billingDateSql($alias) . ' < ?',
+            [Carbon::now()->startOfMonth()->format('Y-m-d H:i:s')]
+        );
+    }
+
+    /**
+     * 注文の請求上の計上日を返す（旧ルール=注文日、新ルール=発送日）
+     *
+     * @param Order $order
+     * @return \Carbon\Carbon|null
+     */
+    public static function billingDate(Order $order)
+    {
+        if ($order->created_at < Carbon::parse(self::SHIPPED_ONLY_FROM)) {
+            return $order->created_at;
+        }
+
+        return $order->shipped_at;
+    }
 
     /**
      * 確定済み（前月まで）の月別集計を返す
@@ -29,18 +121,22 @@ class InvoiceService
     public function monthlyBreakdown(Merchant $merchant)
     {
         // 当月は未確定のため前月までを対象とする
-        $orders = Order::with('details.product')
-            ->where('merchant_id', $merchant->id)
-            ->whereIn('status', self::SALES_STATUSES)
-            ->where('created_at', '<', Carbon::now()->startOfMonth())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = Order::with('details.product')
+            ->where('merchant_id', $merchant->id);
+        self::applyInvoiceScope($query);
+        self::applyFixedMonths($query);
+        $orders = $query->orderBy('created_at', 'desc')->get();
 
         $grouped = [];
         foreach ($orders as $order) {
-            $month = $order->created_at->format('Y-m');
-            $grouped[$month][] = $order;
+            $billingDate = self::billingDate($order);
+            if (!$billingDate) {
+                continue;
+            }
+            $grouped[$billingDate->format('Y-m')][] = $order;
         }
+
+        krsort($grouped);
 
         $result = [];
         foreach ($grouped as $month => $monthOrders) {
@@ -58,10 +154,11 @@ class InvoiceService
      */
     public function hasInvoice(Merchant $merchant)
     {
-        return Order::where('merchant_id', $merchant->id)
-            ->whereIn('status', self::SALES_STATUSES)
-            ->where('created_at', '<', Carbon::now()->startOfMonth())
-            ->exists();
+        $query = Order::where('merchant_id', $merchant->id);
+        self::applyInvoiceScope($query);
+        self::applyFixedMonths($query);
+
+        return $query->exists();
     }
 
     /**
@@ -73,11 +170,11 @@ class InvoiceService
      */
     public function forMonth(Merchant $merchant, $month)
     {
-        $orders = Order::with('details.product')
-            ->where('merchant_id', $merchant->id)
-            ->whereIn('status', self::SALES_STATUSES)
-            ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
-            ->get();
+        $query = Order::with('details.product')
+            ->where('merchant_id', $merchant->id);
+        self::applyInvoiceScope($query);
+        self::applyInvoiceMonth($query, $month);
+        $orders = $query->get();
 
         return $this->aggregate($orders, $merchant, $month);
     }
