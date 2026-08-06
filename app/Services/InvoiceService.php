@@ -17,6 +17,9 @@ class InvoiceService
     /** 売上集計対象のステータス（保留=4以外の確定注文） */
     public const SALES_STATUSES = [2, 3, 5, 6];
 
+    /** 発送済み */
+    public const SHIPPED_STATUS = 6;
+
     /**
      * 確定済み（前月まで）の月別集計を返す
      *
