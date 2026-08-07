@@ -168,8 +168,13 @@ class OrderController extends Controller
 
     public function bulkUpdate(Request $request)
     {
+        // バリデーション
+        $validated = $request->validate([
+            'status' => 'required|integer|in:2,3,4,5,6,9'
+        ]);
+
         $orderIds = $request->order_ids;
-        $newStatus = (int) $request->status;
+        $newStatus = (int) $validated['status'];
 
         // 一括更新前の注文データを取得
         $orders = Order::whereIn('id', $orderIds)->get();
