@@ -26,7 +26,7 @@ class InvoiceService
      * この日以降に作成された注文が新ルールの対象。請求月ではなく注文日で切ることで、
      * 1件の注文が旧ルールと新ルールの両方に計上される二重請求を防いでいる。
      */
-    public const SHIPPED_ONLY_FROM = '2026-09-01';
+    public const SHIPPED_ONLY_FROM = '2026-07-01';
 
     /**
      * 請求対象の注文に絞り込む
