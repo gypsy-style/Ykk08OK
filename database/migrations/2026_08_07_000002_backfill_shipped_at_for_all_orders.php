@@ -4,12 +4,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /**
- * 2026-07-01 以降に作成された発送済み注文の発送日を、アクティビティログから復元する。
+ * 発送済み注文すべての発送日を、アクティビティログから復元する。
  *
- * shipped_at は 2026-08 のリリースで追加した列のため、それ以前に発送された注文は空のままになる。
- * 請求は shipped_at が入っていない注文を対象外にするので、埋めないと請求額が落ちる。
- *
- * この後のリリースでカットオフを撤廃したため、残る期間は後続のマイグレーションが埋める。
+ * 請求のカットオフ（2026-07-01 以降の注文のみ新ルール）を撤廃し、全期間を発送日基準にしたため、
+ * それ以前に発送された注文にも shipped_at が要る。埋めないと過去の請求書が空になる。
  */
 return new class extends Migration
 {
@@ -29,7 +27,7 @@ return new class extends Migration
     public function down()
     {
         DB::table('orders')
-            ->where('created_at', '>=', '2026-07-01')
+            ->where('created_at', '<', '2026-07-01')
             ->where('status', 6)
             ->update(['shipped_at' => null]);
     }
@@ -37,7 +35,6 @@ return new class extends Migration
     private function targetOrders()
     {
         return DB::table('orders')
-            ->where('created_at', '>=', '2026-07-01')
             ->where('status', 6)
             ->whereNull('shipped_at');
     }
