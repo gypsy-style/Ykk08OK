@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\ActivityLogService;
+use App\Services\InvoiceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -125,13 +126,22 @@ class OrderController extends Controller
 
         // 変更前の値を保存
         $oldStatus = $order->status;
+        $newStatus = (int) $validated['status'];
 
         // ステータス更新
-        $order->status = $validated['status'];
-        $order->save();
+        $order->status = $newStatus;
 
-        // 変更後の値を取得
-        $newStatus = $order->status;
+        // 発送済みになった瞬間だけ発送日を記録し、発送済みから外れたら取り消す。
+        // すでに発送済みのまま再保存された場合は既存の発送日を動かさない
+        if ($newStatus === InvoiceService::SHIPPED_STATUS) {
+            if ((int) $oldStatus !== InvoiceService::SHIPPED_STATUS) {
+                $order->shipped_at = now();
+            }
+        } else {
+            $order->shipped_at = null;
+        }
+
+        $order->save();
 
         // ログを記録
         $this->activityLogService->logOrderStatusUpdated($order, $oldStatus, $newStatus);
@@ -158,11 +168,28 @@ class OrderController extends Controller
 
     public function bulkUpdate(Request $request)
     {
+        // バリデーション
+        $validated = $request->validate([
+            'status' => 'required|integer|in:2,3,4,5,6,9'
+        ]);
+
         $orderIds = $request->order_ids;
-        $newStatus = $request->status;
+        $newStatus = (int) $validated['status'];
 
         // 一括更新前の注文データを取得
         $orders = Order::whereIn('id', $orderIds)->get();
+
+        // 発送済みへの変更なら発送日を記録し、発送済みから外れる場合は取り消す。
+        // すでに発送済みだったものは発送日を動かさない
+        if ($newStatus === InvoiceService::SHIPPED_STATUS) {
+            Order::whereIn('id', $orderIds)
+                ->where('status', '!=', InvoiceService::SHIPPED_STATUS)
+                ->update(['shipped_at' => now()]);
+        } else {
+            Order::whereIn('id', $orderIds)
+                ->where('status', InvoiceService::SHIPPED_STATUS)
+                ->update(['shipped_at' => null]);
+        }
 
         // 一括更新を実行
         Order::whereIn('id', $orderIds)->update(['status' => $newStatus]);

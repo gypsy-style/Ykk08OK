@@ -20,9 +20,6 @@ use Illuminate\Support\Facades\DB;
 
 class SalesController extends Controller
 {
-    /** 売上集計対象のステータス（保留=4以外の確定注文） */
-    private const SALES_STATUSES = [2, 3, 5, 6];
-
     public function index(
         Request $request,
         InvoiceService $invoiceService,
@@ -34,7 +31,7 @@ class SalesController extends Controller
         $productSales = DB::table('order_details as od')
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
-            ->whereIn('o.status', self::SALES_STATUSES)
+            ->whereIn('o.status', InvoiceService::SALES_STATUSES)
             ->whereNotIn('o.merchant_id', function ($q) {
                 $q->select('id')->from('merchants')->where('is_test', 1);
             })
@@ -51,7 +48,7 @@ class SalesController extends Controller
 
         $headquartersProcessed = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
-            ->whereIn('status', self::SALES_STATUSES)
+            ->whereIn('status', InvoiceService::SALES_STATUSES)
             ->whereNotIn('merchant_id', function ($q) {
                 $q->select('id')->from('merchants')->where('is_test', 1);
             })
@@ -60,19 +57,20 @@ class SalesController extends Controller
 
         $shippingFeeCount = DB::table('orders')
             ->where('shipping_fee', '>', 0)
-            ->whereIn('status', self::SALES_STATUSES)
+            ->whereIn('status', InvoiceService::SALES_STATUSES)
             ->whereNotIn('merchant_id', function ($q) {
                 $q->select('id')->from('merchants')->where('is_test', 1);
             })
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
             ->count();
 
-        // 月内に売上があった店舗一覧
-        $merchantSales = DB::table('orders as o')
+        // 月内に売上があった店舗一覧（請求額なので発送済みのみ集計）
+        $merchantSalesQuery = DB::table('orders as o')
             ->join('merchants as m', 'm.id', '=', 'o.merchant_id')
-            ->leftJoin('agencies as a', 'a.id', '=', 'm.agency_id')
-            ->whereIn('o.status', self::SALES_STATUSES)
-            ->whereRaw('DATE_FORMAT(o.created_at, "%Y-%m") = ?', [$month])
+            ->leftJoin('agencies as a', 'a.id', '=', 'm.agency_id');
+        InvoiceService::applyInvoiceScope($merchantSalesQuery, 'o');
+        InvoiceService::applyInvoiceMonth($merchantSalesQuery, $month, 'o');
+        $merchantSales = $merchantSalesQuery
             ->groupBy('m.id', 'm.name', 'm.member_rank', 'm.is_test', 'm.bank_account_name', 'a.name')
             ->orderByDesc(DB::raw('SUM(o.total_price + o.shipping_fee)'))
             ->select(
@@ -179,13 +177,12 @@ class SalesController extends Controller
         $prevMonth = $currentDate->copy()->subMonth()->format('Y-m');
         $nextMonth = $currentDate->copy()->addMonth()->format('Y-m');
 
-        // 月内のこの店舗の注文を全件取得
-        $orders = Order::with('details.product')
-            ->where('merchant_id', $merchant->id)
-            ->whereIn('status', self::SALES_STATUSES)
-            ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // 月内のこの店舗の注文を全件取得（請求額なので発送済みのみ集計）
+        $ordersQuery = Order::with('details.product')
+            ->where('merchant_id', $merchant->id);
+        InvoiceService::applyInvoiceScope($ordersQuery);
+        InvoiceService::applyInvoiceMonth($ordersQuery, $month);
+        $orders = $ordersQuery->orderBy('created_at', 'desc')->get();
 
         // 月内全注文を商品ごとに合算
         $productAgg = [];
@@ -257,11 +254,11 @@ class SalesController extends Controller
 
         $month = $request->query('month', Carbon::now()->format('Y-m'));
 
-        $orders = Order::with('details.product')
-            ->where('merchant_id', $merchant->id)
-            ->whereIn('status', self::SALES_STATUSES)
-            ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
-            ->get();
+        $ordersQuery = Order::with('details.product')
+            ->where('merchant_id', $merchant->id);
+        InvoiceService::applyInvoiceScope($ordersQuery);
+        InvoiceService::applyInvoiceMonth($ordersQuery, $month);
+        $orders = $ordersQuery->get();
 
         $productAgg = [];
         $monthSubtotal = 0;

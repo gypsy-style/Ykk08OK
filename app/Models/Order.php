@@ -14,13 +14,18 @@ class Order extends Model
         'id',
         'user_id',
         'agency_id',
-        'merchant_id', 
-        'total_price', 
-        'order_number', 
-        'is_staff_sale', 
-        'shipping_fee', 
-        'status', 
+        'merchant_id',
+        'total_price',
+        'order_number',
+        'is_staff_sale',
+        'shipping_fee',
+        'status',
+        'shipped_at',
         'memo'];
+
+    protected $casts = [
+        'shipped_at' => 'datetime',
+    ];
 
     public function merchant()
     {
