@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Agency;
 
 use App\Http\Controllers\Controller;
+use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -22,24 +23,26 @@ class DashboardController extends Controller
             ->selectRaw('COUNT(*) as order_count, SUM(total_price) as total_price_sum')
             ->first();
 
-        $headquartersProcessed = DB::table('orders')
+        $headquartersProcessedQuery = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
             ->where('agency_id', $agencyId)
             ->whereNotIn('merchant_id', function ($q) {
                 $q->select('id')->from('merchants')->where('is_test', 1);
-            })
-            ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
-            ->first();
+            });
+        InvoiceService::applyInvoiceScope($headquartersProcessedQuery);
+        InvoiceService::applyInvoiceMonth($headquartersProcessedQuery, $month);
+        $headquartersProcessed = $headquartersProcessedQuery->first();
 
         // shipping_fee が 0以上の件数を取得
-        $shippingFeeCount = DB::table('orders')
+        $shippingFeeCountQuery = DB::table('orders')
             ->where('shipping_fee', '>', 0)
             ->where('agency_id', $agencyId)
             ->whereNotIn('merchant_id', function ($q) {
                 $q->select('id')->from('merchants')->where('is_test', 1);
-            })
-            ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month])
-            ->count();
+            });
+        InvoiceService::applyInvoiceScope($shippingFeeCountQuery);
+        InvoiceService::applyInvoiceMonth($shippingFeeCountQuery, $month);
+        $shippingFeeCount = $shippingFeeCountQuery->count();
 
         $currentDate = Carbon::parse($month . '-01');
         $prevMonth = $currentDate->subMonth()->format('Y-m');

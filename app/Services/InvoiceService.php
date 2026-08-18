@@ -14,9 +14,6 @@ use Carbon\Carbon;
  */
 class InvoiceService
 {
-    /** 売上分析で対象とするステータス（保留=4以外の確定注文）。請求の集計には使わない */
-    public const SALES_STATUSES = [2, 3, 5, 6];
-
     /** 発送済み */
     public const SHIPPED_STATUS = 6;
 

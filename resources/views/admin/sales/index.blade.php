@@ -50,7 +50,7 @@
     @endif
 
     <div class="lma-content_block staff nobg">
-        <p style="font-size:12px;color:#666;margin:0 0 8px;">加盟店ごとの金額は請求額です。発送済みの注文のみを、発送日の月に計上しています。上の売上集計とは基準が異なります。</p>
+        <p style="font-size:12px;color:#666;margin:0 0 8px;">加盟店ごとの金額は請求額です。発送済みの注文のみを、発送日の月に計上しています。</p>
         <ul class="lma-user_list store">
             @forelse ($merchantSales as $m)
                 @php
