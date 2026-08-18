@@ -13,7 +13,7 @@
 | 対象ステータス | 発送済み（6）のみ。2・3・5 は対象外 |
 | 月の振り分け | 発送日基準（注文日基準から変更） |
 | 過去分の扱い | カットオフは設けず、全期間に適用する |
-| 管理画面 | 請求額に関わる集計のみ新基準。売上分析系は現状維持 |
+| 管理画面 | 請求・売上分析とも新基準に統一 |
 
 ### カットオフを設けなかった経緯
 
@@ -60,47 +60,48 @@
 
 ### 2. 集計ロジック（`InvoiceService`）
 
-定数は以下の2つ。
+定数は以下の1つ。
 
 ```php
-/** 売上分析で対象とするステータス（保留=4以外の確定注文）。請求の集計には使わない */
-public const SALES_STATUSES = [2, 3, 5, 6];
-
 /** 発送済み */
 public const SHIPPED_STATUS = 6;
 ```
 
 現在 `monthlyBreakdown()` / `hasInvoice()` / `forMonth()` の 3 箇所に同じ `whereIn('status', self::SALES_STATUSES)` がコピペされている。これを `InvoiceService` の **public static メソッド 1 本**（クエリビルダを受け取って条件を適用して返す）にまとめ、3 箇所から呼ぶ。`Admin\SalesController` も同じメソッドを使う。
 
-請求の条件は `status = 6` かつ `shipped_at IS NOT NULL`、計上月は `shipped_at` の月。`SALES_STATUSES` は売上分析側にだけ残る。
+請求の条件は `status = 6` かつ `shipped_at IS NOT NULL`、計上月は `shipped_at` の月。旧定数 `SALES_STATUSES` は参照がゼロになったため削除する。
 
 `monthlyBreakdown()` は月ごとにグループ化する際、注文の `created_at` ではなく `shipped_at` で月を決める。「当月は未確定」の判定（`< Carbon::now()->startOfMonth()`）も `shipped_at` に対して行う。
 
 `isFixedMonth()`、`aggregate()`、`invoiceUrl()` は変更しない。確定タイミング（当月は未確定、前月まで）も現行どおり。
 
-### 3. 管理画面（`Admin\SalesController`）
+### 3. 管理画面・代理店画面
 
-請求額に関わる集計だけを新基準に合わせる。判定条件は §2 の `InvoiceService` の public static メソッドを呼び、条件の重複定義を作らない。`SalesController` は `DB::table` の生 join を使っている箇所があるため、このメソッドは Eloquent ビルダと `DB::table` ビルダの双方で使えるよう、テーブル別名（`o.` など）をプレフィックスとして受け取れるようにする。
-
-**新基準にする（請求）**
+月次の集計はすべて新基準に合わせる。判定条件は §2 の `InvoiceService` の public static メソッドを呼び、条件の重複定義を作らない。`SalesController` は `DB::table` の生 join を使っている箇所があるため、このメソッドは Eloquent ビルダと `DB::table` ビルダの双方で使えるよう、テーブル別名（`o.` など）をプレフィックスとして受け取れるようにする。
 
 | 箇所 | 内容 |
 |---|---|
-| `index()` `$merchantSales`（:71） | 加盟店ごとの請求額一覧。振込確認・督促と並ぶ |
-| `show()` `$orders`（:183） | 加盟店の月次明細・合算コピー |
-| `invoice()` `$orders`（:260） | 請求書そのもの |
+| `Admin\SalesController::index()` `$merchantSales` | 加盟店ごとの請求額一覧。振込確認・督促と並ぶ |
+| `Admin\SalesController::show()` `$orders` | 加盟店の月次明細・合算コピー |
+| `Admin\SalesController::invoice()` `$orders` | 請求書そのもの |
+| `Admin\SalesController::index()` `$productSales` / `$headquartersProcessed` / `$shippingFeeCount` | 売上管理ページ上部の商品別売上・本部処理済み・送料件数 |
+| `Admin\DashboardController::index()` `$productSales` / `$headquartersProcessed` / `$shippingFeeCount` | 本部ダッシュボードの月次集計 |
+| `Agency\DashboardController::index()` `$headquartersProcessed` / `$shippingFeeCount` | 代理店ダッシュボードの月次集計 |
 
-**現状維持（売上分析）**
+`SalesController` と `Admin\DashboardController` に重複している `private const SALES_STATUSES` は削除する。
 
-| 箇所 | 内容 |
-|---|---|
-| `index()` `$productSales`（:34） | 商品別売上 |
-| `index()` `$headquartersProcessed`（:52） | 本部処理済み集計 |
-| `index()` `$shippingFeeCount`（:61） | 送料発生件数 |
+**基準を変えないもの**
 
-この切り分けにより、画面上の「総合計」（分析系の `$grandTotal`）と加盟店別売上一覧の合計が一致しなくなる。誤解を避けるため、加盟店別売上一覧の見出し付近に「発送済みのみ集計」の注記を追加する。
+- `Admin\DashboardController` のステータス別件数 — 月ではなく現時点の状態を数えるスナップショット
+- `Agency\DashboardController` の「今日の注文」 — 注文日そのものを見る数字
 
-`SalesController` に重複している `private const SALES_STATUSES` は削除し、`InvoiceService` の定数を参照する。
+#### 売上分析系も統一した経緯
+
+当初は「請求額に関わる集計だけを新基準にし、売上分析系は注文日 × ステータス `[2,3,5,6]` のまま残す」としていた。分析の連続性を保つ意図だったが、その結果、画面上の「総合計」（`$grandTotal`）と加盟店別売上一覧の合計が一致しなくなり、加盟店別一覧に「基準が異なります」の注記を置いて運用する形になった。
+
+実際に運用してみると、月をまたいで発送された注文でこのズレが表に出て、どちらの数字が正しいのか判断できないという問題になった。基準がふたつ並存すること自体が混乱の原因なので、全体を発送日基準に統一した。注記からも「基準が異なります」の一文を削除している。
+
+代理店ダッシュボードはもともとステータスで絞っておらず、保留・キャンセルを含む全注文を合計していた。統一により発送済みのみとなるため、**従来より数字が下がって見える**。これは本来あるべき集計だが、代理店への説明が要る。
 
 ### 4. 影響を受ける他の経路
 
@@ -120,5 +121,4 @@ public const SHIPPED_STATUS = 6;
 
 - ステータス 6 になったことが一度も無い注文への `shipped_at` 補完
 - 請求書のスナップショット保存（再計算方式の変更）
-- 売上分析系の集計基準の変更
 - 発送滞留の検知・通知機能
