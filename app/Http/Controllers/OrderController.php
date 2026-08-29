@@ -160,6 +160,7 @@ class OrderController extends Controller
             $product->quantity = $quantity; // 各商品の個数を追加
             $product->actual_quantity = $actualQuantity; // 実際の個数を追加
             $unitPrice = $product->getPriceForRank($memberRank);
+            $product->unit_price = $unitPrice; // 会員ランク適用後の単価（税抜）
             $product->subtotal = $unitPrice * $quantity; // 小計を計算（ランク価格）
             // 税込単価（10%）を表示用に付与
             $product->price_with_tax = (int) round($unitPrice * 1.1);

@@ -31,8 +31,8 @@
 								<div class="item_info">
 									<span class="item_name">{{ $product->product_name }}</span>
 									<div class="item_cartin">
-										<b class="item_price">{{ number_format($product->price) }}円</b>
-										<button class="del">削除</button> <button type="button" class="minus">－</button><input data-name="{{ $product->product_name }}" data-pid="{{ $product->product_code }}" data-price="{{ $product->price }}" name="item_number_{{ $product->id }}" type="text" value="{{$product->quantity}}"><button type="button" class="plus">＋</button>
+										<b class="item_price">{{ number_format($product->unit_price) }}円</b>
+										<button class="del">削除</button> <button type="button" class="minus">－</button><input data-name="{{ $product->product_name }}" data-pid="{{ $product->product_code }}" data-price="{{ $product->unit_price }}" data-price-tax="{{ $product->price_with_tax }}" name="item_number_{{ $product->id }}" type="text" value="{{$product->quantity}}"><button type="button" class="plus">＋</button>
 									</div>
 								</div>
 							</div>
@@ -174,7 +174,7 @@
 					let item = {
 						product_id: $(this).find('input').data('pid'),
 						name: $(this).find('.item_name').text(),
-						price: $(this).find('input').data('price'),
+						price: $(this).find('input').data('price-tax'), // 注文一覧は税込で合計するため税込単価を渡す
 						quantity: $(this).find('input').val(),
 						image: $(this).find('img').attr('src'),
 					};

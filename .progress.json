@@ -1,9 +1,9 @@
 {
   "project": "Ykk08OK",
-  "status": "completed",
-  "progress": 100,
-  "current_step": "設計書の更新とブランチ・作業ディレクトリの片付けまで完了",
+  "status": "running",
+  "progress": 95,
+  "current_step": "注文確認画面の会員ランク価格反映の修正をコミットしてpush",
   "need_human_check": false,
-  "last_message": "請求書の発送済み限定・発送日基準への変更を完了。カットオフ撤廃(673ca30)と本部・代理店ダッシュボードの基準統一(3ca0840)を本番デプロイ済み、ユーザーが両画面で確認済み。設計書を実態に合わせて更新し、feature/invoice-shipped-only ブランチと SDD 作業ディレクトリを削除した。",
-  "updated_at": "2026-08-07T12:35:00+09:00"
+  "last_message": "OrderController::register でランク単価を $product->unit_price に保持し、register.blade.php の単価表示と data-price をランク価格に変更。追加注文で注文一覧へ戻る際は list 側が税込基準のため data-price-tax(price_with_tax) を localStorage に渡すよう修正。ローカルで表示・data属性を検証済み。JS/CSSの変更はないため public/build のビルドは不要。",
+  "updated_at": "2026-08-29T00:30:00+09:00"
 }
