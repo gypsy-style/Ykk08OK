@@ -1,9 +1,9 @@
 {
   "project": "Ykk08OK",
-  "status": "running",
-  "progress": 95,
-  "current_step": "注文確認画面の会員ランク価格反映の修正をコミットしてpush",
-  "need_human_check": false,
-  "last_message": "OrderController::register でランク単価を $product->unit_price に保持し、register.blade.php の単価表示と data-price をランク価格に変更。追加注文で注文一覧へ戻る際は list 側が税込基準のため data-price-tax(price_with_tax) を localStorage に渡すよう修正。ローカルで表示・data属性を検証済み。JS/CSSの変更はないため public/build のビルドは不要。",
-  "updated_at": "2026-08-29T00:30:00+09:00"
+  "status": "waiting_user",
+  "progress": 20,
+  "current_step": "加盟店ふりがな欄の設計書を作成・ユーザーのレビュー待ち",
+  "need_human_check": true,
+  "last_message": "加盟店のふりがな欄追加について設計を合意し、docs/superpowers/specs/2026-09-04-merchant-name-kana-design.md に記録。内容はmerchants.name_kana(nullable)の追加、Merchantのfillable追加、管理画面・代理店画面のcreate/edit計4画面への入力欄追加、ひらがな限定の任意バリデーション。一覧のふりがな順ソートは次のステップとしてスコープ外。設計書のレビュー後に実装計画を作成する。なお Deploy run 33235675229 の失敗（SSHタイムアウト）と本番crontab未登録の件は未解決のまま。",
+  "updated_at": "2026-09-04T00:00:00+09:00"
 }
