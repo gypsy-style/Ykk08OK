@@ -46,6 +46,7 @@ class MerchantController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'name_kana' => ['nullable', 'string', 'max:255', 'regex:/\A[ぁ-んー\s　]+\z/u'],
             'merchant_code' => [
                 'required',
                 'string',
@@ -61,6 +62,8 @@ class MerchantController extends Controller
             'phone' => 'required|string|max:15',
             'bank_account_name' => 'nullable|string|max:1000',
             'user_id' => 'required|integer|exists:users,id',
+        ], [
+            'name_kana.regex' => 'ふりがなはひらがなで入力してください。',
         ]);
 
         Merchant::create($request->all());
@@ -78,6 +81,7 @@ class MerchantController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'name_kana' => ['nullable', 'string', 'max:255', 'regex:/\A[ぁ-んー\s　]+\z/u'],
             'merchant_code' => [
                 'required',
                 'string',
@@ -93,6 +97,8 @@ class MerchantController extends Controller
             'phone' => 'required|string|max:15',
             'bank_account_name' => 'nullable|string|max:1000',
             'user_id' => 'required|integer|exists:users,id',
+        ], [
+            'name_kana.regex' => 'ふりがなはひらがなで入力してください。',
         ]);
 
         $merchant = Merchant::findOrFail($id);
