@@ -1,5 +1,14 @@
 @extends('agencies.layouts.app')
 @section('content')
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 <section class="lma-content flex">
     <div class="lma-main_head">
         <div class="lma-title_block">
@@ -12,6 +21,8 @@
             <dl class="lma-form_box">
                 <dt><label for="name">サロン名</label></dt>
                 <dd><input type="text" class="form-control" id="name" name="name" value="{{ old('name', $merchant->name) }}" required></dd>
+                <dt><label for="name_kana">ふりがな</label></dt>
+                <dd><input type="text" class="form-control" id="name_kana" name="name_kana" value="{{ old('name_kana', $merchant->name_kana) }}" placeholder="ひらがなで入力"></dd>
                 <dt><label for="product_code">サロンコード</label></dt>
                 <dd><input type="text" class="form-control" id="merchant_code" name="merchant_code" value="{{ old('merchant_code', $merchant->merchant_code) }}" required></dd>
 

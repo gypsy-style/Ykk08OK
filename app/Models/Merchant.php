@@ -19,6 +19,7 @@ class Merchant extends Model
     protected $fillable = [
         'agency_id',
         'name',
+        'name_kana',
         'merchant_code',
         'campaign_code',
         'status',
