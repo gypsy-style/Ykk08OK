@@ -1,9 +1,9 @@
 {
   "project": "Ykk08OK",
   "status": "waiting_user",
-  "progress": 20,
-  "current_step": "加盟店ふりがな欄の設計書を作成・ユーザーのレビュー待ち",
+  "progress": 30,
+  "current_step": "加盟店ふりがな欄の実装計画を作成・実行方式の選択待ち",
   "need_human_check": true,
-  "last_message": "加盟店のふりがな欄追加について設計を合意し、docs/superpowers/specs/2026-09-04-merchant-name-kana-design.md に記録。内容はmerchants.name_kana(nullable)の追加、Merchantのfillable追加、管理画面・代理店画面のcreate/edit計4画面への入力欄追加、ひらがな限定の任意バリデーション。一覧のふりがな順ソートは次のステップとしてスコープ外。設計書のレビュー後に実装計画を作成する。なお Deploy run 33235675229 の失敗（SSHタイムアウト）と本番crontab未登録の件は未解決のまま。",
-  "updated_at": "2026-09-04T00:00:00+09:00"
+  "last_message": "docs/superpowers/plans/2026-09-04-merchant-name-kana.md に実装計画を作成。Task1がカラム追加とfillable、Task2が管理画面のバリデーションとビュー、Task3が代理店画面。CLAUDE.mdの方針に従いテストコードは書かず、tinkerでのバリデーション検証とブラウザ目視で確認する。サブエージェント方式かインライン実行かをユーザーに確認中。なお Deploy run 33235675229 の失敗と本番crontab未登録は未解決。",
+  "updated_at": "2026-09-04T00:20:00+09:00"
 }
