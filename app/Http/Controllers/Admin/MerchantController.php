@@ -49,6 +49,7 @@ class MerchantController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'name_kana' => ['nullable', 'string', 'max:255', 'regex:/\A[ぁ-んー\s　]+\z/u'],
             'merchant_code' => [
                 'required',
                 'string',
@@ -71,6 +72,8 @@ class MerchantController extends Controller
                     $query->whereNull('deleted_at');
                 }),
             ],
+        ], [
+            'name_kana.regex' => 'ふりがなはひらがなで入力してください。',
         ]);
 
         Merchant::create($request->all());
@@ -91,6 +94,7 @@ class MerchantController extends Controller
         try{
             $request->validate([
                 'name' => 'required|string|max:255',
+                'name_kana' => ['nullable', 'string', 'max:255', 'regex:/\A[ぁ-んー\s　]+\z/u'],
                 'merchant_code' => [
                     'required',
                     'string',
@@ -116,6 +120,8 @@ class MerchantController extends Controller
                         }),
                 ],
                 'agency_id' => 'required|integer|exists:agencies,id',
+            ], [
+                'name_kana.regex' => 'ふりがなはひらがなで入力してください。',
             ]);
 
             $merchant = Merchant::findOrFail($id);
