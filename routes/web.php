@@ -120,6 +120,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // サロン分析
         Route::get('analytics', [AdminAnalyticsController::class, 'index'])->name('analytics');
         Route::get('analytics/product-sales', [AdminAnalyticsController::class, 'productSales'])->name('analytics.product_sales');
+        Route::get('analytics/product-sales/all', [AdminAnalyticsController::class, 'productSalesAll'])->name('analytics.product_sales_all');
         // 商品管理
         Route::resource('products', ProductController::class);
         Route::post('products/update-status', [ProductController::class, 'updateStatus'])->name('products.updateStatus');

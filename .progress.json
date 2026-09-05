@@ -1,9 +1,10 @@
 {
   "project": "Ykk08OK",
+  "project_note": "他セッションの waiting_user/blocked は上書きしない",
   "status": "waiting_user",
-  "progress": 92,
-  "current_step": "売上ゼロ月でもサロン一覧を表示するよう修正・確認待ち",
+  "progress": 95,
+  "current_step": "上位10件＋もっと見る一覧ページとUI調整を実装・確認待ち",
   "need_human_check": true,
-  "last_message": "商品売上テーブルで、その月に売上が無くても全サロンを行として表示するよう修正（空データ時の早期returnを削除）。並びは合計の降順・同額は名前昇順のまま。2026-09（売上なし）で全サロンが0で並ぶことを検証済み。ただし売上のある商品が1つも無い月は商品列が消え「サロン名｜合計」だけになる点をユーザーに確認中。http://localhost:8884/admin/analytics",
-  "updated_at": "2026-09-05T12:35:00+09:00"
+  "last_message": "商品売上を上位10件表示にし、超過分は「もっと見る」→ admin/analytics/product-sales/all の一覧ページへ。部分ビューを _product_sales.blade.php に集約し、JSは _product_sales_script.blade.php を両ページで include、非同期先は wrapper の data-url で切替。行の見分けがつくようゼブラ＋ヘッダー行の色付け＋hoverをインライン<style>で追加（admin配下の既存13ファイルと同じ流儀。アセット再ビルド不要）。全4エンドポイント200、limit=2で hasMore=true・2行になることも検証済み。未コミット。http://localhost:8884/admin/analytics",
+  "updated_at": "2026-09-06T10:30:00+09:00"
 }

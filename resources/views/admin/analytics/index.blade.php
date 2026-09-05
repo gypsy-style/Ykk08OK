@@ -16,7 +16,7 @@
                 <h2 class="lma-title_bar sky"><em class="label">{{ \Carbon\Carbon::parse($months[0] . '-01')->format('Y年n月') }}〜{{ \Carbon\Carbon::parse($month . '-01')->format('Y年n月') }}</em></h2>
             </div>
             <div class="records_table">
-                <table class="lma-detail_tbl">
+                <table class="lma-detail_tbl analytics_tbl">
                     <tbody>
                         <tr>
                             <th></th>
@@ -44,7 +44,7 @@
     </div>
 
     <div class="lma-content_block dashboard_records" style="width:100%;">
-        <div class="record_block" id="product_sales_block">
+        <div class="record_block" id="product_sales_block" data-url="{{ route('admin.analytics.product_sales') }}">
             @include('admin.analytics._product_sales')
         </div>
     </div>
@@ -52,15 +52,5 @@
 @endsection
 
 @push('head')
-<script>
-    $(function () {
-        $('#product_sales_block').on('click', '.lma-pnavi_list a', function (e) {
-            e.preventDefault();
-            $.get('{{ route('admin.analytics.product_sales') }}', { month: $(this).data('month') })
-                .done(function (html) {
-                    $('#product_sales_block').html(html);
-                });
-        });
-    });
-</script>
+@include('admin.analytics._product_sales_script')
 @endpush

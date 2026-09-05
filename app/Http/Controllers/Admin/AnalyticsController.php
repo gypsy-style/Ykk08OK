@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 
 class AnalyticsController extends Controller
 {
+    /** サロン分析のトップに出す行数。これを超える分は一覧ページで見る */
+    private const TOP_ROWS = 10;
+
     public function index(Request $request)
     {
         $month = $this->month($request);
@@ -27,13 +30,21 @@ class AnalyticsController extends Controller
             'prevMonth',
             'nextMonth',
             'hasNextMonth'
-        ), $this->productSalesData($month)));
+        ), $this->productSalesData($month, self::TOP_ROWS)));
     }
 
     /** 商品売上テーブルだけを差し替えるための部分HTML */
     public function productSales(Request $request)
     {
-        return view('admin.analytics._product_sales', $this->productSalesData($this->month($request)));
+        $limit = $request->query('all') ? null : self::TOP_ROWS;
+
+        return view('admin.analytics._product_sales', $this->productSalesData($this->month($request), $limit));
+    }
+
+    /** 全サロンを載せた一覧ページ */
+    public function productSalesAll(Request $request)
+    {
+        return view('admin.analytics.product_sales', $this->productSalesData($this->month($request), null));
     }
 
     private function month(Request $request)
@@ -46,16 +57,23 @@ class AnalyticsController extends Controller
         return $month;
     }
 
-    private function productSalesData($month)
+    private function productSalesData($month, $limit)
     {
         $date = Carbon::parse($month . '-01');
+        $sales = SalonAnalyticsService::salonProductSales($month);
+
+        $hasMore = $limit !== null && count($sales['rows']) > $limit;
+        if ($limit !== null) {
+            $sales['rows'] = array_slice($sales['rows'], 0, $limit);
+        }
 
         return [
-            'productSales' => SalonAnalyticsService::salonProductSales($month),
+            'productSales' => $sales,
             'productMonth' => $month,
             'productPrevMonth' => $date->copy()->subMonth()->format('Y-m'),
             'productNextMonth' => $date->copy()->addMonth()->format('Y-m'),
             'productHasNextMonth' => $month < Carbon::now()->format('Y-m'),
+            'productHasMore' => $hasMore,
         ];
     }
 }
