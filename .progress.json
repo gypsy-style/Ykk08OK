@@ -3,8 +3,8 @@
   "project_note": "他セッションの waiting_user/blocked は上書きしない",
   "status": "running",
   "progress": 80,
-  "current_step": "左メニューにサロン分析を追加してpush",
+  "current_step": "サロン分析トップのサマリーをpush",
   "need_human_check": false,
-  "last_message": "左メニューのダッシュボード直下に「サロン分析」を追加。倉庫権限(permission=2)にはミドルウェアで403になるためリンクも非表示。ローカル確認済み、これから main へ push。",
-  "updated_at": "2026-09-06T12:55:00+09:00"
+  "last_message": "サロン分析トップの先頭にサマリー（総加盟店数・累計売上・平均月売上・集計期間）を追加。SalonAnalyticsService::overview を新設。ローカル確認済み、これから main へ push。",
+  "updated_at": "2026-09-06T13:10:00+09:00"
 }

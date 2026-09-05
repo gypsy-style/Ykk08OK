@@ -13,6 +13,46 @@
     <div class="lma-content_block dashboard_records" style="width:100%;">
         <div class="record_block">
             <div class="records_caption">
+                <h2 class="lma-title_bar sky"><em class="label">サマリー</em></h2>
+            </div>
+            <div class="records_table">
+                <table class="lma-detail_tbl analytics_tbl">
+                    <tbody>
+                        <tr>
+                            <th>項目</th>
+                            <td>内容</td>
+                        </tr>
+                        <tr>
+                            <th>総加盟店数</th>
+                            <td>{{ number_format($overview['merchantCount']) }} 件</td>
+                        </tr>
+                        <tr>
+                            <th>累計売上（税込）</th>
+                            <td>{{ number_format($overview['grandTotal']) }} 円</td>
+                        </tr>
+                        <tr>
+                            <th>平均月売上（税込）</th>
+                            <td>{{ number_format($overview['averageMonthly']) }} 円</td>
+                        </tr>
+                        <tr>
+                            <th>集計期間</th>
+                            <td>
+                                @if ($overview['firstMonth'] === null)
+                                売上なし
+                                @else
+                                {{ \Carbon\Carbon::parse($overview['firstMonth'] . '-01')->format('Y年n月') }}〜{{ \Carbon\Carbon::now()->format('Y年n月') }}（{{ $overview['monthCount'] }}ヶ月）
+                                @endif
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="lma-content_block dashboard_records" style="width:100%;">
+        <div class="record_block">
+            <div class="records_caption">
                 <h2 class="lma-title_bar sky"><em class="label">{{ \Carbon\Carbon::parse($months[0] . '-01')->format('Y年n月') }}〜{{ \Carbon\Carbon::parse($month . '-01')->format('Y年n月') }}</em></h2>
             </div>
             <div class="records_table">

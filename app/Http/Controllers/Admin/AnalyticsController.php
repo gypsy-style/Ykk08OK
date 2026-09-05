@@ -19,7 +19,10 @@ class AnalyticsController extends Controller
 
         return view('admin.analytics.index', array_merge(
             $nav,
-            ['newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months'])],
+            [
+                'overview' => SalonAnalyticsService::overview(),
+                'newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months']),
+            ],
             $this->productSalesData($month, self::TOP_ROWS)
         ));
     }

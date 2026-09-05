@@ -168,6 +168,26 @@ class SalonAnalyticsService
     }
 
     /**
+     * 全サロンをまとめたサマリー（税込）
+     *
+     * 加盟店数は削除済みを除いた現在の数。売上は削除済みサロンの分も含める。
+     *
+     * @return array{merchantCount: int, grandTotal: int, averageMonthly: int, firstMonth: string|null, monthCount: int}
+     */
+    public static function overview()
+    {
+        $summary = self::summary(self::merchants()->pluck('id')->all(), []);
+
+        return [
+            'merchantCount' => Merchant::where('is_test', 0)->count(),
+            'grandTotal' => $summary['grandTotal'],
+            'averageMonthly' => $summary['averageMonthly'],
+            'firstMonth' => $summary['firstMonth'],
+            'monthCount' => $summary['monthCount'],
+        ];
+    }
+
+    /**
      * サロン1件の詳細集計（税込）
      *
      * @param int $merchantId
