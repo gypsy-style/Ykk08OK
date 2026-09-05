@@ -42,6 +42,11 @@
                         <li class="dashboard {{ request()->routeIs('admin.dashboard') ? 'current' : '' }}">
                             <a href="{{ route('admin.dashboard') }}"><span class="text">ダッシュボード</span></a>
                         </li>
+                        @if(auth('admin')->user()->permission === 1)
+                        <li class="dashboard {{ request()->routeIs('admin.analytics') || request()->routeIs('admin.analytics.*') ? 'current' : '' }}">
+                            <a href="{{ route('admin.analytics') }}"><span class="text">サロン分析</span></a>
+                        </li>
+                        @endif
                         <li class="order {{ request()->routeIs('admin.orders.index') ? 'current' : '' }}">
                             <a href="{{ route('admin.orders.index') }}"><span class="text">受注管理</span></a>
                         </li>
