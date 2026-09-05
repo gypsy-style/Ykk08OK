@@ -43,7 +43,7 @@ class SalonAnalyticsService
      * 代理店ごと・月ごとの新規加盟店数
      *
      * @param array<int, string> $months
-     * @return array{rows: array<int, array{name: string, byMonth: array<string, int>}>, totals: array<string, int>}
+     * @return array{rows: array<int, array{id: int, name: string, byMonth: array<string, int>}>, totals: array<string, int>}
      */
     public static function monthlyNewMerchantsByAgency(array $months)
     {
@@ -83,7 +83,7 @@ class SalonAnalyticsService
                 $totals[$month] += $count;
             }
 
-            $result[] = ['name' => $agency->name, 'byMonth' => $byMonth];
+            $result[] = ['id' => $agency->id, 'name' => $agency->name, 'byMonth' => $byMonth];
         }
 
         return ['rows' => $result, 'totals' => $totals];
@@ -170,9 +170,6 @@ class SalonAnalyticsService
     /**
      * サロン1件の詳細集計（税込）
      *
-     * 金額は「月×商品」のセル単位で税込に丸め、累計も平均もその合計から出す。
-     * 画面内のどの数字を足しても合うようにするため、丸めの単位を1か所に揃えている。
-     *
      * @param int $merchantId
      * @param array<int, string> $months 月別テーブルに出す 'YYYY-MM'
      * @return array|null 対象サロンが無ければ null
@@ -184,12 +181,76 @@ class SalonAnalyticsService
             return null;
         }
 
+        return array_merge(self::summary([$merchant->id], $months), [
+            'merchant' => [
+                'id' => $merchant->id,
+                'name' => $merchant->name,
+                'deleted' => $merchant->deleted_at !== null,
+                'agencyName' => $merchant->agency === null ? '代理店なし' : $merchant->agency->name,
+            ],
+        ]);
+    }
+
+    /**
+     * 代理店1件の詳細集計（税込）。配下サロンの売上をまとめて集計する。
+     *
+     * @param int $agencyId
+     * @param array<int, string> $months 月別テーブルに出す 'YYYY-MM'
+     * @return array|null 対象代理店が無ければ null
+     */
+    public static function agencyDetail($agencyId, array $months)
+    {
+        $agency = Agency::find($agencyId);
+        if ($agency === null) {
+            return null;
+        }
+
+        // 削除済みサロンも含める。過去の売上が代理店の累計から消えないようにするため。
+        $merchants = Merchant::withTrashed()
+            ->where('is_test', 0)
+            ->where('agency_id', $agency->id)
+            ->get(['id', 'name', 'deleted_at']);
+
+        $summary = self::summary($merchants->pluck('id')->all(), $months);
+
+        $salons = [];
+        foreach ($merchants as $merchant) {
+            $salons[] = [
+                'id' => $merchant->id,
+                'name' => $merchant->name,
+                'deleted' => $merchant->deleted_at !== null,
+                'total' => $summary['byMerchant'][$merchant->id] ?? 0,
+            ];
+        }
+
+        usort($salons, function ($a, $b) {
+            return $b['total'] <=> $a['total'] ?: strcmp($a['name'], $b['name']);
+        });
+
+        return array_merge($summary, [
+            'agency' => ['id' => $agency->id, 'name' => $agency->name],
+            'salons' => $salons,
+        ]);
+    }
+
+    /**
+     * 指定サロンをまとめた月別・商品別の集計（税込）
+     *
+     * 金額は「月×サロン×商品」のセル単位で税込に丸め、累計も平均もその合計から出す。
+     * 画面内のどの数字を足しても合うようにするため、丸めの単位を1か所に揃えている。
+     *
+     * @param array<int, int> $merchantIds
+     * @param array<int, string> $months
+     * @return array
+     */
+    private static function summary(array $merchantIds, array $months)
+    {
         $query = DB::table('order_details as od')
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
-            ->selectRaw('DATE_FORMAT(o.shipped_at, "%Y-%m") as ym, p.id as product_id, p.product_name, SUM(od.quantity * od.price) as subtotal')
-            ->where('o.merchant_id', $merchant->id)
-            ->groupBy('ym', 'p.id', 'p.product_name');
+            ->selectRaw('DATE_FORMAT(o.shipped_at, "%Y-%m") as ym, o.merchant_id, p.id as product_id, p.product_name, SUM(od.quantity * od.price) as subtotal')
+            ->whereIn('o.merchant_id', $merchantIds)
+            ->groupBy('ym', 'o.merchant_id', 'p.id', 'p.product_name');
 
         InvoiceService::applyInvoiceScope($query, 'o');
 
@@ -197,15 +258,17 @@ class SalonAnalyticsService
         $names = [];
         $productTotals = [];
         $monthTotals = [];
+        $byMerchant = [];
         foreach ($query->get() as $row) {
             $amount = (int) round($row->subtotal * 1.1);
             if ($amount === 0) {
                 continue;
             }
-            $sales[$row->ym][$row->product_id] = $amount;
+            $sales[$row->ym][$row->product_id] = ($sales[$row->ym][$row->product_id] ?? 0) + $amount;
             $names[$row->product_id] = $row->product_name;
             $productTotals[$row->product_id] = ($productTotals[$row->product_id] ?? 0) + $amount;
             $monthTotals[$row->ym] = ($monthTotals[$row->ym] ?? 0) + $amount;
+            $byMerchant[$row->merchant_id] = ($byMerchant[$row->merchant_id] ?? 0) + $amount;
         }
 
         uksort($productTotals, function ($a, $b) use ($productTotals, $names) {
@@ -240,13 +303,8 @@ class SalonAnalyticsService
             : Carbon::parse($firstMonth . '-01')->diffInMonths(Carbon::now()->startOfMonth()) + 1;
 
         return [
-            'merchant' => [
-                'id' => $merchant->id,
-                'name' => $merchant->name,
-                'deleted' => $merchant->deleted_at !== null,
-                'agencyName' => $merchant->agency === null ? '代理店なし' : $merchant->agency->name,
-            ],
             'products' => $products,
+            'byMerchant' => $byMerchant,
             'monthly' => $monthly,
             'grandTotal' => array_sum($productTotals),
             'firstMonth' => $firstMonth,

@@ -3,8 +3,8 @@
   "project_note": "他セッションの waiting_user/blocked は上書きしない",
   "status": "running",
   "progress": 80,
-  "current_step": "サロン詳細に代理店名を追加してpush",
+  "current_step": "代理店詳細ページをpush",
   "need_human_check": false,
-  "last_message": "サロン詳細ページのサロン名の下に代理店名を表示（未紐付けは「代理店なし」）。ローカルで200レンダリング確認済み、これから main へ push。",
-  "updated_at": "2026-09-06T12:20:00+09:00"
+  "last_message": "代理店名リンク＋代理店詳細ページ（サマリー／加盟サロン一覧／月別商品売上／累計商品別売上）を追加。集計は SalonAnalyticsService::summary に共通化し salonDetail と共用。ルート admin/analytics/agency/{agency}、存在しないIDは404。ローカル確認済み、これから main へ push。",
+  "updated_at": "2026-09-06T12:40:00+09:00"
 }

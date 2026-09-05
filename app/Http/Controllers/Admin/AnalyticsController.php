@@ -15,22 +15,13 @@ class AnalyticsController extends Controller
     public function index(Request $request)
     {
         $month = $this->month($request);
-        $months = SalonAnalyticsService::months($month);
-        $newMerchants = SalonAnalyticsService::monthlyNewMerchantsByAgency($months);
+        $nav = $this->monthNav($month);
 
-        $currentDate = Carbon::parse($month . '-01');
-        $prevMonth = $currentDate->copy()->subMonth()->format('Y-m');
-        $nextMonth = $currentDate->copy()->addMonth()->format('Y-m');
-        $hasNextMonth = $month < Carbon::now()->format('Y-m');
-
-        return view('admin.analytics.index', array_merge(compact(
-            'months',
-            'newMerchants',
-            'month',
-            'prevMonth',
-            'nextMonth',
-            'hasNextMonth'
-        ), $this->productSalesData($month, self::TOP_ROWS)));
+        return view('admin.analytics.index', array_merge(
+            $nav,
+            ['newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months'])],
+            $this->productSalesData($month, self::TOP_ROWS)
+        ));
     }
 
     /** 商品売上テーブルだけを差し替えるための部分HTML */
@@ -51,23 +42,44 @@ class AnalyticsController extends Controller
     public function salon(Request $request, $merchantId)
     {
         $month = $this->month($request);
-        $months = SalonAnalyticsService::months($month);
-        $detail = SalonAnalyticsService::salonDetail($merchantId, $months);
+        $nav = $this->monthNav($month);
+        $detail = SalonAnalyticsService::salonDetail($merchantId, $nav['months']);
 
         if ($detail === null) {
             abort(404);
         }
 
-        $currentDate = Carbon::parse($month . '-01');
+        return view('admin.analytics.salon', array_merge(['detail' => $detail], $nav));
+    }
 
-        return view('admin.analytics.salon', [
-            'detail' => $detail,
-            'months' => $months,
+    /** 代理店1件の詳細 */
+    public function agency(Request $request, $agencyId)
+    {
+        $month = $this->month($request);
+        $detail = SalonAnalyticsService::agencyDetail($agencyId, SalonAnalyticsService::months($month));
+
+        if ($detail === null) {
+            abort(404);
+        }
+
+        return view('admin.analytics.agency', array_merge(
+            ['detail' => $detail],
+            $this->monthNav($month)
+        ));
+    }
+
+    /** 6ヶ月表示と先月・次月リンクに必要な値 */
+    private function monthNav($month)
+    {
+        $date = Carbon::parse($month . '-01');
+
+        return [
+            'months' => SalonAnalyticsService::months($month),
             'month' => $month,
-            'prevMonth' => $currentDate->copy()->subMonth()->format('Y-m'),
-            'nextMonth' => $currentDate->copy()->addMonth()->format('Y-m'),
+            'prevMonth' => $date->copy()->subMonth()->format('Y-m'),
+            'nextMonth' => $date->copy()->addMonth()->format('Y-m'),
             'hasNextMonth' => $month < Carbon::now()->format('Y-m'),
-        ]);
+        ];
     }
 
     private function month(Request $request)

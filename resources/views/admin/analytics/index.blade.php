@@ -26,7 +26,8 @@
                         </tr>
                         @foreach ($newMerchants['rows'] as $row)
                         <tr>
-                            <th>{{ $row['name'] }}</th>
+                            {{-- 代理店なしの行はリンク先が無い --}}
+                            <th>@if ($row['id'])<a href="{{ route('admin.analytics.agency', ['agency' => $row['id'], 'month' => $month]) }}">{{ $row['name'] }}</a>@else{{ $row['name'] }}@endif</th>
                             @foreach ($months as $m)
                             <td>{{ number_format($row['byMonth'][$m]) }}</td>
                             @endforeach
