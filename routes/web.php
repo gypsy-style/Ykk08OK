@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\MerchantController as AdminMerchantController;
 use App\Http\Controllers\Admin\LogController as AdminLogController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\SalesController as AdminSalesController;
+use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 use App\Http\Controllers\Agency\DashboardController as AgencyDashboardController;
 use App\Http\Controllers\Agency\MerchantController as AgencyMerchantController; 
 use App\Http\Controllers\Agency\AuthController as AgencyAuthController;
@@ -116,6 +117,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth:admin', 'admin.permission'])->group(function () {
         // ダッシュボード
         Route::get('index', [AdminDashboardController::class, 'index'])->name('dashboard');
+        // サロン分析
+        Route::get('analytics', [AdminAnalyticsController::class, 'index'])->name('analytics');
+        Route::get('analytics/product-sales', [AdminAnalyticsController::class, 'productSales'])->name('analytics.product_sales');
         // 商品管理
         Route::resource('products', ProductController::class);
         Route::post('products/update-status', [ProductController::class, 'updateStatus'])->name('products.updateStatus');
