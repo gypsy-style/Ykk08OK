@@ -3,8 +3,8 @@
   "project_note": "他セッションの waiting_user/blocked は上書きしない",
   "status": "running",
   "progress": 80,
-  "current_step": "代理店別新規加盟店数への変更をpush",
+  "current_step": "サロン詳細アナリティクスをpush",
   "need_human_check": false,
-  "last_message": "新規加盟店数の表を代理店別（行=代理店・列=月・末尾に合計行）に変更。SalonAnalyticsService::monthlyNewMerchantsByAgency を新設し countByMonth を削除。ローカルで200レンダリング確認済み、これから main へ push。",
-  "updated_at": "2026-09-06T11:45:00+09:00"
+  "last_message": "サロン名リンク＋サロン詳細ページ（サマリー／月別商品売上／累計商品別売上）を追加。ルート admin/analytics/salon/{merchant}、テスト加盟店・存在しないIDは404。ローカルで200レンダリング確認済み、これから main へ push。",
+  "updated_at": "2026-09-06T12:05:00+09:00"
 }

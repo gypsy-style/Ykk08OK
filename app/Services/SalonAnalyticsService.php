@@ -96,7 +96,7 @@ class SalonAnalyticsService
      * ここでも金額0として除かれ、0だけの列は並ばない。
      *
      * @param string $month YYYY-MM
-     * @return array{products: array<int, array{id: int, name: string}>, rows: array<int, array{name: string, deleted: bool, byProduct: array<int, int>, total: int}>}
+     * @return array{products: array<int, array{id: int, name: string}>, rows: array<int, array{id: int, name: string, deleted: bool, byProduct: array<int, int>, total: int}>}
      */
     public static function salonProductSales($month)
     {
@@ -152,6 +152,7 @@ class SalonAnalyticsService
             }
 
             $rows[] = [
+                'id' => $merchant->id,
                 'name' => $merchant->name,
                 'deleted' => $merchant->deleted_at !== null,
                 'byProduct' => $byProduct,
@@ -164,6 +165,93 @@ class SalonAnalyticsService
         });
 
         return ['products' => $products, 'rows' => $rows];
+    }
+
+    /**
+     * サロン1件の詳細集計（税込）
+     *
+     * 金額は「月×商品」のセル単位で税込に丸め、累計も平均もその合計から出す。
+     * 画面内のどの数字を足しても合うようにするため、丸めの単位を1か所に揃えている。
+     *
+     * @param int $merchantId
+     * @param array<int, string> $months 月別テーブルに出す 'YYYY-MM'
+     * @return array|null 対象サロンが無ければ null
+     */
+    public static function salonDetail($merchantId, array $months)
+    {
+        $merchant = Merchant::withTrashed()->where('is_test', 0)->find($merchantId);
+        if ($merchant === null) {
+            return null;
+        }
+
+        $query = DB::table('order_details as od')
+            ->join('orders as o', 'o.id', '=', 'od.order_id')
+            ->join('products as p', 'p.id', '=', 'od.product_id')
+            ->selectRaw('DATE_FORMAT(o.shipped_at, "%Y-%m") as ym, p.id as product_id, p.product_name, SUM(od.quantity * od.price) as subtotal')
+            ->where('o.merchant_id', $merchant->id)
+            ->groupBy('ym', 'p.id', 'p.product_name');
+
+        InvoiceService::applyInvoiceScope($query, 'o');
+
+        $sales = [];
+        $names = [];
+        $productTotals = [];
+        $monthTotals = [];
+        foreach ($query->get() as $row) {
+            $amount = (int) round($row->subtotal * 1.1);
+            if ($amount === 0) {
+                continue;
+            }
+            $sales[$row->ym][$row->product_id] = $amount;
+            $names[$row->product_id] = $row->product_name;
+            $productTotals[$row->product_id] = ($productTotals[$row->product_id] ?? 0) + $amount;
+            $monthTotals[$row->ym] = ($monthTotals[$row->ym] ?? 0) + $amount;
+        }
+
+        uksort($productTotals, function ($a, $b) use ($productTotals, $names) {
+            return $productTotals[$b] <=> $productTotals[$a] ?: strcmp($names[$a], $names[$b]);
+        });
+
+        // 列は全期間で売上のあった商品に固定する。月を移動するたびに列が
+        // 増減すると、月をまたいだ比較ができなくなるため。
+        $products = [];
+        foreach ($productTotals as $id => $total) {
+            $products[] = ['id' => $id, 'name' => $names[$id], 'total' => $total];
+        }
+
+        $monthly = [];
+        foreach ($months as $month) {
+            $byProduct = [];
+            foreach ($products as $product) {
+                $byProduct[$product['id']] = $sales[$month][$product['id']] ?? 0;
+            }
+            $monthly[$month] = [
+                'byProduct' => $byProduct,
+                'total' => $monthTotals[$month] ?? 0,
+            ];
+        }
+
+        // 平均は初回売上月から当月までで割る。売上0の月も分母に含めないと、
+        // 動きの止まったサロンほど平均が高く見えてしまう。
+        ksort($monthTotals);
+        $firstMonth = empty($monthTotals) ? null : array_key_first($monthTotals);
+        $monthCount = $firstMonth === null
+            ? 0
+            : Carbon::parse($firstMonth . '-01')->diffInMonths(Carbon::now()->startOfMonth()) + 1;
+
+        return [
+            'merchant' => [
+                'id' => $merchant->id,
+                'name' => $merchant->name,
+                'deleted' => $merchant->deleted_at !== null,
+            ],
+            'products' => $products,
+            'monthly' => $monthly,
+            'grandTotal' => array_sum($productTotals),
+            'firstMonth' => $firstMonth,
+            'monthCount' => $monthCount,
+            'averageMonthly' => $monthCount === 0 ? 0 : (int) round(array_sum($productTotals) / $monthCount),
+        ];
     }
 
     /**

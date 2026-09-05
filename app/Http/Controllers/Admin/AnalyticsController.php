@@ -47,6 +47,29 @@ class AnalyticsController extends Controller
         return view('admin.analytics.product_sales', $this->productSalesData($this->month($request), null));
     }
 
+    /** サロン1件の詳細 */
+    public function salon(Request $request, $merchantId)
+    {
+        $month = $this->month($request);
+        $months = SalonAnalyticsService::months($month);
+        $detail = SalonAnalyticsService::salonDetail($merchantId, $months);
+
+        if ($detail === null) {
+            abort(404);
+        }
+
+        $currentDate = Carbon::parse($month . '-01');
+
+        return view('admin.analytics.salon', [
+            'detail' => $detail,
+            'months' => $months,
+            'month' => $month,
+            'prevMonth' => $currentDate->copy()->subMonth()->format('Y-m'),
+            'nextMonth' => $currentDate->copy()->addMonth()->format('Y-m'),
+            'hasNextMonth' => $month < Carbon::now()->format('Y-m'),
+        ]);
+    }
+
     private function month(Request $request)
     {
         $month = $request->query('month');

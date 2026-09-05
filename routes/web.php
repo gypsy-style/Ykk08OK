@@ -121,6 +121,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('analytics', [AdminAnalyticsController::class, 'index'])->name('analytics');
         Route::get('analytics/product-sales', [AdminAnalyticsController::class, 'productSales'])->name('analytics.product_sales');
         Route::get('analytics/product-sales/all', [AdminAnalyticsController::class, 'productSalesAll'])->name('analytics.product_sales_all');
+        Route::get('analytics/salon/{merchant}', [AdminAnalyticsController::class, 'salon'])->name('analytics.salon');
         // 商品管理
         Route::resource('products', ProductController::class);
         Route::post('products/update-status', [ProductController::class, 'updateStatus'])->name('products.updateStatus');
