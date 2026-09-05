@@ -19,15 +19,23 @@
                 <table class="lma-detail_tbl analytics_tbl">
                     <tbody>
                         <tr>
-                            <th></th>
+                            <th>代理店別新規加盟店数</th>
                             @foreach ($months as $m)
                             <td>{{ \Carbon\Carbon::parse($m . '-01')->format('n月') }}</td>
                             @endforeach
                         </tr>
+                        @foreach ($newMerchants['rows'] as $row)
                         <tr>
-                            <th>新規加盟店数</th>
+                            <th>{{ $row['name'] }}</th>
                             @foreach ($months as $m)
-                            <td>{{ number_format($newMerchants[$m]) }}</td>
+                            <td>{{ number_format($row['byMonth'][$m]) }}</td>
+                            @endforeach
+                        </tr>
+                        @endforeach
+                        <tr>
+                            <th>合計</th>
+                            @foreach ($months as $m)
+                            <td>{{ number_format($newMerchants['totals'][$m]) }}</td>
                             @endforeach
                         </tr>
                     </tbody>

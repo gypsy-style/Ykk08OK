@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Agency;
 use App\Models\Merchant;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -35,30 +36,57 @@ class SalonAnalyticsService
         return $months;
     }
 
+    /** 代理店に紐づかない加盟店をまとめる行のキー */
+    private const NO_AGENCY = 0;
+
     /**
-     * 月ごとの新規加盟店数
+     * 代理店ごと・月ごとの新規加盟店数
      *
      * @param array<int, string> $months
-     * @return array<string, int>
+     * @return array{rows: array<int, array{name: string, byMonth: array<string, int>}>, totals: array<string, int>}
      */
-    public static function monthlyNewMerchants(array $months)
+    public static function monthlyNewMerchantsByAgency(array $months)
     {
         [$start, $end] = self::range($months);
 
         // deleted_at で絞らない。絞ると過去月の新規加盟店数が、後からサロンを
         // 削除するたびに変わってしまい過去の数字として使えなくなる。
-        $counts = self::countByMonth(
-            DB::table('merchants')->where('is_test', 0),
-            $start,
-            $end
-        );
-
-        $result = [];
-        foreach ($months as $month) {
-            $result[$month] = (int) ($counts[$month] ?? 0);
+        //
+        // 絞り込みは素の日時比較で行う。DATE_FORMAT を WHERE 句に書くと
+        // インデックスが効かないため、月への振り分けにだけ使う。
+        $counts = [];
+        $rows = DB::table('merchants')
+            ->where('is_test', 0)
+            ->selectRaw('agency_id, DATE_FORMAT(created_at, "%Y-%m") as ym, COUNT(*) as cnt')
+            ->where('created_at', '>=', $start)
+            ->where('created_at', '<', $end)
+            ->groupBy('agency_id', 'ym')
+            ->get();
+        foreach ($rows as $row) {
+            $key = $row->agency_id === null ? self::NO_AGENCY : (int) $row->agency_id;
+            $counts[$key][$row->ym] = (int) $row->cnt;
         }
 
-        return $result;
+        $agencies = Agency::orderBy('name')->get(['id', 'name'])->all();
+        // 代理店に紐づかない加盟店は該当期間にいるときだけ末尾に出す
+        if (!empty($counts[self::NO_AGENCY])) {
+            $agencies[] = (object) ['id' => self::NO_AGENCY, 'name' => '代理店なし'];
+        }
+
+        $totals = array_fill_keys($months, 0);
+        $result = [];
+        foreach ($agencies as $agency) {
+            $byMonth = [];
+            foreach ($months as $month) {
+                $count = $counts[$agency->id][$month] ?? 0;
+                $byMonth[$month] = $count;
+                $totals[$month] += $count;
+            }
+
+            $result[] = ['name' => $agency->name, 'byMonth' => $byMonth];
+        }
+
+        return ['rows' => $result, 'totals' => $totals];
     }
 
     /**
@@ -163,24 +191,5 @@ class SalonAnalyticsService
             Carbon::parse($months[0] . '-01')->startOfMonth(),
             Carbon::parse(end($months) . '-01')->startOfMonth()->addMonth(),
         ];
-    }
-
-    /**
-     * created_at の年月ごとに件数を数える
-     *
-     * 絞り込みは素の日時比較で行う。DATE_FORMAT を WHERE 句に書くと
-     * インデックスが効かないため、月への振り分けにだけ使う。
-     *
-     * @param mixed $query
-     * @return array<string, int>
-     */
-    private static function countByMonth($query, Carbon $start, Carbon $end)
-    {
-        return $query->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as ym, COUNT(*) as cnt')
-            ->where('created_at', '>=', $start)
-            ->where('created_at', '<', $end)
-            ->groupBy('ym')
-            ->pluck('cnt', 'ym')
-            ->toArray();
     }
 }

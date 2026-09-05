@@ -16,7 +16,7 @@ class AnalyticsController extends Controller
     {
         $month = $this->month($request);
         $months = SalonAnalyticsService::months($month);
-        $newMerchants = SalonAnalyticsService::monthlyNewMerchants($months);
+        $newMerchants = SalonAnalyticsService::monthlyNewMerchantsByAgency($months);
 
         $currentDate = Carbon::parse($month . '-01');
         $prevMonth = $currentDate->copy()->subMonth()->format('Y-m');

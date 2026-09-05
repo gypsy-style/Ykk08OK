@@ -1,10 +1,10 @@
 {
   "project": "Ykk08OK",
   "project_note": "他セッションの waiting_user/blocked は上書きしない",
-  "status": "waiting_user",
-  "progress": 90,
-  "current_step": "サロン別商品売上ブロックのレイアウト調整",
-  "need_human_check": true,
-  "last_message": "_product_sales.blade.php を組み替えて、先月/次月ナビと「もっと見る」を records_table の中（ナビ=表の上、もっと見る=表の下）に配置。ローカルで200レンダリング確認済み。localhost:8884/admin/analytics で見た目を確認してほしい。OKならコミット＆push。残タスク: 設計書 docs/superpowers/specs/2026-09-05-salon-analytics-design.md が旧仕様のまま。",
-  "updated_at": "2026-09-06T11:20:00+09:00"
+  "status": "running",
+  "progress": 80,
+  "current_step": "代理店別新規加盟店数への変更をpush",
+  "need_human_check": false,
+  "last_message": "新規加盟店数の表を代理店別（行=代理店・列=月・末尾に合計行）に変更。SalonAnalyticsService::monthlyNewMerchantsByAgency を新設し countByMonth を削除。ローカルで200レンダリング確認済み、これから main へ push。",
+  "updated_at": "2026-09-06T11:45:00+09:00"
 }
