@@ -1,9 +1,9 @@
 {
   "project": "Ykk08OK",
   "status": "waiting_user",
-  "progress": 30,
-  "current_step": "加盟店ふりがな欄の実装計画を作成・実行方式の選択待ち",
+  "progress": 92,
+  "current_step": "売上ゼロ月でもサロン一覧を表示するよう修正・確認待ち",
   "need_human_check": true,
-  "last_message": "docs/superpowers/plans/2026-09-04-merchant-name-kana.md に実装計画を作成。Task1がカラム追加とfillable、Task2が管理画面のバリデーションとビュー、Task3が代理店画面。CLAUDE.mdの方針に従いテストコードは書かず、tinkerでのバリデーション検証とブラウザ目視で確認する。サブエージェント方式かインライン実行かをユーザーに確認中。なお Deploy run 33235675229 の失敗と本番crontab未登録は未解決。",
-  "updated_at": "2026-09-04T00:20:00+09:00"
+  "last_message": "商品売上テーブルで、その月に売上が無くても全サロンを行として表示するよう修正（空データ時の早期returnを削除）。並びは合計の降順・同額は名前昇順のまま。2026-09（売上なし）で全サロンが0で並ぶことを検証済み。ただし売上のある商品が1つも無い月は商品列が消え「サロン名｜合計」だけになる点をユーザーに確認中。http://localhost:8884/admin/analytics",
+  "updated_at": "2026-09-05T12:35:00+09:00"
 }
