@@ -16,7 +16,8 @@
         background-color: #e6edf8;
     }
 
-    .analytics_tbl th a {
+    .analytics_tbl th a,
+    .analytics_tbl td a {
         color: var(--color-text);
         text-decoration: underline;
     }

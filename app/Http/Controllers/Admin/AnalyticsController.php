@@ -69,16 +69,19 @@ class AnalyticsController extends Controller
     public function agency(Request $request, $agencyId)
     {
         $month = $this->month($request);
-        $detail = SalonAnalyticsService::agencyDetail($agencyId, SalonAnalyticsService::months($month));
+        $nav = $this->monthNav($month);
+        $added = $request->query('added');
+        $detail = SalonAnalyticsService::agencyDetail(
+            $agencyId,
+            $nav['months'],
+            is_string($added) && preg_match('/\A\d{4}-\d{2}\z/', $added) ? $added : null
+        );
 
         if ($detail === null) {
             abort(404);
         }
 
-        return view('admin.analytics.agency', array_merge(
-            ['detail' => $detail],
-            $this->monthNav($month)
-        ));
+        return view('admin.analytics.agency', array_merge(['detail' => $detail], $nav));
     }
 
     /** 6ヶ月表示と先月・次月リンクに必要な値 */

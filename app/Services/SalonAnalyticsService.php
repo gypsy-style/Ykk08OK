@@ -216,9 +216,10 @@ class SalonAnalyticsService
      *
      * @param int $agencyId
      * @param array<int, string> $months 月別テーブルに出す 'YYYY-MM'
+     * @param string|null $addedMonth 指定するとサロン一覧をその月の追加分だけに絞る 'YYYY-MM'
      * @return array|null 対象代理店が無ければ null
      */
-    public static function agencyDetail($agencyId, array $months)
+    public static function agencyDetail($agencyId, array $months, $addedMonth = null)
     {
         $agency = Agency::find($agencyId);
         if ($agency === null) {
@@ -229,16 +230,23 @@ class SalonAnalyticsService
         $merchants = Merchant::withTrashed()
             ->where('is_test', 0)
             ->where('agency_id', $agency->id)
-            ->get(['id', 'name', 'deleted_at']);
+            ->get(['id', 'name', 'deleted_at', 'created_at']);
 
+        // 売上の集計は絞り込みに関係なく代理店全体で出す
         $summary = self::summary($merchants->pluck('id')->all(), $months);
 
         $salons = [];
         foreach ($merchants as $merchant) {
+            $addedAt = $merchant->created_at === null ? null : $merchant->created_at->format('Y-m');
+            if ($addedMonth !== null && $addedAt !== $addedMonth) {
+                continue;
+            }
+
             $salons[] = [
                 'id' => $merchant->id,
                 'name' => $merchant->name,
                 'deleted' => $merchant->deleted_at !== null,
+                'addedAt' => $addedAt,
                 'total' => $summary['byMerchant'][$merchant->id] ?? 0,
             ];
         }
@@ -250,6 +258,7 @@ class SalonAnalyticsService
         return array_merge($summary, [
             'agency' => ['id' => $agency->id, 'name' => $agency->name],
             'salons' => $salons,
+            'addedMonth' => $addedMonth,
         ]);
     }
 

@@ -22,7 +22,8 @@
                 {{-- 代理店なしの行はリンク先が無い --}}
                 <th>@if ($row['id'])<a href="{{ route('admin.analytics.agency', ['agency' => $row['id'], 'month' => $month]) }}">{{ $row['name'] }}</a>@else{{ $row['name'] }}@endif</th>
                 @foreach ($months as $m)
-                <td>{{ number_format($row['byMonth'][$m]) }}</td>
+                {{-- 0件の月はリンク先に出せるサロンが無い --}}
+                <td>@if ($row['id'] && $row['byMonth'][$m])<a href="{{ route('admin.analytics.agency', ['agency' => $row['id'], 'month' => $month, 'added' => $m]) }}#salons">{{ number_format($row['byMonth'][$m]) }}</a>@else{{ number_format($row['byMonth'][$m]) }}@endif</td>
                 @endforeach
             </tr>
             @endforeach

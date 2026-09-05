@@ -48,25 +48,31 @@
     </div>
 
     <div class="lma-content_block dashboard_records" style="width:100%;">
-        <div class="record_block">
+        <div class="record_block" id="salons">
             <div class="records_caption">
-                <h2 class="lma-title_bar sky"><em class="label">加盟サロン一覧</em></h2>
+                <h2 class="lma-title_bar sky"><em class="label">加盟サロン一覧@if ($detail['addedMonth'])（{{ \Carbon\Carbon::parse($detail['addedMonth'] . '-01')->format('Y年n月') }} 追加分）@endif</em></h2>
             </div>
             <div class="records_table">
+                @if ($detail['addedMonth'])
+                <p class="analytics_more"><a href="{{ route('admin.analytics.agency', ['agency' => $detail['agency']['id'], 'month' => $month]) }}#salons">絞り込みを解除</a></p>
+                @endif
                 <table class="lma-detail_tbl analytics_tbl">
                     <tbody>
                         <tr>
                             <th>サロン名</th>
+                            <td>追加年月</td>
                             <td>累計売上</td>
                         </tr>
                         @forelse ($detail['salons'] as $salon)
                         <tr>
                             <th><a href="{{ route('admin.analytics.salon', ['merchant' => $salon['id'], 'month' => $month]) }}">{{ $salon['name'] }}</a>@if ($salon['deleted'])（削除済み）@endif</th>
+                            <td>{{ $salon['addedAt'] ? \Carbon\Carbon::parse($salon['addedAt'] . '-01')->format('Y年n月') : '' }}</td>
                             <td>{{ number_format($salon['total']) }}</td>
                         </tr>
                         @empty
                         <tr>
                             <th>加盟サロンなし</th>
+                            <td></td>
                             <td></td>
                         </tr>
                         @endforelse

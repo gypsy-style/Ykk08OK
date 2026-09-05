@@ -3,8 +3,8 @@
   "project_note": "他セッションの waiting_user/blocked は上書きしない",
   "status": "running",
   "progress": 80,
-  "current_step": "代理店別新規加盟店数の非同期化をpush",
+  "current_step": "加盟サロン一覧の追加年月と月別ドリルダウンをpush",
   "need_human_check": false,
-  "last_message": "代理店別新規加盟店数を非同期化（_new_merchants 部分ビュー＋ admin/analytics/new-merchants ルート）。先月/次月は表の上に移動し、右端で横並びに。JSは .analytics_async クラス方式へ一般化し _async_script にリネーム、_style は head へ集約。ローカル確認済み、これから main へ push。",
-  "updated_at": "2026-09-06T13:30:00+09:00"
+  "last_message": "代理店詳細の加盟サロン一覧に追加年月カラムを追加し、代理店別新規加盟店数の件数セルから ?added=YYYY-MM で絞り込んだ一覧へ遷移できるようにした（0件セルはリンクなし、絞り込み解除リンクあり）。ローカル確認済み、これから main へ push。",
+  "updated_at": "2026-09-06T13:50:00+09:00"
 }
