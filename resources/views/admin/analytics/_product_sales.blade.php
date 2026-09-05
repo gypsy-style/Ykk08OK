@@ -2,6 +2,13 @@
     <h2 class="lma-title_bar sky"><em class="label">サロン別商品売上（税込・{{ \Carbon\Carbon::parse($productMonth . '-01')->format('Y年n月') }}）</em></h2>
 </div>
 <div class="records_table">
+    <ul class="lma-pnavi_list clearfix analytics_pnavi">
+        <li class="prev"><a href="#" data-month="{{ $productPrevMonth }}">先月</a></li>
+        {{-- 当月を表示中は次月へ進めない --}}
+        @if ($productHasNextMonth)
+        <li class="next"><a href="#" data-month="{{ $productNextMonth }}">次月</a></li>
+        @endif
+    </ul>
     <table class="lma-detail_tbl analytics_tbl">
         <tbody>
             <tr>
@@ -27,17 +34,10 @@
             @endforelse
         </tbody>
     </table>
-</div>
-@if ($productHasMore)
-<p class="lma-btn_box btn_wh btn_min analytics_more"><a href="{{ route('admin.analytics.product_sales_all', ['month' => $productMonth]) }}">もっと見る</a></p>
-@endif
-<ul class="lma-pnavi_list clearfix">
-    <li class="prev"><a href="#" data-month="{{ $productPrevMonth }}">先月</a></li>
-    {{-- 当月を表示中は次月へ進めない --}}
-    @if ($productHasNextMonth)
-    <li class="next"><a href="#" data-month="{{ $productNextMonth }}">次月</a></li>
+    @if ($productHasMore)
+    <p class="lma-btn_box btn_wh btn_min analytics_more"><a href="{{ route('admin.analytics.product_sales_all', ['month' => $productMonth]) }}">もっと見る</a></p>
     @endif
-</ul>
+</div>
 
 <style>
     .analytics_tbl tbody tr:first-child {
@@ -55,6 +55,10 @@
 
     .analytics_tbl tbody tr:not(:first-child):hover {
         background-color: #e6edf8;
+    }
+
+    .analytics_pnavi {
+        margin-bottom: 15px;
     }
 
     .analytics_more {

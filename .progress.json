@@ -2,9 +2,9 @@
   "project": "Ykk08OK",
   "project_note": "他セッションの waiting_user/blocked は上書きしない",
   "status": "waiting_user",
-  "progress": 95,
-  "current_step": "上位10件＋もっと見る一覧ページとUI調整を実装・確認待ち",
+  "progress": 90,
+  "current_step": "サロン別商品売上ブロックのレイアウト調整",
   "need_human_check": true,
-  "last_message": "商品売上を上位10件表示にし、超過分は「もっと見る」→ admin/analytics/product-sales/all の一覧ページへ。部分ビューを _product_sales.blade.php に集約し、JSは _product_sales_script.blade.php を両ページで include、非同期先は wrapper の data-url で切替。行の見分けがつくようゼブラ＋ヘッダー行の色付け＋hoverをインライン<style>で追加（admin配下の既存13ファイルと同じ流儀。アセット再ビルド不要）。全4エンドポイント200、limit=2で hasMore=true・2行になることも検証済み。未コミット。http://localhost:8884/admin/analytics",
-  "updated_at": "2026-09-06T10:30:00+09:00"
+  "last_message": "_product_sales.blade.php を組み替えて、先月/次月ナビと「もっと見る」を records_table の中（ナビ=表の上、もっと見る=表の下）に配置。ローカルで200レンダリング確認済み。localhost:8884/admin/analytics で見た目を確認してほしい。OKならコミット＆push。残タスク: 設計書 docs/superpowers/specs/2026-09-05-salon-analytics-design.md が旧仕様のまま。",
+  "updated_at": "2026-09-06T11:20:00+09:00"
 }
