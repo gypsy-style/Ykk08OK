@@ -21,6 +21,11 @@
         text-decoration: underline;
     }
 
+    .analytics_agency {
+        margin-top: 5px;
+        font-size: .9em;
+    }
+
     .analytics_pnavi {
         margin-bottom: 15px;
     }

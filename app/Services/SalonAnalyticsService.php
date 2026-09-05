@@ -179,7 +179,7 @@ class SalonAnalyticsService
      */
     public static function salonDetail($merchantId, array $months)
     {
-        $merchant = Merchant::withTrashed()->where('is_test', 0)->find($merchantId);
+        $merchant = Merchant::withTrashed()->with('agency')->where('is_test', 0)->find($merchantId);
         if ($merchant === null) {
             return null;
         }
@@ -244,6 +244,7 @@ class SalonAnalyticsService
                 'id' => $merchant->id,
                 'name' => $merchant->name,
                 'deleted' => $merchant->deleted_at !== null,
+                'agencyName' => $merchant->agency === null ? '代理店なし' : $merchant->agency->name,
             ],
             'products' => $products,
             'monthly' => $monthly,

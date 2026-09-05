@@ -7,6 +7,7 @@
     <div class="lma-main_head">
         <div class="lma-title_block">
             <h2>{{ $detail['merchant']['name'] }}@if ($detail['merchant']['deleted'])（削除済み）@endif</h2>
+            <p class="analytics_agency">{{ $detail['merchant']['agencyName'] }}</p>
         </div>
     </div>
 
