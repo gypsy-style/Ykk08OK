@@ -119,6 +119,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('index', [AdminDashboardController::class, 'index'])->name('dashboard');
         // サロン分析
         Route::get('analytics', [AdminAnalyticsController::class, 'index'])->name('analytics');
+        Route::get('analytics/new-merchants', [AdminAnalyticsController::class, 'newMerchants'])->name('analytics.new_merchants');
         Route::get('analytics/product-sales', [AdminAnalyticsController::class, 'productSales'])->name('analytics.product_sales');
         Route::get('analytics/product-sales/all', [AdminAnalyticsController::class, 'productSalesAll'])->name('analytics.product_sales_all');
         Route::get('analytics/salon/{merchant}', [AdminAnalyticsController::class, 'salon'])->name('analytics.salon');

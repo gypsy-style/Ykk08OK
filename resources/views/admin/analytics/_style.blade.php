@@ -26,8 +26,17 @@
         font-size: .9em;
     }
 
+    /* 先月・次月を右端に横並びにする（float の左右振り分けを打ち消す） */
     .analytics_pnavi {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
         margin-bottom: 15px;
+    }
+
+    .analytics_pnavi li.prev,
+    .analytics_pnavi li.next {
+        float: none;
     }
 
     .analytics_more {

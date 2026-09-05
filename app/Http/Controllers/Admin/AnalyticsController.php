@@ -27,6 +27,16 @@ class AnalyticsController extends Controller
         ));
     }
 
+    /** 代理店別新規加盟店数テーブルだけを差し替えるための部分HTML */
+    public function newMerchants(Request $request)
+    {
+        $nav = $this->monthNav($this->month($request));
+
+        return view('admin.analytics._new_merchants', array_merge($nav, [
+            'newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months']),
+        ]));
+    }
+
     /** 商品売上テーブルだけを差し替えるための部分HTML */
     public function productSales(Request $request)
     {

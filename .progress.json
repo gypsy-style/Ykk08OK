@@ -3,8 +3,8 @@
   "project_note": "他セッションの waiting_user/blocked は上書きしない",
   "status": "running",
   "progress": 80,
-  "current_step": "サロン分析トップのサマリーをpush",
+  "current_step": "代理店別新規加盟店数の非同期化をpush",
   "need_human_check": false,
-  "last_message": "サロン分析トップの先頭にサマリー（総加盟店数・累計売上・平均月売上・集計期間）を追加。SalonAnalyticsService::overview を新設。ローカル確認済み、これから main へ push。",
-  "updated_at": "2026-09-06T13:10:00+09:00"
+  "last_message": "代理店別新規加盟店数を非同期化（_new_merchants 部分ビュー＋ admin/analytics/new-merchants ルート）。先月/次月は表の上に移動し、右端で横並びに。JSは .analytics_async クラス方式へ一般化し _async_script にリネーム、_style は head へ集約。ローカル確認済み、これから main へ push。",
+  "updated_at": "2026-09-06T13:30:00+09:00"
 }

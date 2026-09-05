@@ -38,5 +38,3 @@
     <p class="lma-btn_box btn_wh btn_min analytics_more"><a href="{{ route('admin.analytics.product_sales_all', ['month' => $productMonth]) }}">もっと見る</a></p>
     @endif
 </div>
-
-@include('admin.analytics._style')
