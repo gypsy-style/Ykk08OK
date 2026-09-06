@@ -15,8 +15,16 @@
         <form method="GET" action="{{ route('admin.merchants.index') }}" class="filter-form">
             <div class="lma-filter">
                 <div class="lma-filter__item">
-                    <label for="keyword">キーワード:</label>
-                    <input type="text" name="keyword" id="keyword" value="{{ request('keyword') }}" placeholder="店舗名・サロンコード">
+                    <label for="keyword">ふりがな:</label>
+                    <input type="text" name="keyword" id="keyword" value="{{ request('keyword') }}" placeholder="ひらがなで入力" autocomplete="off">
+                </div>
+                <div class="lma-filter__item">
+                    <label for="sort">並び順:</label>
+                    <select name="sort" id="sort">
+                        @foreach($sorts as $value => $label)
+                        <option value="{{ $value }}" {{ $sort === $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="lma-filter__item">
                     <label for="agency_id">代理店:</label>
@@ -52,32 +60,60 @@
         </form>
     </div>
 
-    <div class="lma-content_block staff nobg">
-        <ul class="lma-user_list store">
-            @foreach($merchants as $merchant)
-            <li>
-                <div class="lma-user_box {{ $merchant->status == 2 ? 'tbd' : '' }}">
-                    <div class="user_info">
-                        <h3 class="name">{{ $merchant->name }}</h3>
-                        <p class="sub" style="font-size: 0.8em; color: #888;">{{ $merchant->agency->name ?? '代理店未設定' }}　会員ランク{{ $merchant->member_rank ?? '-' }}</p>
-                        @if($merchant->bank_account_name)
-                        <p class="sub" style="font-size: 0.8em; color: #888; white-space: pre-line;">振込み口座名: {{ $merchant->bank_account_name }}</p>
-                        @endif
-                    </div>
-                    <div class="lma-btn_box btn_list">
-                        <a href="{{ route('admin.merchants.edit', $merchant->id) }}" class="btn btn-primary btn-sm">編集</a>
-                        <form action="{{ route('admin.merchants.destroy', $merchant->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('本当に削除しますか？');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="gy">削除</button>
-                        </form>
-                        <!-- <a href="{{ route('admin.merchants.destroy', $merchant->id) }}" class="gy">削除</a> -->
-                    </div>
-
-                </div>
-            </li>
-            @endforeach
-        </ul>
+    <div class="lma-content_block staff nobg" id="merchant_list" data-url="{{ route('admin.merchants.list') }}">
+        @include('admin.merchants._list')
     </div>
 </section>
 @endsection
+
+@push('head')
+<script>
+    $(function () {
+        var $form = $('.filter-form');
+        var $list = $('#merchant_list');
+        var $keyword = $('#keyword');
+        var timer = null;
+        var composing = false;
+
+        // カタカナで打たれても拾えるようひらがなに寄せ、それ以外の文字は落とす
+        function toHiragana(value) {
+            return value
+                .replace(/[ァ-ヶ]/g, function (c) {
+                    return String.fromCharCode(c.charCodeAt(0) - 0x60);
+                })
+                .replace(/[^ぁ-ゖー]/g, '');
+        }
+
+        function reload() {
+            $.get($list.data('url'), $form.serialize()).done(function (html) {
+                $list.html(html);
+            });
+        }
+
+        // IME 変換中は値を書き換えない。書き換えると入力中の文字が消える
+        $keyword.on('compositionstart', function () {
+            composing = true;
+        }).on('compositionend', function () {
+            composing = false;
+            $(this).trigger('input');
+        }).on('input', function () {
+            if (composing) {
+                return;
+            }
+            var cleaned = toHiragana(this.value);
+            if (cleaned !== this.value) {
+                this.value = cleaned;
+            }
+            clearTimeout(timer);
+            timer = setTimeout(reload, 300);
+        });
+
+        $form.find('select').on('change', reload);
+
+        $form.on('submit', function (e) {
+            e.preventDefault();
+            reload();
+        });
+    });
+</script>
+@endpush

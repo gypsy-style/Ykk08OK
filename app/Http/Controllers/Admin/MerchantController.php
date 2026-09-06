@@ -15,15 +15,51 @@ use Illuminate\Validation\Rule;
 
 class MerchantController extends Controller
 {
+    /** 並び順の選択肢。キーが sort パラメータの値 */
+    private const SORTS = [
+        'kana_asc' => 'あいうえお順（昇順）',
+        'kana_desc' => 'あいうえお順（降順）',
+        'created_desc' => '登録日順（新しい順）',
+        'created_asc' => '登録日順（古い順）',
+    ];
+
     public function index(Request $request)
     {
-        $query = Merchant::with('agency')->orderBy('created_at', 'desc');
+        return view('admin.merchants.index', [
+            'merchants' => $this->filtered($request),
+            'agencies' => Agency::all(),
+            'sorts' => self::SORTS,
+            'sort' => $this->sort($request),
+        ]);
+    }
+
+    /** 検索・並び替えで一覧部分だけを差し替えるための部分HTML */
+    public function listPartial(Request $request)
+    {
+        return view('admin.merchants._list', ['merchants' => $this->filtered($request)]);
+    }
+
+    private function filtered(Request $request)
+    {
+        $query = Merchant::with('agency');
+
+        switch ($this->sort($request)) {
+            case 'kana_desc':
+                // ふりがな未入力は昇順・降順どちらでも末尾に固める
+                $query->orderByRaw("(name_kana IS NULL OR name_kana = '') asc")->orderBy('name_kana', 'desc');
+                break;
+            case 'created_desc':
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'created_asc':
+                $query->orderBy('created_at', 'asc');
+                break;
+            default:
+                $query->orderByRaw("(name_kana IS NULL OR name_kana = '') asc")->orderBy('name_kana', 'asc');
+        }
 
         if ($keyword = $request->query('keyword')) {
-            $query->where(function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('merchant_code', 'like', "%{$keyword}%");
-            });
+            $query->where('name_kana', 'like', "%{$keyword}%");
         }
         if ($agencyId = $request->query('agency_id')) {
             $query->where('agency_id', $agencyId);
@@ -35,9 +71,14 @@ class MerchantController extends Controller
             $query->where('member_rank', $memberRank);
         }
 
-        $merchants = $query->get();
-        $agencies = Agency::all();
-        return view('admin.merchants.index', compact('merchants', 'agencies'));
+        return $query->get();
+    }
+
+    private function sort(Request $request)
+    {
+        $sort = $request->query('sort');
+
+        return is_string($sort) && isset(self::SORTS[$sort]) ? $sort : 'kana_asc';
     }
 
     public function create()

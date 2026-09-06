@@ -132,6 +132,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('agencies/{agency}/edit-password', [AgencyController::class, 'editPassword'])->name('agencies.edit-password');
     Route::post('agencies/{agency}/update-password', [AgencyController::class, 'updatePassword'])->name('agencies.update-password');
         Route::post('agencies/update/{agency}', [AgencyController::class,'update'])->name('agencies.update');
+        // resource より前に置く。後ろだと merchants/{merchant} に食われる
+        Route::get('merchants/list', [AdminMerchantController::class, 'listPartial'])->name('merchants.list');
         Route::resource('merchants', AdminMerchantController::class);
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show', 'edit']);
         Route:: PUT('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
