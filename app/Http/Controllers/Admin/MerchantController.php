@@ -59,7 +59,7 @@ class MerchantController extends Controller
         }
 
         if ($keyword = $request->query('keyword')) {
-            $query->where('name_kana', 'like', "%{$keyword}%");
+            $query->where('name_kana', 'like', "{$keyword}%");
         }
         if ($agencyId = $request->query('agency_id')) {
             $query->where('agency_id', $agencyId);

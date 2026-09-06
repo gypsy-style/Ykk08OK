@@ -2,9 +2,9 @@
   "project": "Ykk08OK",
   "project_note": "他セッションの waiting_user/blocked は上書きしない",
   "status": "waiting_user",
-  "progress": 90,
-  "current_step": "加盟店一覧の並び替え・ふりがなダイナミック検索を実装、動作確認済み",
+  "progress": 95,
+  "current_step": "ふりがな検索を前方一致に変更、ローカル確認済み",
   "need_human_check": true,
-  "last_message": "加盟店一覧に並び順（あいうえお昇順=デフォルト/降順・登録日新しい順/古い順）とふりがな絞り込み（ひらがな限定・入力しながら非同期で絞り込み）を追加。ローカルで並び順と検索の動作確認済み。push/デプロイの指示待ち。あわせて name_kana 推測値の SQL（/tmp/merchants_name_kana.sql）もレビュー待ち。",
-  "updated_at": "2026-09-06T14:45:00+09:00"
+  "last_message": "ふりがな検索を部分一致から前方一致に変更しコミット。push/デプロイの指示待ち。残タスク: name_kana 推測値の SQL（/tmp/merchants_name_kana.sql）のレビューと本番実行。",
+  "updated_at": "2026-09-06T22:52:00+09:00"
 }
