@@ -78,7 +78,7 @@ class SalesController extends Controller
         InvoiceService::applyInvoiceScope($merchantSalesQuery, 'o');
         InvoiceService::applyInvoiceMonth($merchantSalesQuery, $month, 'o');
         $merchantSales = $merchantSalesQuery
-            ->groupBy('m.id', 'm.name', 'm.member_rank', 'm.is_test', 'm.bank_account_name', 'a.name')
+            ->groupBy('m.id', 'm.name', 'm.member_rank', 'm.is_test', 'm.bank_account_name', 'a.name', 'a.is_test')
             ->orderByDesc(DB::raw('SUM(o.total_price + o.shipping_fee)'))
             ->select(
                 'm.id as merchant_id',
@@ -87,6 +87,7 @@ class SalesController extends Controller
                 'm.is_test as is_test',
                 'm.bank_account_name',
                 'a.name as agency_name',
+                'a.is_test as agency_is_test',
                 DB::raw('COUNT(o.id) as order_count'),
                 DB::raw('SUM(o.total_price + o.shipping_fee) as total_amount')
             )

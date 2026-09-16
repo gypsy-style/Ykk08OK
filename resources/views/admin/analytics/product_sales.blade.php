@@ -17,7 +17,7 @@
     </div>
 
     <div class="lma-content_block nobg" style="width:100%;">
-        <p class="lma-btn_box btn_wh btn_min"><a href="{{ route('admin.analytics') }}">サロン分析へ戻る</a></p>
+        <p class="lma-btn_box btn_wh btn_min"><a href="{{ route('admin.analytics', ['exclude_test' => $excludeTest ? 1 : 0]) }}">サロン分析へ戻る</a></p>
     </div>
 </section>
 @endsection

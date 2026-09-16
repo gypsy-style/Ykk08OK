@@ -54,7 +54,7 @@
 				</div>
 			</div>
 			<div class="lma-btn_box center">
-				<a href="{{ route('admin.orders.index') }}">受注一覧</a>
+				<a href="{{ route('admin.orders.index', ['exclude_test' => $excludeTest ? 1 : 0]) }}">受注一覧</a>
 			</div>
 		</section>
 

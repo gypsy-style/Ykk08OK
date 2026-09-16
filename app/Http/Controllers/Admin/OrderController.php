@@ -30,7 +30,7 @@ class OrderController extends Controller
         // 未指定ならテストを除外する
         $excludeTest = $request->query('exclude_test', '1') !== '0';
 
-        $ordersQuery = Order::with(['merchant', 'details.product', 'agency', 'statusChangeLogs'])
+        $ordersQuery = Order::with(['merchant.agency', 'details.product', 'agency', 'statusChangeLogs'])
             ->where('status', $status)
             ->orderBy('created_at', 'desc');
         if ($excludeTest) {
