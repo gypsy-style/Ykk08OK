@@ -88,20 +88,25 @@ class ExportController extends Controller
             '付箋色',
             '付箋メモ'
         ];
+        // 未指定ならテストを除外する
+        $excludeTest = $request->query('exclude_test', '1') !== '0';
+
         // $orders = Order::with('details.product')->get();
         // dd($orders->toArray());
         // CSVのストリームレスポンスを作成
-        $response = new StreamedResponse(function () use ($headers) {
+        $response = new StreamedResponse(function () use ($headers, $excludeTest) {
             $handle = fopen('php://output', 'w');
 
             // ヘッダーを書き込み
             fputcsv($handle, array_map(fn($h) => mb_convert_encoding($h, 'SJIS-win', 'UTF-8'), $headers));
 
             // データ取得
-            $orders = Order::with(['merchant', 'agency', 'details.product'])
-                ->where('status', 3)
-                ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds())
-                ->get();
+            $ordersQuery = Order::with(['merchant', 'agency', 'details.product'])
+                ->where('status', 3);
+            if ($excludeTest) {
+                TestDataFilter::excludeMerchants($ordersQuery);
+            }
+            $orders = $ordersQuery->get();
             // dd($orders);
 
             $previousOrderId = null;  // 前回のorder_idを保持する変数

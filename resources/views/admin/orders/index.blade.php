@@ -27,49 +27,54 @@
         </div>
     </div>
     @if($status==3)
-    <p class="lma-btn_box btn_wide"><a href="{{ route('admin.export.orders') }}"">店舗別CSVダウンロード</a></p>
+    <p class="lma-btn_box btn_wide"><a href="{{ route('admin.export.orders', ['exclude_test' => $excludeTest ? 1 : 0]) }}">店舗別CSVダウンロード</a></p>
     @endif
+    @include('admin.partials.exclude_test_checkbox', [
+        'route' => 'admin.orders.index',
+        'excludeTest' => $excludeTest,
+        'params' => ['status' => $status],
+    ])
     <div class="lma-content_block nobg">
         <ul class="lma-sort_list">
             <li>@if ($status == 2)
                 <span>代理店処理済み({{ $statusCounts[2] }})</span>
                 @else
-                <a href="{{ route('admin.orders.index', ['status' => 2]) }}">代理店処理済み({{ $statusCounts[2] }})</a>
+                <a href="{{ route('admin.orders.index', ['status' => 2, 'exclude_test' => $excludeTest ? 1 : 0]) }}">代理店処理済み({{ $statusCounts[2] }})</a>
                 @endif
             </li>
             <li>
                 @if ($status == 3)
                 <span>本部処理済み({{ $statusCounts[3] }})</span>
                 @else
-                <a href="{{ route('admin.orders.index', ['status' => 3]) }}">本部処理済み({{ $statusCounts[3] }})</a>
+                <a href="{{ route('admin.orders.index', ['status' => 3, 'exclude_test' => $excludeTest ? 1 : 0]) }}">本部処理済み({{ $statusCounts[3] }})</a>
                 @endif
             </li>
             <li>
                 @if ($status == 5)
                 <span>発送待ち</span>
                 @else
-                <a href="{{ route('admin.orders.index', ['status' => 5]) }}">発送待ち({{ $statusCounts[5] }})</a>
+                <a href="{{ route('admin.orders.index', ['status' => 5, 'exclude_test' => $excludeTest ? 1 : 0]) }}">発送待ち({{ $statusCounts[5] }})</a>
                 @endif
             </li>
             <li>
                 @if ($status == 6)
                 <span>発送済み</span>
                 @else
-                <a href="{{ route('admin.orders.index', ['status' => 6]) }}">発送済み</a>
+                <a href="{{ route('admin.orders.index', ['status' => 6, 'exclude_test' => $excludeTest ? 1 : 0]) }}">発送済み</a>
                 @endif
             </li>
             <li>
                 @if ($status == 4)
                 <span>保留({{ $statusCounts[4] }})</span>
                 @else
-                <a href="{{ route('admin.orders.index', ['status' => 4]) }}">保留({{ $statusCounts[4] }})</a>
+                <a href="{{ route('admin.orders.index', ['status' => 4, 'exclude_test' => $excludeTest ? 1 : 0]) }}">保留({{ $statusCounts[4] }})</a>
                 @endif
             </li>
             <li>
                 @if ($status == 9)
                 <span>キャンセル</span>
                 @else
-                <a href="{{ route('admin.orders.index', ['status' => 9]) }}">キャンセル</a>
+                <a href="{{ route('admin.orders.index', ['status' => 9, 'exclude_test' => $excludeTest ? 1 : 0]) }}">キャンセル</a>
                 @endif
             </li>
         </ul>
