@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\InvoiceService;
+use App\Services\TestDataFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -17,16 +18,14 @@ class DashboardController extends Controller
         // ダッシュボード用のデータを取得する場合
         $data = [
             'agencyCount' => \App\Models\Agency::count(),
-            'merchantCount' => \App\Models\Merchant::where('is_test', 0)->count(),
+            'merchantCount' => TestDataFilter::excludeMerchantRows(\App\Models\Merchant::query())->count(),
         ];
 
         // 各statusの件数を取得
         $statusCounts = DB::table('orders')
             ->select('status', DB::raw('COUNT(*) as count'))
             ->whereIn('status', [2, 3, 4, 5, 6, 9]) // 対象とするステータス
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            })
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds())
             ->groupBy('status')
             ->pluck('count', 'status') // 結果を 'status' => 'count' の形式で取得
             ->toArray();
@@ -35,9 +34,7 @@ class DashboardController extends Controller
 
         $headquartersProcessedQuery = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds());
         InvoiceService::applyInvoiceScope($headquartersProcessedQuery);
         InvoiceService::applyInvoiceMonth($headquartersProcessedQuery, $month);
         $headquartersProcessed = $headquartersProcessedQuery->first();
@@ -45,9 +42,7 @@ class DashboardController extends Controller
         // shipping_fee が 0以上の件数を取得
         $shippingFeeCountQuery = DB::table('orders')
             ->where('shipping_fee', '>', 0)
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds());
         InvoiceService::applyInvoiceScope($shippingFeeCountQuery);
         InvoiceService::applyInvoiceMonth($shippingFeeCountQuery, $month);
         $shippingFeeCount = $shippingFeeCountQuery->count();
@@ -56,9 +51,7 @@ class DashboardController extends Controller
         $productSalesQuery = DB::table('order_details as od')
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
-            ->whereNotIn('o.merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->whereNotIn('o.merchant_id', TestDataFilter::testMerchantIds());
         InvoiceService::applyInvoiceScope($productSalesQuery, 'o');
         InvoiceService::applyInvoiceMonth($productSalesQuery, $month, 'o');
         $productSales = $productSalesQuery

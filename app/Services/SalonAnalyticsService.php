@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Agency;
 use App\Models\Merchant;
+use App\Services\TestDataFilter;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -55,8 +56,7 @@ class SalonAnalyticsService
         // 絞り込みは素の日時比較で行う。DATE_FORMAT を WHERE 句に書くと
         // インデックスが効かないため、月への振り分けにだけ使う。
         $counts = [];
-        $rows = DB::table('merchants')
-            ->where('is_test', 0)
+        $rows = TestDataFilter::excludeMerchantRows(DB::table('merchants'))
             ->selectRaw('agency_id, DATE_FORMAT(created_at, "%Y-%m") as ym, COUNT(*) as cnt')
             ->where('created_at', '>=', $start)
             ->where('created_at', '<', $end)
@@ -106,9 +106,7 @@ class SalonAnalyticsService
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
             ->selectRaw('o.merchant_id, p.id as product_id, p.product_name, SUM(od.quantity * od.price) as subtotal')
-            ->whereNotIn('o.merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            })
+            ->whereNotIn('o.merchant_id', TestDataFilter::testMerchantIds())
             ->where('o.shipped_at', '>=', $start)
             ->where('o.shipped_at', '<', $end)
             ->groupBy('o.merchant_id', 'p.id', 'p.product_name');
@@ -179,7 +177,7 @@ class SalonAnalyticsService
         $summary = self::summary(self::merchants()->pluck('id')->all(), []);
 
         return [
-            'merchantCount' => Merchant::where('is_test', 0)->count(),
+            'merchantCount' => TestDataFilter::excludeMerchantRows(Merchant::query())->count(),
             'grandTotal' => $summary['grandTotal'],
             'averageMonthly' => $summary['averageMonthly'],
             'firstMonth' => $summary['firstMonth'],
@@ -196,7 +194,7 @@ class SalonAnalyticsService
      */
     public static function salonDetail($merchantId, array $months)
     {
-        $merchant = Merchant::withTrashed()->with('agency')->where('is_test', 0)->find($merchantId);
+        $merchant = TestDataFilter::excludeMerchantRows(Merchant::withTrashed()->with('agency'))->find($merchantId);
         if ($merchant === null) {
             return null;
         }
@@ -227,8 +225,7 @@ class SalonAnalyticsService
         }
 
         // 削除済みサロンも含める。過去の売上が代理店の累計から消えないようにするため。
-        $merchants = Merchant::withTrashed()
-            ->where('is_test', 0)
+        $merchants = TestDataFilter::excludeMerchantRows(Merchant::withTrashed())
             ->where('agency_id', $agency->id)
             ->get(['id', 'name', 'deleted_at', 'created_at']);
 
@@ -349,8 +346,7 @@ class SalonAnalyticsService
      */
     private static function merchants()
     {
-        return Merchant::withTrashed()
-            ->where('is_test', 0)
+        return TestDataFilter::excludeMerchantRows(Merchant::withTrashed())
             ->orderBy('name')
             ->get(['id', 'name', 'deleted_at']);
     }

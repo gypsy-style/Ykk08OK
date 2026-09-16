@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use App\Services\InvoiceService;
+use App\Services\TestDataFilter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -36,27 +37,21 @@ class OrderController extends Controller
         $agenciesProcessed = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price')
             ->where('status', 2)
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            })
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds())
             ->first();
 
         // 本部処理済みの受注
         $headquartersProcessed = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price')
             ->where('status', 3)
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            })
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds())
             ->first();
 
             // 各statusの件数を取得
             $statusCounts = DB::table('orders')
             ->select('status', DB::raw('COUNT(*) as count'))
             ->whereIn('status', [2, 3, 4, 5, 6, 9]) // 対象とするステータス
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            })
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds())
             ->groupBy('status')
             ->pluck('count', 'status') // 結果を 'status' => 'count' の形式で取得
             ->toArray();

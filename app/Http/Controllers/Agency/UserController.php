@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Agency;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Merchant;
+use App\Services\TestDataFilter;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +29,7 @@ class UserController extends Controller
 
         // 代理店に紐づく加盟店の `user_id` を取得
 
-        $userIds = Merchant::where('agency_id', $agency->id)->where('is_test', 0)->pluck('user_id')->filter();
+        $userIds = TestDataFilter::excludeMerchantRows(Merchant::where('agency_id', $agency->id))->pluck('user_id')->filter();
 
         // その `user_id` に該当するユーザー情報を取得
         $users = User::whereIn('id', $userIds)

@@ -13,6 +13,7 @@ use App\Services\InvoiceLineSender;
 use App\Services\InvoiceService;
 use App\Services\PaymentReminderMessageService;
 use App\Services\PaymentReminderSender;
+use App\Services\TestDataFilter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,9 +32,7 @@ class SalesController extends Controller
         $productSalesQuery = DB::table('order_details as od')
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
-            ->whereNotIn('o.merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->whereNotIn('o.merchant_id', TestDataFilter::testMerchantIds());
         InvoiceService::applyInvoiceScope($productSalesQuery, 'o');
         InvoiceService::applyInvoiceMonth($productSalesQuery, $month, 'o');
         $productSales = $productSalesQuery
@@ -49,18 +48,14 @@ class SalesController extends Controller
 
         $headquartersProcessedQuery = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds());
         InvoiceService::applyInvoiceScope($headquartersProcessedQuery);
         InvoiceService::applyInvoiceMonth($headquartersProcessedQuery, $month);
         $headquartersProcessed = $headquartersProcessedQuery->first();
 
         $shippingFeeCountQuery = DB::table('orders')
             ->where('shipping_fee', '>', 0)
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds());
         InvoiceService::applyInvoiceScope($shippingFeeCountQuery);
         InvoiceService::applyInvoiceMonth($shippingFeeCountQuery, $month);
         $shippingFeeCount = $shippingFeeCountQuery->count();

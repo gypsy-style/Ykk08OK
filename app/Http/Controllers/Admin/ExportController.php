@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\TestDataFilter;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -99,9 +100,7 @@ class ExportController extends Controller
             // データ取得
             $orders = Order::with(['merchant', 'agency', 'details.product'])
                 ->where('status', 3)
-                ->whereNotIn('merchant_id', function ($q) {
-                    $q->select('id')->from('merchants')->where('is_test', 1);
-                })
+                ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds())
                 ->get();
             // dd($orders);
 

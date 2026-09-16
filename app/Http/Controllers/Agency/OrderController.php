@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\User;
 use App\Models\Product;
 use App\Services\ActivityLogService;
+use App\Services\TestDataFilter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -38,19 +39,18 @@ class OrderController extends Controller
             $query->select('id', 'name', 'agency_id');
         }, 'merchant.agency', 'details.product', 'statusChangeLogs'])
             ->whereHas('merchant', function ($query) use ($agencyId) {
-                $query->where('agency_id', $agencyId)
-                      ->where('is_test', 0);
+                $query->where('agency_id', $agencyId);
             })
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds())
             ->where('status', $status)
             ->whereIn('status', [1, 2, 3, 4, 5, 6, 9])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $statusCounts = DB::table('orders')
+        $statusCounts = TestDataFilter::excludeMerchants(DB::table('orders')
             ->join('merchants', 'orders.merchant_id', '=', 'merchants.id')
             ->where('merchants.agency_id', $agencyId)
-            ->where('merchants.is_test', 0)
-            ->whereIn('orders.status', [1, 2, 3, 4, 5, 6, 9])
+            ->whereIn('orders.status', [1, 2, 3, 4, 5, 6, 9]))
             ->select('orders.status', DB::raw('COUNT(*) as count'))
             ->groupBy('orders.status')
             ->pluck('count', 'orders.status')
