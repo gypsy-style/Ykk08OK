@@ -11,7 +11,7 @@
     </div>
 
     <div class="lma-content_block dashboard_records" style="width:100%;">
-        <div class="record_block analytics_async" data-url="{{ route('admin.analytics.product_sales', ['all' => 1]) }}">
+        <div class="record_block analytics_async" data-url="{{ route('admin.analytics.product_sales', ['all' => 1, 'exclude_test' => $excludeTest ? 1 : 0]) }}">
             @include('admin.analytics._product_sales')
         </div>
     </div>

@@ -46,7 +46,7 @@ class SalonAnalyticsService
      * @param array<int, string> $months
      * @return array{rows: array<int, array{id: int, name: string, byMonth: array<string, int>}>, totals: array<string, int>}
      */
-    public static function monthlyNewMerchantsByAgency(array $months)
+    public static function monthlyNewMerchantsByAgency(array $months, $excludeTest = true)
     {
         [$start, $end] = self::range($months);
 
@@ -56,7 +56,11 @@ class SalonAnalyticsService
         // 絞り込みは素の日時比較で行う。DATE_FORMAT を WHERE 句に書くと
         // インデックスが効かないため、月への振り分けにだけ使う。
         $counts = [];
-        $rows = TestDataFilter::excludeMerchantRows(DB::table('merchants'))
+        $merchantsQuery = DB::table('merchants');
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchantRows($merchantsQuery);
+        }
+        $rows = $merchantsQuery
             ->selectRaw('agency_id, DATE_FORMAT(created_at, "%Y-%m") as ym, COUNT(*) as cnt')
             ->where('created_at', '>=', $start)
             ->where('created_at', '<', $end)
@@ -67,7 +71,11 @@ class SalonAnalyticsService
             $counts[$key][$row->ym] = (int) $row->cnt;
         }
 
-        $agencies = Agency::orderBy('name')->get(['id', 'name'])->all();
+        $agenciesQuery = Agency::orderBy('name');
+        if ($excludeTest) {
+            TestDataFilter::excludeAgencyRows($agenciesQuery);
+        }
+        $agencies = $agenciesQuery->get(['id', 'name'])->all();
         // 代理店に紐づかない加盟店は該当期間にいるときだけ末尾に出す
         if (!empty($counts[self::NO_AGENCY])) {
             $agencies[] = (object) ['id' => self::NO_AGENCY, 'name' => '代理店なし'];
@@ -98,7 +106,7 @@ class SalonAnalyticsService
      * @param string $month YYYY-MM
      * @return array{products: array<int, array{id: int, name: string}>, rows: array<int, array{id: int, name: string, deleted: bool, byProduct: array<int, int>, total: int}>}
      */
-    public static function salonProductSales($month)
+    public static function salonProductSales($month, $excludeTest = true)
     {
         [$start, $end] = self::range([$month]);
 
@@ -106,10 +114,13 @@ class SalonAnalyticsService
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
             ->selectRaw('o.merchant_id, p.id as product_id, p.product_name, SUM(od.quantity * od.price) as subtotal')
-            ->whereNotIn('o.merchant_id', TestDataFilter::testMerchantIds())
             ->where('o.shipped_at', '>=', $start)
             ->where('o.shipped_at', '<', $end)
             ->groupBy('o.merchant_id', 'p.id', 'p.product_name');
+
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($query, 'o');
+        }
 
         InvoiceService::applyInvoiceScope($query, 'o');
 
@@ -136,7 +147,7 @@ class SalonAnalyticsService
         }
 
         $rows = [];
-        foreach (self::merchants() as $merchant) {
+        foreach (self::merchants($excludeTest) as $merchant) {
             $byProduct = [];
             $total = 0;
             foreach ($products as $product) {
@@ -172,12 +183,17 @@ class SalonAnalyticsService
      *
      * @return array{merchantCount: int, grandTotal: int, averageMonthly: int, firstMonth: string|null, monthCount: int}
      */
-    public static function overview()
+    public static function overview($excludeTest = true)
     {
-        $summary = self::summary(self::merchants()->pluck('id')->all(), []);
+        $summary = self::summary(self::merchants($excludeTest)->pluck('id')->all(), []);
+
+        $merchantCountQuery = Merchant::query();
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchantRows($merchantCountQuery);
+        }
 
         return [
-            'merchantCount' => TestDataFilter::excludeMerchantRows(Merchant::query())->count(),
+            'merchantCount' => $merchantCountQuery->count(),
             'grandTotal' => $summary['grandTotal'],
             'averageMonthly' => $summary['averageMonthly'],
             'firstMonth' => $summary['firstMonth'],
@@ -194,7 +210,7 @@ class SalonAnalyticsService
      */
     public static function salonDetail($merchantId, array $months)
     {
-        $merchant = TestDataFilter::excludeMerchantRows(Merchant::withTrashed()->with('agency'))->find($merchantId);
+        $merchant = Merchant::withTrashed()->with('agency')->find($merchantId);
         if ($merchant === null) {
             return null;
         }
@@ -225,7 +241,7 @@ class SalonAnalyticsService
         }
 
         // 削除済みサロンも含める。過去の売上が代理店の累計から消えないようにするため。
-        $merchants = TestDataFilter::excludeMerchantRows(Merchant::withTrashed())
+        $merchants = Merchant::withTrashed()
             ->where('agency_id', $agency->id)
             ->get(['id', 'name', 'deleted_at', 'created_at']);
 
@@ -344,11 +360,14 @@ class SalonAnalyticsService
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    private static function merchants()
+    private static function merchants($excludeTest = true)
     {
-        return TestDataFilter::excludeMerchantRows(Merchant::withTrashed())
-            ->orderBy('name')
-            ->get(['id', 'name', 'deleted_at']);
+        $query = Merchant::withTrashed();
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchantRows($query);
+        }
+
+        return $query->orderBy('name')->get(['id', 'name', 'deleted_at']);
     }
 
     /**

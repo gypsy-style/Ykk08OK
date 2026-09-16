@@ -35,6 +35,6 @@
         </tbody>
     </table>
     @if ($productHasMore)
-    <p class="lma-btn_box btn_wh btn_min analytics_more"><a href="{{ route('admin.analytics.product_sales_all', ['month' => $productMonth]) }}">もっと見る</a></p>
+    <p class="lma-btn_box btn_wh btn_min analytics_more"><a href="{{ route('admin.analytics.product_sales_all', ['month' => $productMonth, 'exclude_test' => $excludeTest ? 1 : 0]) }}">もっと見る</a></p>
     @endif
 </div>

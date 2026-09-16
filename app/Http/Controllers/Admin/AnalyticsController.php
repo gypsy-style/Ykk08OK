@@ -16,14 +16,16 @@ class AnalyticsController extends Controller
     {
         $month = $this->month($request);
         $nav = $this->monthNav($month);
+        $excludeTest = $this->excludeTest($request);
 
         return view('admin.analytics.index', array_merge(
             $nav,
             [
-                'overview' => SalonAnalyticsService::overview(),
-                'newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months']),
+                'excludeTest' => $excludeTest,
+                'overview' => SalonAnalyticsService::overview($excludeTest),
+                'newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months'], $excludeTest),
             ],
-            $this->productSalesData($month, self::TOP_ROWS)
+            $this->productSalesData($month, self::TOP_ROWS, $excludeTest)
         ));
     }
 
@@ -31,9 +33,11 @@ class AnalyticsController extends Controller
     public function newMerchants(Request $request)
     {
         $nav = $this->monthNav($this->month($request));
+        $excludeTest = $this->excludeTest($request);
 
         return view('admin.analytics._new_merchants', array_merge($nav, [
-            'newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months']),
+            'excludeTest' => $excludeTest,
+            'newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months'], $excludeTest),
         ]));
     }
 
@@ -42,13 +46,13 @@ class AnalyticsController extends Controller
     {
         $limit = $request->query('all') ? null : self::TOP_ROWS;
 
-        return view('admin.analytics._product_sales', $this->productSalesData($this->month($request), $limit));
+        return view('admin.analytics._product_sales', $this->productSalesData($this->month($request), $limit, $this->excludeTest($request)));
     }
 
     /** 全サロンを載せた一覧ページ */
     public function productSalesAll(Request $request)
     {
-        return view('admin.analytics.product_sales', $this->productSalesData($this->month($request), null));
+        return view('admin.analytics.product_sales', $this->productSalesData($this->month($request), null, $this->excludeTest($request)));
     }
 
     /** サロン1件の詳細 */
@@ -108,10 +112,16 @@ class AnalyticsController extends Controller
         return $month;
     }
 
-    private function productSalesData($month, $limit)
+    /** 未指定ならテストを除外する */
+    private function excludeTest(Request $request)
+    {
+        return $request->query('exclude_test', '1') !== '0';
+    }
+
+    private function productSalesData($month, $limit, $excludeTest)
     {
         $date = Carbon::parse($month . '-01');
-        $sales = SalonAnalyticsService::salonProductSales($month);
+        $sales = SalonAnalyticsService::salonProductSales($month, $excludeTest);
 
         $hasMore = $limit !== null && count($sales['rows']) > $limit;
         if ($limit !== null) {
@@ -119,6 +129,7 @@ class AnalyticsController extends Controller
         }
 
         return [
+            'excludeTest' => $excludeTest,
             'productSales' => $sales,
             'productMonth' => $month,
             'productPrevMonth' => $date->copy()->subMonth()->format('Y-m'),
