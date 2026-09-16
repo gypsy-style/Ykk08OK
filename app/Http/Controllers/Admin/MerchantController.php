@@ -144,6 +144,7 @@ class MerchantController extends Controller
                 ],
                 'campaign_code' => 'nullable|string|max:255',
                 'status' => 'required|integer|in:1,2',
+                'is_test' => 'required|boolean',
                 'member_rank' => 'required|integer|in:1,2,3',
                 'postal_code1' => 'required|string|max:3',
                 'postal_code2' => 'required|string|max:4',

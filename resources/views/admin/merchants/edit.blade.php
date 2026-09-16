@@ -48,6 +48,12 @@
                     </select>
                 </dd>
 
+                <dt><label for="is_test">テスト加盟店</label></dt>
+                <dd>
+                    <input type="hidden" name="is_test" value="0">
+                    <label><input type="checkbox" id="is_test" name="is_test" value="1" {{ old('is_test', $merchant->is_test) ? 'checked' : '' }}> テストデータとして扱う</label>
+                </dd>
+
                 <dt><label for="member_rank">会員ランク</label></dt>
                 <dd>
                     <select class="form-control" id="member_rank" name="member_rank">

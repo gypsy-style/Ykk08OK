@@ -86,6 +86,7 @@ class AgencyController extends Controller
     {
         $request->validate([
             'agency_code' => 'required|string|max:255',
+            'is_test' => 'required|boolean',
             'name' => 'required|string|max:255',
             'postal_code1' => 'required|string|max:3',
             'postal_code2' => 'required|string|max:4',
@@ -99,6 +100,7 @@ class AgencyController extends Controller
 
         $agency->update([
             'agency_code' => $request->agency_code,
+            'is_test' => $request->boolean('is_test'),
             'name' => $request->name,
             'postal_code1' => $request->postal_code1,
             'postal_code2' => $request->postal_code2,
