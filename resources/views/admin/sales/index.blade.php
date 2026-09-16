@@ -43,6 +43,12 @@
 
     </div>
 
+    @include('admin.partials.exclude_test_checkbox', [
+        'route' => 'admin.sales.index',
+        'excludeTest' => $excludeTest,
+        'params' => ['month' => $month],
+    ])
+
     @include('admin.sales.partials.month_nav')
 
     @if ($isFixedMonth)
