@@ -5,6 +5,11 @@
 @section('content')
 
 <section class="lma-content flex">
+			@include('admin.partials.exclude_test_checkbox', [
+				'route' => 'admin.dashboard',
+				'excludeTest' => $excludeTest,
+				'params' => ['month' => $month],
+			])
 			<div class="lma-title_block center">
 				<h2 class="color2">注文履歴</h2>
 			</div>
@@ -12,7 +17,7 @@
 				<div class="process_box">
 					<em class="label">代理店処理済</em>
 					<b class="number color__sky">
-						<a href="{{ route('admin.orders.index', ['status' => 2]) }}"><span class="num">{{ $statusCounts[2] }}</span></a><small class="unit">件</small>
+						<a href="{{ route('admin.orders.index', ['status' => 2, 'exclude_test' => $excludeTest ? 1 : 0]) }}"><span class="num">{{ $statusCounts[2] }}</span></a><small class="unit">件</small>
 					</b>
 				</div>
 			</div>
@@ -20,7 +25,7 @@
 				<div class="process_box">
 					<em class="label">本部処理済</em>
 					<b class="number">
-						<a href="{{ route('admin.orders.index', ['status' => 3]) }}"><span class="num">{{ $statusCounts[3] }}</span></a><small class="unit">件</small>
+						<a href="{{ route('admin.orders.index', ['status' => 3, 'exclude_test' => $excludeTest ? 1 : 0]) }}"><span class="num">{{ $statusCounts[3] }}</span></a><small class="unit">件</small>
 					</b>
 				</div>
 			</div>
@@ -28,7 +33,7 @@
 				<div class="process_box">
 					<em class="label">発送待ち</em>
 					<b class="number color__sky">
-						<a href="{{ route('admin.orders.index', ['status' => 5]) }}"><span class="num">{{ $statusCounts[5] }}</span></a><small class="unit">件</small>
+						<a href="{{ route('admin.orders.index', ['status' => 5, 'exclude_test' => $excludeTest ? 1 : 0]) }}"><span class="num">{{ $statusCounts[5] }}</span></a><small class="unit">件</small>
 					</b>
 				</div>
 			</div>
@@ -36,7 +41,7 @@
 				<div class="process_box">
 					<em class="label">発送済み</em>
 					<b class="number color__sky">
-						<a href="{{ route('admin.orders.index', ['status' => 6]) }}"><span class="num">{{ $statusCounts[6] }}</span></a><small class="unit">件</small>
+						<a href="{{ route('admin.orders.index', ['status' => 6, 'exclude_test' => $excludeTest ? 1 : 0]) }}"><span class="num">{{ $statusCounts[6] }}</span></a><small class="unit">件</small>
 					</b>
 				</div>
 			</div>
@@ -44,7 +49,7 @@
 				<div class="process_box">
 					<em class="label">保留</em>
 					<b class="number color__sky">
-						<a href="{{ route('admin.orders.index', ['status' => 4]) }}"><span class="num">{{ $statusCounts[4] }}</span></a><small class="unit">件</small>
+						<a href="{{ route('admin.orders.index', ['status' => 4, 'exclude_test' => $excludeTest ? 1 : 0]) }}"><span class="num">{{ $statusCounts[4] }}</span></a><small class="unit">件</small>
 					</b>
 				</div>
 			</div>
@@ -94,9 +99,9 @@
 			</div>
 			<div class="lma-content_block nobg">
 				<ul class="lma-pnavi_list clearfix">
-					<li class="prev"><a href="{{ route('admin.dashboard', ['month' => $prevMonth]) }}">先月</a></li>
+					<li class="prev"><a href="{{ route('admin.dashboard', ['month' => $prevMonth, 'exclude_test' => $excludeTest ? 1 : 0]) }}">先月</a></li>
 					@if ($month < now()->format('Y-m'))
-						<li class="next"><a href="{{ route('admin.dashboard', ['month' => $nextMonth]) }}">次月</a></li>
+						<li class="next"><a href="{{ route('admin.dashboard', ['month' => $nextMonth, 'exclude_test' => $excludeTest ? 1 : 0]) }}">次月</a></li>
 					@endif
 					
 				</ul>
