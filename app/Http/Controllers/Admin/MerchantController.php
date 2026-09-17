@@ -45,8 +45,8 @@ class MerchantController extends Controller
 
         switch ($this->sort($request)) {
             case 'kana_desc':
-                // ふりがな未入力は昇順・降順どちらでも末尾に固める
-                $query->orderByRaw("(name_kana IS NULL OR name_kana = '') asc")->orderBy('name_kana', 'desc');
+                // ふりがな未入力は昇順・降順どちらでも先頭に固める
+                $query->orderByRaw("(name_kana IS NULL OR name_kana = '') desc")->orderBy('name_kana', 'desc');
                 break;
             case 'created_desc':
                 $query->orderBy('created_at', 'desc');
@@ -55,7 +55,7 @@ class MerchantController extends Controller
                 $query->orderBy('created_at', 'asc');
                 break;
             default:
-                $query->orderByRaw("(name_kana IS NULL OR name_kana = '') asc")->orderBy('name_kana', 'asc');
+                $query->orderByRaw("(name_kana IS NULL OR name_kana = '') desc")->orderBy('name_kana', 'asc');
         }
 
         if ($keyword = $request->query('keyword')) {
