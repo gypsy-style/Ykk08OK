@@ -13,6 +13,7 @@ use App\Services\InvoiceLineSender;
 use App\Services\InvoiceService;
 use App\Services\PaymentReminderMessageService;
 use App\Services\PaymentReminderSender;
+use App\Services\TestDataFilter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,14 +27,16 @@ class SalesController extends Controller
         PaymentReminderSender $reminderSender
     ) {
         $month = $request->query('month', Carbon::now()->format('Y-m'));
+        // 未指定ならテストを除外する
+        $excludeTest = $request->query('exclude_test', '1') !== '0';
 
         // 商品別の月別売上集計
         $productSalesQuery = DB::table('order_details as od')
             ->join('orders as o', 'o.id', '=', 'od.order_id')
-            ->join('products as p', 'p.id', '=', 'od.product_id')
-            ->whereNotIn('o.merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->join('products as p', 'p.id', '=', 'od.product_id');
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($productSalesQuery, 'o');
+        }
         InvoiceService::applyInvoiceScope($productSalesQuery, 'o');
         InvoiceService::applyInvoiceMonth($productSalesQuery, $month, 'o');
         $productSales = $productSalesQuery
@@ -48,19 +51,19 @@ class SalesController extends Controller
             ->get();
 
         $headquartersProcessedQuery = DB::table('orders')
-            ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee');
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($headquartersProcessedQuery);
+        }
         InvoiceService::applyInvoiceScope($headquartersProcessedQuery);
         InvoiceService::applyInvoiceMonth($headquartersProcessedQuery, $month);
         $headquartersProcessed = $headquartersProcessedQuery->first();
 
         $shippingFeeCountQuery = DB::table('orders')
-            ->where('shipping_fee', '>', 0)
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->where('shipping_fee', '>', 0);
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($shippingFeeCountQuery);
+        }
         InvoiceService::applyInvoiceScope($shippingFeeCountQuery);
         InvoiceService::applyInvoiceMonth($shippingFeeCountQuery, $month);
         $shippingFeeCount = $shippingFeeCountQuery->count();
@@ -69,10 +72,13 @@ class SalesController extends Controller
         $merchantSalesQuery = DB::table('orders as o')
             ->join('merchants as m', 'm.id', '=', 'o.merchant_id')
             ->leftJoin('agencies as a', 'a.id', '=', 'm.agency_id');
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($merchantSalesQuery, 'o');
+        }
         InvoiceService::applyInvoiceScope($merchantSalesQuery, 'o');
         InvoiceService::applyInvoiceMonth($merchantSalesQuery, $month, 'o');
         $merchantSales = $merchantSalesQuery
-            ->groupBy('m.id', 'm.name', 'm.member_rank', 'm.is_test', 'm.bank_account_name', 'a.name')
+            ->groupBy('m.id', 'm.name', 'm.member_rank', 'm.is_test', 'm.bank_account_name', 'a.name', 'a.is_test')
             ->orderByDesc(DB::raw('SUM(o.total_price + o.shipping_fee)'))
             ->select(
                 'm.id as merchant_id',
@@ -81,6 +87,7 @@ class SalesController extends Controller
                 'm.is_test as is_test',
                 'm.bank_account_name',
                 'a.name as agency_name',
+                'a.is_test as agency_is_test',
                 DB::raw('COUNT(o.id) as order_count'),
                 DB::raw('SUM(o.total_price + o.shipping_fee) as total_amount')
             )
@@ -159,6 +166,7 @@ class SalesController extends Controller
             'prevMonth',
             'nextMonth',
             'isFixedMonth',
+            'excludeTest',
             'paymentConfirmations',
             'invoiceSends',
             'reminderSends',

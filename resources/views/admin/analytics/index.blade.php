@@ -10,6 +10,12 @@
         </div>
     </div>
 
+    @include('admin.partials.exclude_test_checkbox', [
+        'route' => 'admin.analytics',
+        'excludeTest' => $excludeTest,
+        'params' => ['month' => $month],
+    ])
+
     <div class="lma-content_block dashboard_records" style="width:100%;">
         <div class="record_block">
             <div class="records_caption">
@@ -51,13 +57,13 @@
     </div>
 
     <div class="lma-content_block dashboard_records" style="width:100%;">
-        <div class="record_block analytics_async" data-url="{{ route('admin.analytics.new_merchants') }}">
+        <div class="record_block analytics_async" data-url="{{ route('admin.analytics.new_merchants', ['exclude_test' => $excludeTest ? 1 : 0]) }}">
             @include('admin.analytics._new_merchants')
         </div>
     </div>
 
     <div class="lma-content_block dashboard_records" style="width:100%;">
-        <div class="record_block analytics_async" data-url="{{ route('admin.analytics.product_sales') }}">
+        <div class="record_block analytics_async" data-url="{{ route('admin.analytics.product_sales', ['exclude_test' => $excludeTest ? 1 : 0]) }}">
             @include('admin.analytics._product_sales')
         </div>
     </div>

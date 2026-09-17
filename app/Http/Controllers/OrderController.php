@@ -10,6 +10,7 @@ use App\Models\MerchantMember;
 use App\Models\Order;
 use App\Services\ActivityLogService;
 use App\Services\EmailNotificationService;
+use App\Services\TestDataFilter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -313,7 +314,7 @@ class OrderController extends Controller
             $this->activityLogService->logOrderCreated($order);
 
             // メール通知（テスト加盟店の注文では代理店に通知しない）
-            if (!optional($order->merchant)->is_test) {
+            if (!TestDataFilter::isTestMerchant($order->merchant)) {
                 $this->emailNotificationService->sendOrderNotification($order);
             }
 

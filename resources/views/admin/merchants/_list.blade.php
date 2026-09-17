@@ -6,7 +6,7 @@
                 @if($merchant->name_kana)
                 <p class="sub" style="font-size: 0.8em; color: #888;">{{ $merchant->name_kana }}</p>
                 @endif
-                <h3 class="name">{{ $merchant->name }}</h3>
+                <h3 class="name">{{ $merchant->name }}@if ($merchant->is_test || optional($merchant->agency)->is_test)<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:#f60;color:#fff;font-size:11px;vertical-align:middle;">テスト</span>@endif</h3>
                 <p class="sub" style="font-size: 0.8em; color: #888;">{{ $merchant->agency->name ?? '代理店未設定' }}　会員ランク{{ $merchant->member_rank ?? '-' }}</p>
                 @if($merchant->bank_account_name)
                 <p class="sub" style="font-size: 0.8em; color: #888; white-space: pre-line;">振込み口座名: {{ $merchant->bank_account_name }}</p>

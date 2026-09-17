@@ -11,13 +11,13 @@
     </div>
 
     <div class="lma-content_block dashboard_records" style="width:100%;">
-        <div class="record_block analytics_async" data-url="{{ route('admin.analytics.product_sales', ['all' => 1]) }}">
+        <div class="record_block analytics_async" data-url="{{ route('admin.analytics.product_sales', ['all' => 1, 'exclude_test' => $excludeTest ? 1 : 0]) }}">
             @include('admin.analytics._product_sales')
         </div>
     </div>
 
     <div class="lma-content_block nobg" style="width:100%;">
-        <p class="lma-btn_box btn_wh btn_min"><a href="{{ route('admin.analytics') }}">サロン分析へ戻る</a></p>
+        <p class="lma-btn_box btn_wh btn_min"><a href="{{ route('admin.analytics', ['exclude_test' => $excludeTest ? 1 : 0]) }}">サロン分析へ戻る</a></p>
     </div>
 </section>
 @endsection

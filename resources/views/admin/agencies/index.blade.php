@@ -18,7 +18,7 @@
             <li>
                 <div class="lma-user_box">
                     <div class="user_info">
-                        <h3 class="name">{{ $agency->name }}</h3>
+                        <h3 class="name">{{ $agency->name }}@if ($agency->is_test)<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:#f60;color:#fff;font-size:11px;vertical-align:middle;">テスト</span>@endif</h3>
                     </div>
                     <div class="lma-btn_box btn_list">
                         <a href="{{ route('admin.agencies.edit', $agency->id) }}" class="btn btn-primary btn-sm">編集</a>

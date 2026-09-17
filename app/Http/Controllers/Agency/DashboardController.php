@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Agency;
 
 use App\Http\Controllers\Controller;
 use App\Services\InvoiceService;
+use App\Services\TestDataFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -17,18 +18,14 @@ class DashboardController extends Controller
         $agencyId = auth('agencies')->user()->id;
         $todayOrders = DB::table('orders')
             ->whereDate('created_at', now()->toDateString())
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            })
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds())
             ->selectRaw('COUNT(*) as order_count, SUM(total_price) as total_price_sum')
             ->first();
 
         $headquartersProcessedQuery = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee')
             ->where('agency_id', $agencyId)
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds());
         InvoiceService::applyInvoiceScope($headquartersProcessedQuery);
         InvoiceService::applyInvoiceMonth($headquartersProcessedQuery, $month);
         $headquartersProcessed = $headquartersProcessedQuery->first();
@@ -37,9 +34,7 @@ class DashboardController extends Controller
         $shippingFeeCountQuery = DB::table('orders')
             ->where('shipping_fee', '>', 0)
             ->where('agency_id', $agencyId)
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            });
+            ->whereNotIn('merchant_id', TestDataFilter::testMerchantIds());
         InvoiceService::applyInvoiceScope($shippingFeeCountQuery);
         InvoiceService::applyInvoiceMonth($shippingFeeCountQuery, $month);
         $shippingFeeCount = $shippingFeeCountQuery->count();
@@ -49,7 +44,7 @@ class DashboardController extends Controller
         $nextMonth = $currentDate->addMonths(2)->format('Y-m');
         // ダッシュボード用のデータを取得する場合
         $data = [
-            'merchantCount' => \App\Models\Merchant::where('agency_id', $agencyId)->where('is_test', 0)->count(),
+            'merchantCount' => TestDataFilter::excludeMerchantRows(\App\Models\Merchant::where('agency_id', $agencyId))->count(),
             'todayOrderCount' => $todayOrders->order_count ?? 0, // 注文件数
             'todayTotalPriceSum' => $todayOrders->total_price_sum ?? 0, // 合計金額
         ];

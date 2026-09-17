@@ -11,6 +11,7 @@ class Agency extends Authenticatable
 
     protected $fillable = [
         'agency_code',
+        'is_test',
         'name',
         'postal_code1',
         'postal_code2',
@@ -23,6 +24,10 @@ class Agency extends Authenticatable
 
     protected $hidden = [
         'password',
+    ];
+
+    protected $casts = [
+        'is_test' => 'boolean',
     ];
 
     public function merchants()

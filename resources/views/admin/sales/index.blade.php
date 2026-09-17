@@ -43,6 +43,12 @@
 
     </div>
 
+    @include('admin.partials.exclude_test_checkbox', [
+        'route' => 'admin.sales.index',
+        'excludeTest' => $excludeTest,
+        'params' => ['month' => $month],
+    ])
+
     @include('admin.sales.partials.month_nav')
 
     @if ($isFixedMonth)
@@ -61,7 +67,7 @@
                 <li>
                     <div class="lma-user_box{{ $confirmation ? ' tbd' : '' }}">
                         <div class="user_info">
-                            <h3 class="name">{{ $m->merchant_name }}@if ($m->is_test)<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:#f60;color:#fff;font-size:11px;vertical-align:middle;">テスト</span>@endif</h3>
+                            <h3 class="name">{{ $m->merchant_name }}@if ($m->is_test || $m->agency_is_test)<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:#f60;color:#fff;font-size:11px;vertical-align:middle;">テスト</span>@endif</h3>
                             <p class="line_id">{{ $m->agency_name ?? '代理店未設定' }}　会員ランク{{ $m->member_rank ?? '-' }}</p>
                             @if ($m->bank_account_name)
                                 <p class="line_id" style="white-space:pre-line;">振込み口座名: {{ $m->bank_account_name }}</p>

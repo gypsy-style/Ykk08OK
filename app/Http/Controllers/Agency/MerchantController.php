@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Agency;
 use App\Http\Controllers\Controller;
 use App\Models\Merchant;
 use App\Models\User;
-use Illuminate\Http\Request;
 use App\Services\LineRichMenuService;
+use App\Services\TestDataFilter;
+use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -23,7 +24,7 @@ class MerchantController extends Controller
         $agencyId = auth('agencies')->user()->id;
 
         // agency_idで絞り込みを追加
-        $merchants = Merchant::where('agency_id', $agencyId)->where('is_test', 0)->get();
+        $merchants = TestDataFilter::excludeMerchantRows(Merchant::where('agency_id', $agencyId))->get();
 
         return view('agencies.merchants.index', compact('merchants'));
     }

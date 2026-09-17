@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use App\Services\InvoiceService;
+use App\Services\TestDataFilter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -26,49 +27,56 @@ class OrderController extends Controller
     {
         // GETパラメータからstatusを取得（デフォルトは1）
         $status = $request->get('status', 2);
-        $orders = Order::with(['merchant', 'details.product', 'agency', 'statusChangeLogs'])
+        // 未指定ならテストを除外する
+        $excludeTest = $request->query('exclude_test', '1') !== '0';
+
+        $ordersQuery = Order::with(['merchant.agency', 'details.product', 'agency', 'statusChangeLogs'])
             ->where('status', $status)
-            ->orderBy('created_at', 'desc') // 追加: created_at を降順でソート
-            ->get();
+            ->orderBy('created_at', 'desc');
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($ordersQuery);
+        }
+        $orders = $ordersQuery->get();
             // dd($orders);
 
         //代理店処理済みの受注
-        $agenciesProcessed = DB::table('orders')
+        $agenciesProcessedQuery = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price')
-            ->where('status', 2)
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            })
-            ->first();
+            ->where('status', 2);
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($agenciesProcessedQuery);
+        }
+        $agenciesProcessed = $agenciesProcessedQuery->first();
 
         // 本部処理済みの受注
-        $headquartersProcessed = DB::table('orders')
+        $headquartersProcessedQuery = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price')
-            ->where('status', 3)
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            })
-            ->first();
+            ->where('status', 3);
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($headquartersProcessedQuery);
+        }
+        $headquartersProcessed = $headquartersProcessedQuery->first();
 
             // 各statusの件数を取得
-            $statusCounts = DB::table('orders')
+            $statusCountsQuery = DB::table('orders')
             ->select('status', DB::raw('COUNT(*) as count'))
-            ->whereIn('status', [2, 3, 4, 5, 6, 9]) // 対象とするステータス
-            ->whereNotIn('merchant_id', function ($q) {
-                $q->select('id')->from('merchants')->where('is_test', 1);
-            })
+            ->whereIn('status', [2, 3, 4, 5, 6, 9]); // 対象とするステータス
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($statusCountsQuery);
+        }
+        $statusCounts = $statusCountsQuery
             ->groupBy('status')
             ->pluck('count', 'status') // 結果を 'status' => 'count' の形式で取得
             ->toArray();
-            
-        
+
+
         // 全ステータスを初期化し、結果をマージして不足分を補完
         $statusCounts = array_replace([ 2 => 0, 3 => 0, 4 => 0,5 => 0,6 => 0,9 => 0], $statusCounts);
 
 
 
             // dd($headquartersProcessed);
-        return view('admin.orders.index', compact('status','orders','agenciesProcessed','headquartersProcessed','statusCounts'));
+        return view('admin.orders.index', compact('status','orders','agenciesProcessed','headquartersProcessed','statusCounts','excludeTest'));
     }
 
     /**

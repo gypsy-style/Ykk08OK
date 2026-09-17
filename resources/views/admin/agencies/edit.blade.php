@@ -13,6 +13,12 @@
                 <dt><label for="product_code">代理店コード</label></dt>
                 <dd><input type="text" class="form-control" id="agency_code" name="agency_code" value="{{ old('agency_code', $agency->agency_code) }}" required></dd>
 
+                <dt><label for="is_test">テスト代理店</label></dt>
+                <dd>
+                    <input type="hidden" name="is_test" value="0">
+                    <label><input type="checkbox" id="is_test" name="is_test" value="1" {{ old('is_test', $agency->is_test) ? 'checked' : '' }}> テストデータとして扱う（配下の加盟店もすべてテスト扱いになります）</label>
+                </dd>
+
                 <dt><label for="product_code">名前</label></dt>
                 <dd><input type="text" class="form-control" id="name" name="name" value="{{ old('name', $agency->name) }}" required></dd>
 
