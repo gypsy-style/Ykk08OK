@@ -1,3 +1,4 @@
+<p style="text-align: right; font-size: 0.8em; color: #888; margin-bottom: 6px;">並び順：{{ $sortLabel }}</p>
 <ul class="lma-user_list store">
     @forelse($merchants as $merchant)
     <li>
