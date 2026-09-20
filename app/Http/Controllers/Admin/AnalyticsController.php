@@ -23,6 +23,7 @@ class AnalyticsController extends Controller
             [
                 'excludeTest' => $excludeTest,
                 'overview' => SalonAnalyticsService::overview($excludeTest),
+                'dormantSalons' => SalonAnalyticsService::dormantSalons($excludeTest),
                 'newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months'], $excludeTest),
             ],
             $this->productSalesData($month, self::TOP_ROWS, $excludeTest)

@@ -30,6 +30,28 @@
         font-weight: normal;
     }
 
+    /* 直近注文のないサロンの4カラム */
+    .analytics_dormant {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .analytics_dormant_col {
+        flex: 1 1 200px;
+        min-width: 0;
+    }
+
+    @media only screen and (max-width: 678px) {
+        .analytics_dormant {
+            display: block;
+        }
+
+        .analytics_dormant_col:not(:last-child) {
+            margin-bottom: 20px;
+        }
+    }
+
     .analytics_agency {
         margin-top: 5px;
         font-size: .9em;

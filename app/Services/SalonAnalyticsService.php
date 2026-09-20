@@ -189,6 +189,78 @@ class SalonAnalyticsService
     }
 
     /**
+     * 直近に注文のないサロン。フォロー対象を洗い出すための一覧
+     *
+     * 1/2/3ヶ月の列には「以前は注文があったが止まっているサロン」だけを入れ、
+     * 一度も注文のないサロンは最後の列にだけ出す。声のかけ方が別物のため。
+     * 削除済みサロンは対象外。
+     *
+     * @return array<int, array{key: string, label: string, salons: array<int, array{id: int, name: string}>}>
+     */
+    public static function dormantSalons($excludeTest = true)
+    {
+        $lastOrders = DB::table('orders as o')
+            ->selectRaw('o.merchant_id, MAX(o.shipped_at) as last_shipped_at')
+            ->groupBy('o.merchant_id');
+
+        InvoiceService::applyInvoiceScope($lastOrders, 'o');
+
+        $lastShipped = [];
+        foreach ($lastOrders->get() as $row) {
+            $lastShipped[(int) $row->merchant_id] = Carbon::parse($row->last_shipped_at);
+        }
+
+        $merchantsQuery = Merchant::query();
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchantRows($merchantsQuery);
+        }
+
+        $now = Carbon::now();
+        $buckets = ['m1' => [], 'm2' => [], 'm3' => [], 'never' => []];
+        foreach ($merchantsQuery->orderBy('name')->get(['id', 'name']) as $merchant) {
+            $last = $lastShipped[$merchant->id] ?? null;
+            $salon = ['id' => $merchant->id, 'name' => $merchant->name, 'last' => $last];
+
+            if ($last === null) {
+                $buckets['never'][] = $salon;
+                continue;
+            }
+            foreach ([1 => 'm1', 2 => 'm2', 3 => 'm3'] as $months => $key) {
+                if ($last->lt($now->copy()->subMonths($months))) {
+                    $buckets[$key][] = $salon;
+                }
+            }
+        }
+
+        // 止まって長いサロンほど先に出す
+        foreach (['m1', 'm2', 'm3'] as $key) {
+            usort($buckets[$key], function ($a, $b) {
+                return $a['last'] <=> $b['last'];
+            });
+        }
+
+        $labels = [
+            'm1' => '直近1ヶ月注文のないサロン',
+            'm2' => '直近2ヶ月注文のないサロン',
+            'm3' => '直近3ヶ月注文のないサロン',
+            'never' => '一度も注文のないサロン',
+        ];
+
+        $groups = [];
+        foreach ($labels as $key => $label) {
+            $groups[] = [
+                'key' => $key,
+                'label' => $label,
+                'salons' => array_map(function ($salon) {
+                    return ['id' => $salon['id'], 'name' => $salon['name']];
+                }, $buckets[$key]),
+            ];
+        }
+
+        return $groups;
+    }
+
+    /**
      * サロンごとの発送件数。商品明細と JOIN すると件数が明細数だけ膨らむので別に数える。
      *
      * @return array<int, int> merchant_id => 件数
