@@ -8,7 +8,7 @@
 			@include('admin.partials.exclude_test_checkbox', [
 				'route' => 'admin.dashboard',
 				'excludeTest' => $excludeTest,
-				'params' => ['month' => $month],
+				'params' => ['month' => $month, 'date' => $date],
 			])
 			<div class="lma-title_block center">
 				<h2 class="color2">注文履歴</h2>
@@ -77,6 +77,36 @@
 			<div class="lma-content_block dashboard_records">
 				<div class="record_block">
 					<div class="records_caption">
+						<h2 class="lma-title_bar sky"><em class="label">日報（{{ \Carbon\Carbon::parse($date)->format('Y年n月j日') }}）</em></h2>
+					</div>
+					<div class="records_table">
+						<dl class="records_list">
+							@forelse ($daily['productSales'] as $row)
+								<dt style="width:inherit;">{{ $row->product_name }}</dt>
+								<dd><div class="inner"><span class="num">{{ (int) $row->total_quantity }}件</span><em class="price">{{ number_format($row->total_amount ?? 0) }}円</em></div></dd>
+							@empty
+								<dt>売上</dt>
+								<dd><div class="inner"><span class="num">0件</span><em class="price">0円</em></div></dd>
+							@endforelse
+							<dt>送料</dt>
+							<dd><div class="inner"><span class="num">{{ $daily['shippingCount'] }}件</span><em class="price">{{ number_format($daily['shippingFee']) }}円</em></div></dd>
+							<dt>合計</dt>
+							<dd><div class="inner"><span class="num">{{ $daily['orderCount'] }}件</span><em class="price">{{ number_format($daily['total']) }}円</em></div></dd>
+						</dl>
+					</div>
+				</div>
+			</div>
+			<div class="lma-content_block nobg">
+				<ul class="lma-pnavi_list clearfix">
+					<li class="prev"><a href="{{ route('admin.dashboard', ['month' => $month, 'date' => $prevDate, 'exclude_test' => $excludeTest ? 1 : 0]) }}">前日</a></li>
+					@if ($hasNextDate)
+						<li class="next"><a href="{{ route('admin.dashboard', ['month' => $month, 'date' => $nextDate, 'exclude_test' => $excludeTest ? 1 : 0]) }}">翌日</a></li>
+					@endif
+				</ul>
+			</div>
+			<div class="lma-content_block dashboard_records">
+				<div class="record_block">
+					<div class="records_caption">
 						<h2 class="lma-title_bar sky"><em class="label">{{ \Carbon\Carbon::parse($month . '-01')->format('Y年m月') }}</em></h2>
 					</div>
 					<div class="records_table">
@@ -99,9 +129,9 @@
 			</div>
 			<div class="lma-content_block nobg">
 				<ul class="lma-pnavi_list clearfix">
-					<li class="prev"><a href="{{ route('admin.dashboard', ['month' => $prevMonth, 'exclude_test' => $excludeTest ? 1 : 0]) }}">先月</a></li>
+					<li class="prev"><a href="{{ route('admin.dashboard', ['month' => $prevMonth, 'date' => $date, 'exclude_test' => $excludeTest ? 1 : 0]) }}">先月</a></li>
 					@if ($month < now()->format('Y-m'))
-						<li class="next"><a href="{{ route('admin.dashboard', ['month' => $nextMonth, 'exclude_test' => $excludeTest ? 1 : 0]) }}">次月</a></li>
+						<li class="next"><a href="{{ route('admin.dashboard', ['month' => $nextMonth, 'date' => $date, 'exclude_test' => $excludeTest ? 1 : 0]) }}">次月</a></li>
 					@endif
 					
 				</ul>
