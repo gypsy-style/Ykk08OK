@@ -50,9 +50,10 @@
     <div class="lma-content_block dashboard_records" style="width:100%;">
         <div class="record_block">
             <div class="records_caption">
-                <h2 class="lma-title_bar sky"><em class="label">月別商品売上（税込・{{ \Carbon\Carbon::parse($months[0] . '-01')->format('Y年n月') }}〜{{ \Carbon\Carbon::parse($month . '-01')->format('Y年n月') }}）</em></h2>
+                <h2 class="lma-title_bar sky"><em class="label">日別商品売上（税込・{{ \Carbon\Carbon::parse($month . '-01')->format('Y年n月') }}）</em></h2>
             </div>
             <div class="records_table">
+                {{-- 月の切り替えは日別・月別の両方に効くので、先頭のこのブロックに置く --}}
                 <ul class="lma-pnavi_list clearfix analytics_pnavi">
                     <li class="prev"><a href="{{ route('admin.analytics.salon', ['merchant' => $detail['merchant']['id'], 'month' => $prevMonth]) }}">先月</a></li>
                     {{-- 当月を表示中は次月へ進めない --}}
@@ -60,36 +61,6 @@
                     <li class="next"><a href="{{ route('admin.analytics.salon', ['merchant' => $detail['merchant']['id'], 'month' => $nextMonth]) }}">次月</a></li>
                     @endif
                 </ul>
-                <table class="lma-detail_tbl analytics_tbl">
-                    <tbody>
-                        <tr>
-                            <th>月</th>
-                            @foreach ($detail['products'] as $product)
-                            <td>{{ $product['name'] }}</td>
-                            @endforeach
-                            <td>合計</td>
-                        </tr>
-                        @foreach ($months as $m)
-                        <tr>
-                            <th>{{ \Carbon\Carbon::parse($m . '-01')->format('Y年n月') }}</th>
-                            @foreach ($detail['products'] as $product)
-                            <td>{{ number_format($detail['monthly'][$m]['byProduct'][$product['id']]) }}</td>
-                            @endforeach
-                            <td>{{ number_format($detail['monthly'][$m]['total']) }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="lma-content_block dashboard_records" style="width:100%;">
-        <div class="record_block">
-            <div class="records_caption">
-                <h2 class="lma-title_bar sky"><em class="label">日別商品売上（税込・{{ \Carbon\Carbon::parse($month . '-01')->format('Y年n月') }}）</em></h2>
-            </div>
-            <div class="records_table">
                 <table class="lma-detail_tbl analytics_tbl">
                     <tbody>
                         <tr>
@@ -113,6 +84,36 @@
                             <td colspan="{{ count($detail['products']) + 1 }}"></td>
                         </tr>
                         @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="lma-content_block dashboard_records" style="width:100%;">
+        <div class="record_block">
+            <div class="records_caption">
+                <h2 class="lma-title_bar sky"><em class="label">月別商品売上（税込・{{ \Carbon\Carbon::parse($months[0] . '-01')->format('Y年n月') }}〜{{ \Carbon\Carbon::parse($month . '-01')->format('Y年n月') }}）</em></h2>
+            </div>
+            <div class="records_table">
+                <table class="lma-detail_tbl analytics_tbl">
+                    <tbody>
+                        <tr>
+                            <th>月</th>
+                            @foreach ($detail['products'] as $product)
+                            <td>{{ $product['name'] }}</td>
+                            @endforeach
+                            <td>合計</td>
+                        </tr>
+                        @foreach ($months as $m)
+                        <tr>
+                            <th>{{ \Carbon\Carbon::parse($m . '-01')->format('Y年n月') }}</th>
+                            @foreach ($detail['products'] as $product)
+                            <td>{{ number_format($detail['monthly'][$m]['byProduct'][$product['id']]) }}</td>
+                            @endforeach
+                            <td>{{ number_format($detail['monthly'][$m]['total']) }}</td>
+                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
