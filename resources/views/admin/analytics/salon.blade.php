@@ -87,6 +87,41 @@
     <div class="lma-content_block dashboard_records" style="width:100%;">
         <div class="record_block">
             <div class="records_caption">
+                <h2 class="lma-title_bar sky"><em class="label">日別商品売上（税込・{{ \Carbon\Carbon::parse($month . '-01')->format('Y年n月') }}）</em></h2>
+            </div>
+            <div class="records_table">
+                <table class="lma-detail_tbl analytics_tbl">
+                    <tbody>
+                        <tr>
+                            <th>日</th>
+                            @foreach ($detail['products'] as $product)
+                            <td>{{ $product['name'] }}</td>
+                            @endforeach
+                            <td>合計</td>
+                        </tr>
+                        @forelse ($dailySales as $day)
+                        <tr>
+                            <th>{{ \Carbon\Carbon::parse($day['date'])->format('n月j日') }}<span class="analytics_sub">{{ number_format($day['shipments']) }}件</span></th>
+                            @foreach ($detail['products'] as $product)
+                            <td>{{ number_format($day['byProduct'][$product['id']] ?? 0) }}</td>
+                            @endforeach
+                            <td>{{ number_format($day['total']) }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <th>売上なし</th>
+                            <td colspan="{{ count($detail['products']) + 1 }}"></td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="lma-content_block dashboard_records" style="width:100%;">
+        <div class="record_block">
+            <div class="records_caption">
                 <h2 class="lma-title_bar sky"><em class="label">累計商品別売上（税込）</em></h2>
             </div>
             <div class="records_table">

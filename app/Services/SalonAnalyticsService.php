@@ -261,6 +261,81 @@ class SalonAnalyticsService
     }
 
     /**
+     * サロン1件の日別商品売上（税込・単月）
+     *
+     * 行は売上のあった日だけ。売上0の日まで並べると1ヶ月で31行になり、
+     * 実際に動いた日が埋もれるため。商品の列は月別テーブルと共通のものを使う
+     * 前提で、ここでは売上のあった商品だけを返す。
+     *
+     * @param int $merchantId
+     * @param string $month YYYY-MM
+     * @return array<int, array{date: string, shipments: int, byProduct: array<int, int>, total: int}>
+     */
+    public static function salonDailySales($merchantId, $month)
+    {
+        [$start, $end] = self::range([$month]);
+
+        $query = DB::table('order_details as od')
+            ->join('orders as o', 'o.id', '=', 'od.order_id')
+            ->selectRaw('DATE(o.shipped_at) as ymd, od.product_id, SUM(od.quantity * od.price) as subtotal')
+            ->where('o.merchant_id', $merchantId)
+            ->where('o.shipped_at', '>=', $start)
+            ->where('o.shipped_at', '<', $end)
+            ->groupBy('ymd', 'od.product_id');
+
+        InvoiceService::applyInvoiceScope($query, 'o');
+
+        $sales = [];
+        foreach ($query->get() as $row) {
+            $amount = (int) round($row->subtotal * 1.1);
+            if ($amount === 0) {
+                continue;
+            }
+            $sales[$row->ymd][$row->product_id] = $amount;
+        }
+
+        $shipments = self::dailyShipmentCounts($merchantId, $start, $end);
+
+        ksort($sales);
+
+        $rows = [];
+        foreach ($sales as $ymd => $byProduct) {
+            $rows[] = [
+                'date' => $ymd,
+                'shipments' => $shipments[$ymd] ?? 0,
+                'byProduct' => $byProduct,
+                'total' => array_sum($byProduct),
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * サロン1件の日別発送件数。明細と JOIN すると膨らむので別に数える。
+     *
+     * @return array<string, int> YYYY-MM-DD => 件数
+     */
+    private static function dailyShipmentCounts($merchantId, Carbon $start, Carbon $end)
+    {
+        $query = DB::table('orders as o')
+            ->selectRaw('DATE(o.shipped_at) as ymd, COUNT(*) as cnt')
+            ->where('o.merchant_id', $merchantId)
+            ->where('o.shipped_at', '>=', $start)
+            ->where('o.shipped_at', '<', $end)
+            ->groupBy('ymd');
+
+        InvoiceService::applyInvoiceScope($query, 'o');
+
+        $counts = [];
+        foreach ($query->get() as $row) {
+            $counts[$row->ymd] = (int) $row->cnt;
+        }
+
+        return $counts;
+    }
+
+    /**
      * サロンごとの発送件数。商品明細と JOIN すると件数が明細数だけ膨らむので別に数える。
      *
      * @return array<int, int> merchant_id => 件数

@@ -67,7 +67,10 @@ class AnalyticsController extends Controller
             abort(404);
         }
 
-        return view('admin.analytics.salon', array_merge(['detail' => $detail], $nav));
+        return view('admin.analytics.salon', array_merge([
+            'detail' => $detail,
+            'dailySales' => SalonAnalyticsService::salonDailySales($merchantId, $month),
+        ], $nav));
     }
 
     /** 代理店1件の詳細 */
