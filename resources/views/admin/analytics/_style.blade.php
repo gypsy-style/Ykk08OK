@@ -70,6 +70,15 @@
         float: none;
     }
 
+    /* 基本の白背景だと白いカードに埋もれてボタンに見えないため敷き直す */
+    .analytics_pnavi a {
+        background-color: var(--color_pglay);
+    }
+
+    .analytics_pnavi a:hover {
+        background-color: var(--color_lglay);
+    }
+
     .analytics_more {
         margin-top: 15px;
         text-align: center;
