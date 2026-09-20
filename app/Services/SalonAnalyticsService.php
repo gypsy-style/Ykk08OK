@@ -104,7 +104,7 @@ class SalonAnalyticsService
      * ここでも金額0として除かれ、0だけの列は並ばない。
      *
      * @param string $month YYYY-MM
-     * @return array{products: array<int, array{id: int, name: string}>, rows: array<int, array{id: int, name: string, deleted: bool, byProduct: array<int, int>, total: int}>}
+     * @return array{products: array<int, array{id: int, name: string}>, rows: array<int, array{id: int, name: string, deleted: bool, shipments: int, byProduct: array<int, int>, byQuantity: array<int, int>, quantity: int, total: int}>}
      */
     public static function salonProductSales($month, $excludeTest = true)
     {
@@ -113,7 +113,7 @@ class SalonAnalyticsService
         $query = DB::table('order_details as od')
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
-            ->selectRaw('o.merchant_id, p.id as product_id, p.product_name, SUM(od.quantity * od.price) as subtotal')
+            ->selectRaw('o.merchant_id, p.id as product_id, p.product_name, SUM(od.quantity * od.price) as subtotal, SUM(od.quantity) as quantity')
             ->where('o.shipped_at', '>=', $start)
             ->where('o.shipped_at', '<', $end)
             ->groupBy('o.merchant_id', 'p.id', 'p.product_name');
@@ -125,6 +125,7 @@ class SalonAnalyticsService
         InvoiceService::applyInvoiceScope($query, 'o');
 
         $sales = [];
+        $quantities = [];
         $names = [];
         $totals = [];
         foreach ($query->get() as $row) {
@@ -133,9 +134,12 @@ class SalonAnalyticsService
                 continue;
             }
             $sales[$row->merchant_id][$row->product_id] = $amount;
+            $quantities[$row->merchant_id][$row->product_id] = (int) $row->quantity;
             $names[$row->product_id] = $row->product_name;
             $totals[$row->product_id] = ($totals[$row->product_id] ?? 0) + $amount;
         }
+
+        $shipments = self::shipmentCounts($start, $end, $excludeTest);
 
         uksort($totals, function ($a, $b) use ($totals, $names) {
             return $totals[$b] <=> $totals[$a] ?: strcmp($names[$a], $names[$b]);
@@ -149,11 +153,16 @@ class SalonAnalyticsService
         $rows = [];
         foreach (self::merchants($excludeTest) as $merchant) {
             $byProduct = [];
+            $byQuantity = [];
             $total = 0;
+            $quantity = 0;
             foreach ($products as $product) {
                 $amount = $sales[$merchant->id][$product['id']] ?? 0;
+                $count = $quantities[$merchant->id][$product['id']] ?? 0;
                 $byProduct[$product['id']] = $amount;
+                $byQuantity[$product['id']] = $count;
                 $total += $amount;
+                $quantity += $count;
             }
 
             if ($merchant->deleted_at !== null && $total === 0) {
@@ -164,7 +173,10 @@ class SalonAnalyticsService
                 'id' => $merchant->id,
                 'name' => $merchant->name,
                 'deleted' => $merchant->deleted_at !== null,
+                'shipments' => $shipments[$merchant->id] ?? 0,
                 'byProduct' => $byProduct,
+                'byQuantity' => $byQuantity,
+                'quantity' => $quantity,
                 'total' => $total,
             ];
         }
@@ -174,6 +186,33 @@ class SalonAnalyticsService
         });
 
         return ['products' => $products, 'rows' => $rows];
+    }
+
+    /**
+     * サロンごとの発送件数。商品明細と JOIN すると件数が明細数だけ膨らむので別に数える。
+     *
+     * @return array<int, int> merchant_id => 件数
+     */
+    private static function shipmentCounts(Carbon $start, Carbon $end, $excludeTest)
+    {
+        $query = DB::table('orders as o')
+            ->selectRaw('o.merchant_id, COUNT(*) as cnt')
+            ->where('o.shipped_at', '>=', $start)
+            ->where('o.shipped_at', '<', $end)
+            ->groupBy('o.merchant_id');
+
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($query, 'o');
+        }
+
+        InvoiceService::applyInvoiceScope($query, 'o');
+
+        $counts = [];
+        foreach ($query->get() as $row) {
+            $counts[(int) $row->merchant_id] = (int) $row->cnt;
+        }
+
+        return $counts;
     }
 
     /**

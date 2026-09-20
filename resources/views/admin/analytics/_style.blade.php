@@ -22,6 +22,14 @@
         text-decoration: underline;
     }
 
+    /* 発送件数・個数。金額より目立たせない */
+    .analytics_sub {
+        margin-right: .5em;
+        color: #888;
+        font-size: .85em;
+        font-weight: normal;
+    }
+
     .analytics_agency {
         margin-top: 5px;
         font-size: .9em;
