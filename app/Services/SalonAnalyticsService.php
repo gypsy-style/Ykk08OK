@@ -104,7 +104,7 @@ class SalonAnalyticsService
      * ここでも金額0として除かれ、0だけの列は並ばない。
      *
      * @param string $month YYYY-MM
-     * @return array{products: array<int, array{id: int, name: string}>, rows: array<int, array{id: int, name: string, deleted: bool, byProduct: array<int, int>, total: int}>}
+     * @return array{products: array<int, array{id: int, name: string}>, rows: array<int, array{id: int, name: string, deleted: bool, shipments: int, byProduct: array<int, int>, byQuantity: array<int, int>, quantity: int, total: int}>}
      */
     public static function salonProductSales($month, $excludeTest = true)
     {
@@ -113,7 +113,7 @@ class SalonAnalyticsService
         $query = DB::table('order_details as od')
             ->join('orders as o', 'o.id', '=', 'od.order_id')
             ->join('products as p', 'p.id', '=', 'od.product_id')
-            ->selectRaw('o.merchant_id, p.id as product_id, p.product_name, SUM(od.quantity * od.price) as subtotal')
+            ->selectRaw('o.merchant_id, p.id as product_id, p.product_name, SUM(od.quantity * od.price) as subtotal, SUM(od.quantity) as quantity')
             ->where('o.shipped_at', '>=', $start)
             ->where('o.shipped_at', '<', $end)
             ->groupBy('o.merchant_id', 'p.id', 'p.product_name');
@@ -125,6 +125,7 @@ class SalonAnalyticsService
         InvoiceService::applyInvoiceScope($query, 'o');
 
         $sales = [];
+        $quantities = [];
         $names = [];
         $totals = [];
         foreach ($query->get() as $row) {
@@ -133,9 +134,12 @@ class SalonAnalyticsService
                 continue;
             }
             $sales[$row->merchant_id][$row->product_id] = $amount;
+            $quantities[$row->merchant_id][$row->product_id] = (int) $row->quantity;
             $names[$row->product_id] = $row->product_name;
             $totals[$row->product_id] = ($totals[$row->product_id] ?? 0) + $amount;
         }
+
+        $shipments = self::shipmentCounts($start, $end, $excludeTest);
 
         uksort($totals, function ($a, $b) use ($totals, $names) {
             return $totals[$b] <=> $totals[$a] ?: strcmp($names[$a], $names[$b]);
@@ -149,11 +153,16 @@ class SalonAnalyticsService
         $rows = [];
         foreach (self::merchants($excludeTest) as $merchant) {
             $byProduct = [];
+            $byQuantity = [];
             $total = 0;
+            $quantity = 0;
             foreach ($products as $product) {
                 $amount = $sales[$merchant->id][$product['id']] ?? 0;
+                $count = $quantities[$merchant->id][$product['id']] ?? 0;
                 $byProduct[$product['id']] = $amount;
+                $byQuantity[$product['id']] = $count;
                 $total += $amount;
+                $quantity += $count;
             }
 
             if ($merchant->deleted_at !== null && $total === 0) {
@@ -164,7 +173,10 @@ class SalonAnalyticsService
                 'id' => $merchant->id,
                 'name' => $merchant->name,
                 'deleted' => $merchant->deleted_at !== null,
+                'shipments' => $shipments[$merchant->id] ?? 0,
                 'byProduct' => $byProduct,
+                'byQuantity' => $byQuantity,
+                'quantity' => $quantity,
                 'total' => $total,
             ];
         }
@@ -174,6 +186,180 @@ class SalonAnalyticsService
         });
 
         return ['products' => $products, 'rows' => $rows];
+    }
+
+    /**
+     * 直近に注文のないサロン。フォロー対象を洗い出すための一覧
+     *
+     * 1/2/3ヶ月の列には「以前は注文があったが止まっているサロン」だけを入れ、
+     * 一度も注文のないサロンは最後の列にだけ出す。声のかけ方が別物のため。
+     * 削除済みサロンは対象外。
+     *
+     * @return array<int, array{key: string, label: string, salons: array<int, array{id: int, name: string}>}>
+     */
+    public static function dormantSalons($excludeTest = true)
+    {
+        $lastOrders = DB::table('orders as o')
+            ->selectRaw('o.merchant_id, MAX(o.shipped_at) as last_shipped_at')
+            ->groupBy('o.merchant_id');
+
+        InvoiceService::applyInvoiceScope($lastOrders, 'o');
+
+        $lastShipped = [];
+        foreach ($lastOrders->get() as $row) {
+            $lastShipped[(int) $row->merchant_id] = Carbon::parse($row->last_shipped_at);
+        }
+
+        $merchantsQuery = Merchant::query();
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchantRows($merchantsQuery);
+        }
+
+        $now = Carbon::now();
+        $buckets = ['m1' => [], 'm2' => [], 'm3' => [], 'never' => []];
+        foreach ($merchantsQuery->orderBy('name')->get(['id', 'name']) as $merchant) {
+            $last = $lastShipped[$merchant->id] ?? null;
+            $salon = ['id' => $merchant->id, 'name' => $merchant->name, 'last' => $last];
+
+            if ($last === null) {
+                $buckets['never'][] = $salon;
+                continue;
+            }
+            foreach ([1 => 'm1', 2 => 'm2', 3 => 'm3'] as $months => $key) {
+                if ($last->lt($now->copy()->subMonths($months))) {
+                    $buckets[$key][] = $salon;
+                }
+            }
+        }
+
+        // 止まって長いサロンほど先に出す
+        foreach (['m1', 'm2', 'm3'] as $key) {
+            usort($buckets[$key], function ($a, $b) {
+                return $a['last'] <=> $b['last'];
+            });
+        }
+
+        $labels = [
+            'm1' => '直近1ヶ月注文のないサロン',
+            'm2' => '直近2ヶ月注文のないサロン',
+            'm3' => '直近3ヶ月注文のないサロン',
+            'never' => '一度も注文のないサロン',
+        ];
+
+        $groups = [];
+        foreach ($labels as $key => $label) {
+            $groups[] = [
+                'key' => $key,
+                'label' => $label,
+                'salons' => array_map(function ($salon) {
+                    return ['id' => $salon['id'], 'name' => $salon['name']];
+                }, $buckets[$key]),
+            ];
+        }
+
+        return $groups;
+    }
+
+    /**
+     * サロン1件の日別商品売上（税込・単月）
+     *
+     * 行は売上のあった日だけ。売上0の日まで並べると1ヶ月で31行になり、
+     * 実際に動いた日が埋もれるため。商品の列は月別テーブルと共通のものを使う
+     * 前提で、ここでは売上のあった商品だけを返す。
+     *
+     * @param int $merchantId
+     * @param string $month YYYY-MM
+     * @return array<int, array{date: string, shipments: int, byProduct: array<int, int>, total: int}>
+     */
+    public static function salonDailySales($merchantId, $month)
+    {
+        [$start, $end] = self::range([$month]);
+
+        $query = DB::table('order_details as od')
+            ->join('orders as o', 'o.id', '=', 'od.order_id')
+            ->selectRaw('DATE(o.shipped_at) as ymd, od.product_id, SUM(od.quantity * od.price) as subtotal')
+            ->where('o.merchant_id', $merchantId)
+            ->where('o.shipped_at', '>=', $start)
+            ->where('o.shipped_at', '<', $end)
+            ->groupBy('ymd', 'od.product_id');
+
+        InvoiceService::applyInvoiceScope($query, 'o');
+
+        $sales = [];
+        foreach ($query->get() as $row) {
+            $amount = (int) round($row->subtotal * 1.1);
+            if ($amount === 0) {
+                continue;
+            }
+            $sales[$row->ymd][$row->product_id] = $amount;
+        }
+
+        $shipments = self::dailyShipmentCounts($merchantId, $start, $end);
+
+        ksort($sales);
+
+        $rows = [];
+        foreach ($sales as $ymd => $byProduct) {
+            $rows[] = [
+                'date' => $ymd,
+                'shipments' => $shipments[$ymd] ?? 0,
+                'byProduct' => $byProduct,
+                'total' => array_sum($byProduct),
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * サロン1件の日別発送件数。明細と JOIN すると膨らむので別に数える。
+     *
+     * @return array<string, int> YYYY-MM-DD => 件数
+     */
+    private static function dailyShipmentCounts($merchantId, Carbon $start, Carbon $end)
+    {
+        $query = DB::table('orders as o')
+            ->selectRaw('DATE(o.shipped_at) as ymd, COUNT(*) as cnt')
+            ->where('o.merchant_id', $merchantId)
+            ->where('o.shipped_at', '>=', $start)
+            ->where('o.shipped_at', '<', $end)
+            ->groupBy('ymd');
+
+        InvoiceService::applyInvoiceScope($query, 'o');
+
+        $counts = [];
+        foreach ($query->get() as $row) {
+            $counts[$row->ymd] = (int) $row->cnt;
+        }
+
+        return $counts;
+    }
+
+    /**
+     * サロンごとの発送件数。商品明細と JOIN すると件数が明細数だけ膨らむので別に数える。
+     *
+     * @return array<int, int> merchant_id => 件数
+     */
+    private static function shipmentCounts(Carbon $start, Carbon $end, $excludeTest)
+    {
+        $query = DB::table('orders as o')
+            ->selectRaw('o.merchant_id, COUNT(*) as cnt')
+            ->where('o.shipped_at', '>=', $start)
+            ->where('o.shipped_at', '<', $end)
+            ->groupBy('o.merchant_id');
+
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($query, 'o');
+        }
+
+        InvoiceService::applyInvoiceScope($query, 'o');
+
+        $counts = [];
+        foreach ($query->get() as $row) {
+            $counts[(int) $row->merchant_id] = (int) $row->cnt;
+        }
+
+        return $counts;
     }
 
     /**

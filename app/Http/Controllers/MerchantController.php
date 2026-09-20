@@ -67,8 +67,17 @@ class MerchantController extends Controller
                 'bank_account_name' => 'nullable|string|max:1000',
             ]);
 
-            // 会員ランクは agency/admin の create/edit からのみ更新できる仕様
-            $merchant->update($request->except(['member_rank']));
+            // サロン自身が変更できるのはこの画面の入力項目だけ。status や member_rank を
+            // 受け付けると、編集のたびに承認済みが未承認に戻るなどの事故になる
+            $merchant->update($request->only([
+                'name',
+                'postal_code1',
+                'postal_code2',
+                'address',
+                'phone',
+                'campaign_code',
+                'bank_account_name',
+            ]));
 
             return response()->json([
                 'success' => true,

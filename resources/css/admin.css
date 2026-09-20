@@ -1202,7 +1202,29 @@ input.lma-search_submit[type="submit"] {
 /* フィルター
 -----------------------------------------------------------*/
 
-.lma-filter .lma-btn_box {
+.lma-filter {
+	font-size: .875rem;
+}
+.lma-filter__item > label {
+	display: block;
+	margin-bottom: 2px;
+	color: var(--color_dglay);
+	font-size: .75rem;
+	font-weight: 600;
+	line-height: 1.2;
+}
+.lma-filter__item input[type="text"] ,
+.lma-filter__item select {
+	width: 100%;
+	height: 2.5em;
+	padding: 0 .5em;
+	border: 1px solid var(--color_dglay);
+	border-radius: 10px;
+	background-color: var(--color_white);
+	font-weight: normal;
+	line-height: 1.2;
+}
+.lma-filter .lma-btn_box:not(.btn_list) {
 	margin-bottom: 0;
 }
 
@@ -1214,19 +1236,68 @@ input.lma-search_submit[type="submit"] {
 @media only screen and (min-width: 679px) {
 	.lma-filter {
 		display: flex;
-		align-items: center;
+		align-items: flex-end;
 		flex-wrap: wrap;
 		gap: var(--gap-ss);
-		font-size: .875rem;
 	}
-	.lma-filter > * {
+	.lma-filter__item {
+		flex: 0 0 auto;
+		width: 11em;
 	}
-	.lma-filter .lma-btn_box {
+	.lma-filter__item.wide {
+		width: 16em;
 	}
-	.lma-filter {
+	.lma-filter__item.auto {
+		width: auto;
+		margin-left: auto;
 	}
-	.lma-filter {
-	}
+}
+
+
+/* チェックボックス
+-----------------------------------------------------------*/
+
+.lma-checkbox_box {
+	padding: 4px 0;
+}
+.lma-checkbox_box label {
+	display: inline-flex;
+	align-items: center;
+	cursor: pointer;
+	font-size: .875rem;
+	line-height: 1.2;
+}
+.lma-checkbox_box input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	flex: 0 0 auto;
+	width: 1.25em;
+	height: 1.25em;
+	margin: 0 .5em 0 0;
+	border: 1px solid var(--color_dglay);
+	border-radius: 5px;
+	background-color: var(--color_white);
+	cursor: pointer;
+	transition: .2s;
+}
+.lma-checkbox_box input[type="checkbox"]:checked {
+	border-color: var(--color-secondary);
+	background-color: var(--color-secondary);
+}
+/* チェックマークは枠の中に置いた L 字を回転させて描く */
+.lma-checkbox_box input[type="checkbox"]:checked::before {
+	content: "";
+	display: block;
+	width: .32em;
+	height: .62em;
+	margin: .05em auto 0;
+	border-right: 2px solid var(--color_white);
+	border-bottom: 2px solid var(--color_white);
+	transform: rotate(45deg);
+}
+.lma-checkbox_box input[type="checkbox"]:focus-visible {
+	outline: 2px solid var(--color-secondary);
+	outline-offset: 2px;
 }
 
 

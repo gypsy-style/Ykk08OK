@@ -20,11 +20,11 @@
             </tr>
             @forelse ($productSales['rows'] as $row)
             <tr>
-                <th><a href="{{ route('admin.analytics.salon', ['merchant' => $row['id'], 'month' => $productMonth]) }}">{{ $row['name'] }}</a>@if ($row['deleted'])（削除済み）@endif</th>
+                <th><a href="{{ route('admin.analytics.salon', ['merchant' => $row['id'], 'month' => $productMonth]) }}">{{ $row['name'] }}</a>@if ($row['deleted'])（削除済み）@endif<span class="analytics_sub">{{ number_format($row['shipments']) }}件</span></th>
                 @foreach ($productSales['products'] as $product)
-                <td>{{ number_format($row['byProduct'][$product['id']]) }}</td>
+                <td>@if ($row['byQuantity'][$product['id']])<span class="analytics_sub">{{ number_format($row['byQuantity'][$product['id']]) }}個</span>@endif{{ number_format($row['byProduct'][$product['id']]) }}</td>
                 @endforeach
-                <td>{{ number_format($row['total']) }}</td>
+                <td>@if ($row['quantity'])<span class="analytics_sub">{{ number_format($row['quantity']) }}個</span>@endif{{ number_format($row['total']) }}</td>
             </tr>
             @empty
             <tr>

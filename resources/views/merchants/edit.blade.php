@@ -38,8 +38,7 @@
                     <p class="lmf-btn_box btn_small"><input type="submit" value="サロン編集"></p>
                     
 				</div>
-                <input type="hidden" name="status" value="2">
-                
+
             </form>
         </section>
     </main>

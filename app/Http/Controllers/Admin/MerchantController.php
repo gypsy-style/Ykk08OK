@@ -25,23 +25,32 @@ class MerchantController extends Controller
 
     public function index(Request $request)
     {
+        $sort = $this->sort($request);
+
         return view('admin.merchants.index', [
             'merchants' => $this->filtered($request),
             'agencies' => Agency::all(),
             'sorts' => self::SORTS,
-            'sort' => $this->sort($request),
+            'sort' => $sort,
+            'sortLabel' => self::SORTS[$sort],
         ]);
     }
 
     /** 検索・並び替えで一覧部分だけを差し替えるための部分HTML */
     public function listPartial(Request $request)
     {
-        return view('admin.merchants._list', ['merchants' => $this->filtered($request)]);
+        return view('admin.merchants._list', [
+            'merchants' => $this->filtered($request),
+            'sortLabel' => self::SORTS[$this->sort($request)],
+        ]);
     }
 
     private function filtered(Request $request)
     {
         $query = Merchant::with('agency');
+
+        // 未承認（status=2）はどの並び順でも最上位に固める
+        $query->orderByRaw('(status = 2) desc');
 
         switch ($this->sort($request)) {
             case 'kana_desc':

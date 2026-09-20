@@ -15,19 +15,19 @@
         <form method="GET" action="{{ route('admin.merchants.index') }}" class="filter-form">
             <div class="lma-filter">
                 <div class="lma-filter__item">
-                    <label for="keyword">ふりがな:</label>
+                    <label for="keyword">ふりがな</label>
                     <input type="text" name="keyword" id="keyword" value="{{ request('keyword') }}" placeholder="ひらがなで入力" autocomplete="off">
                 </div>
-                <div class="lma-filter__item">
-                    <label for="sort">並び順:</label>
+                <div class="lma-filter__item wide">
+                    <label for="sort">並び順</label>
                     <select name="sort" id="sort">
                         @foreach($sorts as $value => $label)
                         <option value="{{ $value }}" {{ $sort === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="lma-filter__item">
-                    <label for="agency_id">代理店:</label>
+                <div class="lma-filter__item wide">
+                    <label for="agency_id">代理店</label>
                     <select name="agency_id" id="agency_id">
                         <option value="">すべて</option>
                         @foreach($agencies as $agency)
@@ -36,7 +36,7 @@
                     </select>
                 </div>
                 <div class="lma-filter__item">
-                    <label for="status">ステータス:</label>
+                    <label for="status">ステータス</label>
                     <select name="status" id="status">
                         <option value="">すべて</option>
                         <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>有効</option>
@@ -44,7 +44,7 @@
                     </select>
                 </div>
                 <div class="lma-filter__item">
-                    <label for="member_rank">会員ランク:</label>
+                    <label for="member_rank">会員ランク</label>
                     <select name="member_rank" id="member_rank">
                         <option value="">すべて</option>
                         @foreach([1, 2, 3] as $rank)
@@ -52,9 +52,9 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="lma-filter__item">
-                    <button type="submit" class="btn btn-primary">フィルター</button>
-                    <a href="{{ route('admin.merchants.index') }}" class="btn btn-secondary">リセット</a>
+                <div class="lma-filter__item auto lma-btn_box btn_list">
+                    <button type="submit">フィルター</button>
+                    <a href="{{ route('admin.merchants.index') }}" class="lgy">リセット</a>
                 </div>
             </div>
         </form>

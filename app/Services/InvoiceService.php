@@ -50,6 +50,21 @@ class InvoiceService
     }
 
     /**
+     * 請求上の計上日で絞り込む
+     *
+     * @param mixed $query
+     * @param string $date YYYY-MM-DD
+     * @param string $alias テーブル別名
+     * @return mixed
+     */
+    public static function applyInvoiceDate($query, $date, $alias = '')
+    {
+        $p = $alias === '' ? '' : $alias . '.';
+
+        return $query->whereRaw('DATE(' . $p . 'shipped_at) = ?', [$date]);
+    }
+
+    /**
      * 請求上の計上日が確定月（前月以前）に入っているものだけに絞り込む
      *
      * @param mixed $query

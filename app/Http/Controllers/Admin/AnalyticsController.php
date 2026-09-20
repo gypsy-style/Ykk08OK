@@ -23,6 +23,7 @@ class AnalyticsController extends Controller
             [
                 'excludeTest' => $excludeTest,
                 'overview' => SalonAnalyticsService::overview($excludeTest),
+                'dormantSalons' => SalonAnalyticsService::dormantSalons($excludeTest),
                 'newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months'], $excludeTest),
             ],
             $this->productSalesData($month, self::TOP_ROWS, $excludeTest)
@@ -66,7 +67,10 @@ class AnalyticsController extends Controller
             abort(404);
         }
 
-        return view('admin.analytics.salon', array_merge(['detail' => $detail], $nav));
+        return view('admin.analytics.salon', array_merge([
+            'detail' => $detail,
+            'dailySales' => SalonAnalyticsService::salonDailySales($merchantId, $month),
+        ], $nav));
     }
 
     /** 代理店1件の詳細 */

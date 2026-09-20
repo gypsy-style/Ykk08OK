@@ -22,6 +22,36 @@
         text-decoration: underline;
     }
 
+    /* 発送件数・個数。金額より目立たせない */
+    .analytics_sub {
+        margin-right: .5em;
+        color: #888;
+        font-size: .85em;
+        font-weight: normal;
+    }
+
+    /* 直近注文のないサロンの4カラム */
+    .analytics_dormant {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .analytics_dormant_col {
+        flex: 1 1 200px;
+        min-width: 0;
+    }
+
+    @media only screen and (max-width: 678px) {
+        .analytics_dormant {
+            display: block;
+        }
+
+        .analytics_dormant_col:not(:last-child) {
+            margin-bottom: 20px;
+        }
+    }
+
     .analytics_agency {
         margin-top: 5px;
         font-size: .9em;
@@ -38,6 +68,15 @@
     .analytics_pnavi li.prev,
     .analytics_pnavi li.next {
         float: none;
+    }
+
+    /* 基本の白背景だと白いカードに埋もれてボタンに見えないため敷き直す */
+    .analytics_pnavi a {
+        background-color: var(--color_pglay);
+    }
+
+    .analytics_pnavi a:hover {
+        background-color: var(--color_lglay);
     }
 
     .analytics_more {
