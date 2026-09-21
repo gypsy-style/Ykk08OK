@@ -193,6 +193,7 @@ class SalonAnalyticsService
      *
      * 1/2/3ヶ月の列には「以前は注文があったが止まっているサロン」だけを入れ、
      * 一度も注文のないサロンは最後の列にだけ出す。声のかけ方が別物のため。
+     * 列どうしは排他で、同じサロンが複数の列に出ることはない。
      * 削除済みサロンは対象外。
      *
      * @return array<int, array{key: string, label: string, salons: array<int, array{id: int, name: string}>}>
@@ -225,10 +226,13 @@ class SalonAnalyticsService
                 $buckets['never'][] = $salon;
                 continue;
             }
-            foreach ([1 => 'm1', 2 => 'm2', 3 => 'm3'] as $months => $key) {
-                if ($last->lt($now->copy()->subMonths($months))) {
-                    $buckets[$key][] = $salon;
-                }
+            // 古い順に判定し、最初に当たった列だけに入れる
+            if ($last->lt($now->copy()->subMonths(3))) {
+                $buckets['m3'][] = $salon;
+            } elseif ($last->lt($now->copy()->subMonths(2))) {
+                $buckets['m2'][] = $salon;
+            } elseif ($last->lt($now->copy()->subMonth())) {
+                $buckets['m1'][] = $salon;
             }
         }
 
@@ -240,9 +244,9 @@ class SalonAnalyticsService
         }
 
         $labels = [
-            'm1' => '直近1ヶ月注文のないサロン',
-            'm2' => '直近2ヶ月注文のないサロン',
-            'm3' => '直近3ヶ月注文のないサロン',
+            'm1' => '1〜2ヶ月注文のないサロン',
+            'm2' => '2〜3ヶ月注文のないサロン',
+            'm3' => '3ヶ月以上注文のないサロン',
             'never' => '一度も注文のないサロン',
         ];
 
