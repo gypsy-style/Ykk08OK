@@ -46,6 +46,7 @@
     }
     .shipping-unit {
         font-size: 12px;
+        font-weight: normal;
         color: #666;
     }
     .shipping-error {
