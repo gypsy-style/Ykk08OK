@@ -158,6 +158,78 @@ class SettingController extends Controller
         return redirect()->route('admin.settings.company_info')->with('success', '会社情報を保存しました。');
     }
 
+    public function shipping()
+    {
+        $prefectures = config('prefectures');
+        $threshold = Setting::getValue('shipping_threshold', '');
+        $fees = $this->shippingFees($prefectures);
+
+        return view('admin.settings.shipping', compact('prefectures', 'threshold', 'fees'));
+    }
+
+    public function updateShipping(Request $request)
+    {
+        $request->validate([
+            'threshold' => 'nullable|integer|min:0',
+            'fees.*.under' => 'nullable|integer|min:0',
+            'fees.*.over' => 'nullable|integer|min:0',
+        ], [
+            'threshold.integer' => '送料設定金額は半角数字で入力してください。',
+            'threshold.min' => '送料設定金額は0以上で入力してください。',
+            'fees.*.under.integer' => '半角数字で入力してください。',
+            'fees.*.under.min' => '0以上で入力してください。',
+            'fees.*.over.integer' => '半角数字で入力してください。',
+            'fees.*.over.min' => '0以上で入力してください。',
+        ]);
+
+        $input = (array) $request->input('fees', []);
+        $fees = [];
+
+        // 知らない都道府県が紛れ込んでも保存しない。空欄は0として扱う
+        foreach (config('prefectures') as $pref) {
+            $row = isset($input[$pref]) && is_array($input[$pref]) ? $input[$pref] : [];
+            $fees[$pref] = [
+                'under' => (int) ($row['under'] ?? 0),
+                'over' => (int) ($row['over'] ?? 0),
+            ];
+        }
+
+        Setting::updateOrCreate(
+            ['key' => 'shipping_threshold'],
+            ['value' => $request->filled('threshold') ? (string) (int) $request->input('threshold') : '']
+        );
+        Setting::updateOrCreate(
+            ['key' => 'shipping_fees'],
+            ['value' => json_encode($fees, JSON_UNESCAPED_UNICODE)]
+        );
+
+        return redirect()->route('admin.settings.shipping')->with('success', '送料設定を保存しました。');
+    }
+
+    /**
+     * 保存済みの都道府県別送料を、全都道府県ぶん0埋めした配列で返す
+     *
+     * 未保存でもビューが全行を描けるようにするため、欠けている都道府県は0で補う。
+     */
+    private function shippingFees(array $prefectures)
+    {
+        $saved = json_decode((string) Setting::getValue('shipping_fees', ''), true);
+        if (!is_array($saved)) {
+            $saved = [];
+        }
+
+        $fees = [];
+        foreach ($prefectures as $pref) {
+            $row = isset($saved[$pref]) && is_array($saved[$pref]) ? $saved[$pref] : [];
+            $fees[$pref] = [
+                'under' => (int) ($row['under'] ?? 0),
+                'over' => (int) ($row['over'] ?? 0),
+            ];
+        }
+
+        return $fees;
+    }
+
     public function invoiceLine(InvoiceLineMessageService $messageService, InvoiceService $invoiceService)
     {
         $invoiceLineEnabled = $messageService->isEnabled();

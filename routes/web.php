@@ -169,6 +169,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('settings/cart-notice', [AdminSettingController::class, 'updateCartNotice'])->name('settings.update_cart_notice');
         Route::get('settings/company-info', [AdminSettingController::class, 'companyInfo'])->name('settings.company_info');
         Route::post('settings/company-info', [AdminSettingController::class, 'updateCompanyInfo'])->name('settings.update_company_info');
+        Route::get('settings/shipping', [AdminSettingController::class, 'shipping'])->name('settings.shipping');
+        Route::post('settings/shipping', [AdminSettingController::class, 'updateShipping'])->name('settings.update_shipping');
         Route::get('settings/invoice-line', [AdminSettingController::class, 'invoiceLine'])->name('settings.invoice_line');
         Route::post('settings/invoice-line', [AdminSettingController::class, 'updateInvoiceLine'])->name('settings.update_invoice_line');
         Route::post('settings/invoice-line/test', [AdminSettingController::class, 'testInvoiceLine'])->name('settings.test_invoice_line');
