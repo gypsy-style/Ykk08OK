@@ -4,9 +4,11 @@
 
 @push('head')
 <style>
+    /* stretch のままだとテーブルが横いっぱいに広がり、列が余白を分け合って入力欄と単位が離れる */
     .shipping-fields {
         display: flex;
         flex-direction: column;
+        align-items: flex-start;
         gap: 18px;
     }
     .shipping-threshold {
