@@ -2,10 +2,10 @@
 @php($active = $active ?? '')
 <ul class="lma-setting_vnav">
     <li><a href="{{ route('admin.settings.custom_css') }}" @if($active === 'custom_css') class="is-active" @endif>カスタムCSS</a></li>
-    <li><a href="{{ route('admin.settings.privacy_policy') }}" @if($active === 'privacy_policy') class="is-active" @endif>プライバシーポリシー</a></li>
+    <li><a href="{{ route('admin.settings.privacy_policy') }}" @if($active === 'privacy_policy') class="is-active" @endif><span>プライバシー</span><span>ポリシー</span></a></li>
     <li><a href="{{ route('admin.settings.user_guide') }}" @if($active === 'user_guide') class="is-active" @endif>ご利用ガイド</a></li>
     <li><a href="{{ route('admin.settings.commercial_law') }}" @if($active === 'commercial_law') class="is-active" @endif>特定商取引法</a></li>
-    <li><a href="{{ route('admin.settings.cart_notice') }}" @if($active === 'cart_notice') class="is-active" @endif>カート画面のお知らせ</a></li>
+    <li><a href="{{ route('admin.settings.cart_notice') }}" @if($active === 'cart_notice') class="is-active" @endif><span>カート画面の</span><span>お知らせ</span></a></li>
     <li><a href="{{ route('admin.settings.company_info') }}" @if($active === 'company_info') class="is-active" @endif>会社情報</a></li>
     <li><a href="{{ route('admin.settings.shipping') }}" @if($active === 'shipping') class="is-active" @endif>送料設定</a></li>
     <li><a href="{{ route('admin.settings.invoice_line') }}" @if($active === 'invoice_line') class="is-active" @endif>請求書LINE通知</a></li>
@@ -30,6 +30,11 @@
         text-decoration: none;
         color: #333;
         border-radius: 4px;
+    }
+    /* 幅が足りないときに語の途中（「プライバシーポ／リシー」）で折れるのを防ぐ。
+       inline-block は内部で改行されないので、収まらないときだけ span の境目で折り返す */
+    .lma-setting_vnav li a span {
+        display: inline-block;
     }
     .lma-setting_vnav li a:hover {
         background: #f0f0f0;
