@@ -11,13 +11,18 @@
     <li><a href="{{ route('admin.settings.invoice_line') }}" @if($active === 'invoice_line') class="is-active" @endif>請求書LINE通知</a></li>
 </ul>
 <style>
+    /* コンテンツ側と同じ白背景だと境目が見えないため、ナビだけ敷き直す。
+       横の padding と border は 9em の dt 幅を削って項目名の折り返しを増やすので入れない。
+       選択中の青（#e6f0ff）と紛れないよう、敷き色は青みを抑えたグレーにする */
     .lma-setting_vnav {
         list-style: none;
-        padding: 0;
-        margin: 0;
+        padding: 8px 0;
+        margin: 0 0 10px;
         display: flex;
         flex-direction: column;
         gap: 6px;
+        background: #eef1f6;
+        border-radius: 8px;
     }
     .lma-setting_vnav li a {
         display: block;
