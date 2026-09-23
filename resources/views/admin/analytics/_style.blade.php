@@ -30,11 +30,14 @@
         font-weight: normal;
     }
 
-    /* 直近注文のないサロンの4カラム */
+    /* 直近注文のないサロンの4カラム。
+       親の .record_block が 1040px 以上で flex になるため、幅を指定しないと
+       内容幅に縮んで右側が余り、4カラムが均等に並ばない */
     .analytics_dormant {
         display: flex;
         flex-wrap: wrap;
         gap: 20px;
+        width: 100%;
     }
 
     .analytics_dormant_col {
