@@ -82,7 +82,7 @@ class MerchantRegisteredNotifier
                     ]);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('加盟店登録通知でエラー', [
                 'merchant_id' => $merchant->id,
                 'error' => $e->getMessage(),
