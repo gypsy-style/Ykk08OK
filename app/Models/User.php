@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'line_id',
         'richmenu_id',
+        'is_notify_target',
     ];
 
     /**
@@ -44,6 +45,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_notify_target' => 'boolean',
     ];
 
     public function orders()
