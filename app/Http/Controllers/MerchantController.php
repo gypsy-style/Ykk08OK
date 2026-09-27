@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Services\InvoiceService;
 use App\Services\LineRichMenuService;
+use App\Services\MerchantRegisteredNotifier;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\URL;
 
@@ -95,7 +96,7 @@ class MerchantController extends Controller
     }
 
     // データ保存処理
-    public function store(LineRichMenuService $lineRichMenuService, Request $request)
+    public function store(LineRichMenuService $lineRichMenuService, MerchantRegisteredNotifier $notifier, Request $request)
     {
         try {
             // バリデーション
@@ -141,6 +142,8 @@ class MerchantController extends Controller
             $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu_id_3);
 
             Log::info("Merchant created: {$merchant->id}, Richmenu switched: {$line_id}");
+
+            $notifier->notify($merchant);
 
             return response()->json([
                 'success' => true,
