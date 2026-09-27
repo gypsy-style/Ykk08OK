@@ -141,6 +141,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('orders/bulk-update', [AdminOrderController::class, 'bulkUpdate'])->name('orders.bulk-update');
         Route::resource('users', AdminUserController::class);
         Route::post('/users/{user}/update-richmenu', [AdminUserController::class, 'updateRichmenu'])->name('admin.users.update-richmenu');
+        Route::post('/users/{user}/update-notify-target', [AdminUserController::class, 'updateNotifyTarget'])->name('users.update-notify-target');
         // csvエクスポート
         Route::get('export/orders', [ExportController::class, 'exportOrders'])->name('export.orders');
 
