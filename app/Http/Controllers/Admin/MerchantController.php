@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Services\LineRichMenuService;
 use App\Services\LineMessageService;
+use App\Services\MerchantRegisteredNotifier;
 use Illuminate\Validation\Rule;
 
 class MerchantController extends Controller
@@ -95,7 +96,7 @@ class MerchantController extends Controller
         return view('admin.merchants.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, MerchantRegisteredNotifier $notifier)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -126,7 +127,9 @@ class MerchantController extends Controller
             'name_kana.regex' => 'ふりがなはひらがなで始めてください。',
         ]);
 
-        Merchant::create($request->all());
+        $merchant = Merchant::create($request->all());
+
+        $notifier->notify($merchant);
 
         return redirect()->route('admin.merchants.index')->with('success', '加盟店を登録しました。');
     }

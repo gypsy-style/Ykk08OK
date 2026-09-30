@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Merchant;
 use App\Models\User;
 use App\Services\LineRichMenuService;
+use App\Services\MerchantRegisteredNotifier;
 use App\Services\TestDataFilter;
 use Illuminate\Http\Request;
 use Exception;
@@ -45,7 +46,7 @@ class MerchantController extends Controller
         return view('agencies.merchants.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, MerchantRegisteredNotifier $notifier)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -69,7 +70,9 @@ class MerchantController extends Controller
             'name_kana.regex' => 'ふりがなはひらがなで始めてください。',
         ]);
 
-        Merchant::create($request->all());
+        $merchant = Merchant::create($request->all());
+
+        $notifier->notify($merchant);
 
         return redirect()->route('agencies.merchants.index')->with('success', '加盟店を登録しました。');
     }

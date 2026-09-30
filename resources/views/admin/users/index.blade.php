@@ -58,6 +58,15 @@ $richmenuOptions = \App\Services\RichMenuSlots::labels(); // キー=段階、値
                             @endforeach
                         </select>
                     </div>
+                    <div class="lma-select_box">
+                        <label class="notify-target-label">
+                            <input type="checkbox" class="notify-target-check" data-user-id="{{ $user->id }}" {{ $user->is_notify_target ? 'checked' : '' }} @if(!$user->line_id) disabled @endif>
+                            通知を受け取る
+                        </label>
+                        @if(!$user->line_id)
+                        <span class="notify-target-note">LINE ID未登録</span>
+                        @endif
+                    </div>
                     <div class="lma-btn_box btn_list">
                         <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('本当に削除しますか？');">
                             @csrf
@@ -100,6 +109,54 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(error => console.error('Error:', error));
         });
     });
+
+    document.querySelectorAll('.notify-target-check').forEach(check => {
+        check.addEventListener('change', function () {
+            let userId = this.dataset.userId;
+            let isNotifyTarget = this.checked;
+
+            fetch(`${BASE_URL}/admin/users/${userId}/update-notify-target`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ is_notify_target: isNotifyTarget })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(isNotifyTarget ? "通知対象に設定しました！" : "通知対象から外しました！");
+                } else {
+                    // 保存できていないので、チェックの見た目を元に戻す
+                    this.checked = !isNotifyTarget;
+                    alert(data.message || "更新に失敗しました。");
+                }
+            })
+            .catch(error => {
+                this.checked = !isNotifyTarget;
+                console.error('Error:', error);
+            });
+        });
+    });
 });
 </script>
+<style>
+    .notify-target-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+    }
+    /* LINE ID が無い行は操作できないことを見た目でも示す */
+    .notify-target-label:has(input:disabled) {
+        color: #999;
+        cursor: not-allowed;
+    }
+    .notify-target-note {
+        margin-left: 6px;
+        font-size: 12px;
+        color: #999;
+    }
+</style>
 @endsection

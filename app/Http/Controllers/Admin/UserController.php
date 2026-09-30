@@ -19,7 +19,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::select('id', 'name', 'line_id', 'richmenu_id'); // name, line_id のみ取得
+        $query = User::select('id', 'name', 'line_id', 'richmenu_id', 'is_notify_target'); // name, line_id のみ取得
 
         if ($keyword = $request->query('keyword')) {
             $query->where(function ($q) use ($keyword) {
@@ -103,5 +103,33 @@ class UserController extends Controller
             Log::error('リッチメニュー更新エラー', ['exception' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'リッチメニューの更新中にエラーが発生しました。'], 500);
         }
+    }
+
+    /**
+     * システム通知の送信対象フラグを切り替える
+     *
+     * 一覧のチェックボックスから即時保存されるため、JSON を返す。
+     */
+    public function updateNotifyTarget(Request $request, User $user)
+    {
+        $request->validate([
+            'is_notify_target' => 'required|boolean',
+        ]);
+
+        $isNotifyTarget = $request->boolean('is_notify_target');
+
+        // LINE ID が無いユーザーは通知を受け取れないので、対象にさせない
+        if ($isNotifyTarget && !$user->line_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'このユーザーはLINE IDが未登録のため、通知対象にできません。',
+            ], 400);
+        }
+
+        $user->update([
+            'is_notify_target' => $isNotifyTarget,
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }
