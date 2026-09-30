@@ -12,6 +12,7 @@
             </div>
         @endif
     <div class="lma-content_block store_edit">
+        @include('admin.agencies._errors')
         <form action="{{ route('admin.agencies.update-password', $agency) }}" method="POST" enctype="multipart/form-data">
             @csrf
             <dl class="lma-form_box">
@@ -20,7 +21,6 @@
             </dl>
 
             <p class="lma-btn_box">
-                <input type="hidden" class="form-control" id="user_id" name="user_id" value="{{ old('user_id') }}" required>
                 <button type="submit" class="btn btn-primary">更新</button>
             </p>
         </form>

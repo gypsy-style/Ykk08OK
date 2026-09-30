@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Merchant;
+use App\Models\MerchantMember;
 use Illuminate\Support\Facades\Log;
 use App\Services\LineRichMenuService;
 
@@ -43,6 +45,17 @@ class UserController extends Controller
                 $email = $line_id . '@example.com';
             }
 
+            // 招待QRの入口がユーザー登録になったため、登録済みの人が開くことがある。
+            // 二重登録を避け、登録済みとして正常終了する（その後サロン登録へ進む）
+            $existingUser = User::where('line_id', $line_id)->first();
+            if ($existingUser) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'すでに登録済みです。',
+                    'user' => $existingUser,
+                ]);
+            }
+
             $user = User::create([
                 'name' => $request->input('name'),
                 'display_name' => $display_name,
@@ -52,7 +65,7 @@ class UserController extends Controller
             ]);
 
             // 4. リッチメニュー更新
-            $richmenu_id_2 = env('RICHMENU_ID_2');
+            $richmenu_id_2 = \App\Services\RichMenuSlots::id('RICHMENU_ID_2');
             $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu_id_2);
 
             Log::info("Richmenu updated for LINE ID: {$line_id}", ['result' => $result]);
@@ -72,6 +85,31 @@ class UserController extends Controller
                 'error' => '登録に失敗しました'
             ], 500);
         }
+    }
+
+    /**
+     * 登録状況を返す（ユーザー登録画面の振り分け用）
+     *  salon : サロン登録済み（オーナー or スタッフ）
+     *  user  : ユーザー登録のみ
+     *  none  : 未登録（友だち追加のみ）
+     */
+    public function registrationStatus(Request $request)
+    {
+        $accessToken = (string) $request->input('access_token');
+        $profile = $accessToken !== '' ? $this->getLineProfile($accessToken) : null;
+        if (!$profile) {
+            return response()->json(['error' => 'invalid token'], 401);
+        }
+
+        $user = User::where('line_id', $profile['line_id'])->first();
+        if (!$user) {
+            return response()->json(['status' => 'none']);
+        }
+
+        $hasSalon = Merchant::where('user_id', $user->id)->exists()
+            || MerchantMember::where('user_id', $user->id)->exists();
+
+        return response()->json(['status' => $hasSalon ? 'salon' : 'user']);
     }
 
     // LIFF IDからuser_idを取得

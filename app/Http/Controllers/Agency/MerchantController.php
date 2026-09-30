@@ -33,7 +33,9 @@ class MerchantController extends Controller
     {
         // LIFF URL取得
         $agencyId = auth('agencies')->user()->id;
-        $liff = config('app.register_merchant_liff_id');
+        // 登録フローは「ユーザー登録 → サロン登録」なので、入口はユーザー登録LIFF。
+        // 登録完了後に agency_id を付けたままサロン登録へ進む（user/register.blade.php）
+        $liff = config('app.register_liff_id');
         $inviteUrl = 'https://liff.line.me/' . $liff . '?agency_id=' . $agencyId;
         return view('agencies.merchants.invite', compact('inviteUrl'));
     }
@@ -124,11 +126,11 @@ class MerchantController extends Controller
 
         if ($status == 1) {
             // ステータスが 1 の場合richmenu_4に
-            $richmenu_id = env('RICHMENU_ID_4');
+            $richmenu_id = $lineRichMenuService->slotMenuIdFor('RICHMENU_ID_4', $user);
             $richmenu_name = 'RICHMENU_ID_4';
         } elseif ($status == 2) {
             // ステータスが 2 の場合richmenu_3に
-            $richmenu_id = env('RICHMENU_ID_3');
+            $richmenu_id = \App\Services\RichMenuSlots::id('RICHMENU_ID_3');
             $richmenu_name = 'RICHMENU_ID_3';
         }
         $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu_id);
@@ -152,7 +154,7 @@ class MerchantController extends Controller
      */
     public function destroy(LineRichMenuService $lineRichMenuService, $id)
     {
-        $richmenu_2 = env('RICHMENU_ID_2');
+        $richmenu_2 = \App\Services\RichMenuSlots::id('RICHMENU_ID_2');
         $merchant = Merchant::findOrFail($id);
         $merchant_id = $merchant->id;
         $owner_id = $merchant->user_id;
@@ -161,6 +163,7 @@ class MerchantController extends Controller
         // 店舗オーナーのリッチメニューを変更
         if ($owner && $owner->line_id) {
             $lineRichMenuService->switchRichMenu($owner->line_id, $richmenu_2);
+            $owner->update(['richmenu_id' => 'RICHMENU_ID_2']);
         }
         // 店舗データを削除
         $merchant->delete();
@@ -171,6 +174,7 @@ class MerchantController extends Controller
             if ($member->line_id) {
                 // メンバーのrichmenuを2に変更
                 $lineRichMenuService->switchRichMenu($member->line_id, $richmenu_2);
+                $member->update(['richmenu_id' => 'RICHMENU_ID_2']);
             }
         }
         return redirect()->route('agencies.merchants.index')->with('success', '加盟店を削除しました。');

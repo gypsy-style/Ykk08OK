@@ -85,7 +85,7 @@ class UserController extends Controller
             ]);
 
             // リッチメニュー更新
-            $richmenu_value = config("app.richmenus.{$richmenu_id}"); // 環境変数から適切に取得
+            $richmenu_value = (\App\Services\RichMenuSlots::isSlot($richmenu_id) ? $lineRichMenuService->slotMenuIdFor($richmenu_id, $user) : null); // 環境変数から適切に取得
             if (!$richmenu_value) {
                 return response()->json(['success' => false, 'message' => 'リッチメニューの設定が見つかりません。'], 400);
             }

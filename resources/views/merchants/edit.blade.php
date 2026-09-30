@@ -29,8 +29,8 @@
                     <dt>電話番号</dt>
                     <dd><input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone', $merchant->phone) }}" required></dd>
 
-                    <dt>キャンペーンコード（任意）</dt>
-                    <dd><input type="text" name="campaign_code" id="campaign_code" class="form-control" value="{{ old('campaign_code', $merchant->campaign_code) }}"></dd>
+                    {{-- キャンペーンコードは不要になったため非表示（既存の値は保持） --}}
+                    <input type="hidden" name="campaign_code" id="campaign_code" value="{{ old('campaign_code', $merchant->campaign_code) }}">
 
                     <dt>振込み口座名（任意）</dt>
                     <dd><textarea name="bank_account_name" id="bank_account_name" class="form-control" rows="4">{{ old('bank_account_name', $merchant->bank_account_name) }}</textarea></dd>

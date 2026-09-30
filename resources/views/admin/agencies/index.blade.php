@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', '管理画面 [商品]')
+@section('title', '管理画面 [代理店]')
 
 @section('content')
 <section class="lma-content">
@@ -12,6 +12,9 @@
     <div>
         <p class="lma-btn_box"><a href="{{ route('admin.agencies.create') }}">代理店新規作成</a></p>
     </div>
+    @if (session('success'))
+        <div style="background:#d4edda; padding:10px 14px; margin-bottom:15px; border-radius:4px;">{{ session('success') }}</div>
+    @endif
     <div class="lma-content_block staff nobg">
         <ul class="lma-user_list store">
             @foreach($agencies as $agency)

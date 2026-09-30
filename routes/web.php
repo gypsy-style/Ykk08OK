@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\LogController as AdminLogController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\SalesController as AdminSalesController;
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
+use App\Http\Controllers\Admin\RichMenuController as AdminRichMenuController;
 use App\Http\Controllers\Agency\DashboardController as AgencyDashboardController;
 use App\Http\Controllers\Agency\MerchantController as AgencyMerchantController; 
 use App\Http\Controllers\Agency\AuthController as AgencyAuthController;
@@ -95,6 +96,7 @@ Route::get('/merchants/invoice/{merchant}/{month}', [UserMerchantController::cla
 Route::delete('/merchants/member/{id}', [UserMerchantController::class, 'destroy_member'])->name('merchant.member.destroy');
 
 Route::post('/get-user-id', [UserController::class, 'getUserId']);
+Route::post('/get-registration-status', [UserController::class, 'registrationStatus']);
 Route::post('/get-merchant-information', [UserMerchantController::class, 'getMerchantInformation']);
 
 
@@ -174,6 +176,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('settings/invoice-line', [AdminSettingController::class, 'invoiceLine'])->name('settings.invoice_line');
         Route::post('settings/invoice-line', [AdminSettingController::class, 'updateInvoiceLine'])->name('settings.update_invoice_line');
         Route::post('settings/invoice-line/test', [AdminSettingController::class, 'testInvoiceLine'])->name('settings.test_invoice_line');
+        // リッチメニュー（割り当て・既存ユーザーへの再適用・作成）
+        Route::get('settings/richmenu', [AdminRichMenuController::class, 'index'])->name('settings.richmenu');
+        Route::post('settings/richmenu/assign', [AdminRichMenuController::class, 'updateAssignments'])->name('settings.richmenu.assign');
+        Route::post('settings/richmenu/reapply/{slot}', [AdminRichMenuController::class, 'reapply'])->name('settings.richmenu.reapply');
+        Route::post('settings/richmenu/recalculate', [AdminRichMenuController::class, 'recalculate'])->name('settings.richmenu.recalculate');
+        Route::post('settings/richmenu', [AdminRichMenuController::class, 'store'])->name('settings.richmenu.store');
+        Route::delete('settings/richmenu/{richMenuId}', [AdminRichMenuController::class, 'destroy'])->name('settings.richmenu.destroy');
 
     });
 });

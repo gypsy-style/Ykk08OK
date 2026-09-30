@@ -40,6 +40,11 @@ class MerchantController extends Controller
     public function create(Request $request)
     {
         $agency_id = $request->query('agency_id');
+        if (!$agency_id && $request->query('liff_state')) {
+            // LIFF経由だとクエリが liff.state に入ってくることがある
+            parse_str(ltrim(urldecode($request->query('liff_state')), '?'), $params);
+            $agency_id = $params['agency_id'] ?? null;
+        }
         return view('merchants.create', compact('agency_id'));
     }
 
@@ -137,8 +142,10 @@ class MerchantController extends Controller
             ));
 
             // リッチメニュー更新
-            $richmenu_id_3 = env('RICHMENU_ID_3');
+            $richmenu_id_3 = \App\Services\RichMenuSlots::id('RICHMENU_ID_3');
             $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu_id_3);
+            // 段階を記録（リッチメニュー変更時の既存ユーザーへの再適用に使う）
+            $user->update(['richmenu_id' => 'RICHMENU_ID_3']);
 
             Log::info("Merchant created: {$merchant->id}, Richmenu switched: {$line_id}");
 
@@ -183,11 +190,12 @@ class MerchantController extends Controller
 
     public function destroy_member(LineRichMenuService $lineRichMenuService, $id)
     {
-        $richmenu_2 = env('RICHMENU_ID_2');
+        $richmenu_2 = \App\Services\RichMenuSlots::id('RICHMENU_ID_2');
          $merchantMember = MerchantMember::where('user_id', $id)->firstOrFail();
          if($merchantMember && $merchantMember->line_id)
          {
             $lineRichMenuService->switchRichMenu($merchantMember->line_id, $richmenu_2);
+            User::where('id', $merchantMember->user_id)->update(['richmenu_id' => 'RICHMENU_ID_2']);
          }
          $merchantMember->delete();
 
@@ -232,7 +240,7 @@ class MerchantController extends Controller
         ]);
 
         // リッチメニュー更新
-        $richmenu_id_4 = env('RICHMENU_ID_4');
+        $richmenu_id_4 = $lineRichMenuService->slotMenuIdFor('RICHMENU_ID_4', $user);
         $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu_id_4);
 
         // ユーザーテーブルのrichmenu_idを更新

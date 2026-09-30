@@ -8,6 +8,15 @@
     <main class="lmf-main_contents">
         <section class="lmf-content">
 
+            {{-- 既存サロンにスタッフとして追加する人向けの案内 --}}
+            <div class="lm-form_block lmf-white_block" id="staffScanBlock" style="margin-bottom: 20px;">
+                <p style="font-size: 14px; line-height: 1.7; margin: 0 0 12px;">
+                    すでにサロン登録が完了していて、<b>スタッフとして追加する場合</b>は、サロンオーナーのQRコードを読み込んでください。<br>
+                    <span style="font-size: 12px; color: #666;">（QRコードはマイページの「登録スタッフ一覧」の「スタッフを追加」ボタンで確認できます）</span>
+                </p>
+                <p class="lmf-btn_box btn_small" style="margin: 0;"><a href="#" id="scanStaffQrButton">QRコードを読み込む</a></p>
+            </div>
+
             <form id="merchantForm">
                 @csrf
                 <input type="hidden" name="agency_id" value="{{ $agency_id }}">
@@ -34,8 +43,8 @@
                         <input type="hidden" name="address" id="address">
                         <dt>電話番号</dt>
                         <dd><input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone') }}" required></dd>
-                        <dt>キャンペーンコード（任意）</dt>
-                        <dd><input type="text" name="campaign_code" id="campaign_code" class="form-control" value="{{ old('campaign_code') }}"></dd>
+                        {{-- キャンペーンコードは不要になったため非表示（既存の値は保持） --}}
+                        <input type="hidden" name="campaign_code" id="campaign_code" value="{{ old('campaign_code') }}">
                         <dt>振込み口座名（任意）</dt>
                         <dd><textarea name="bank_account_name" id="bank_account_name" class="form-control" rows="4">{{ old('bank_account_name') }}</textarea></dd>
                         <p class="lmf-btn_box btn_small"><input type="submit" value="サロン登録"></p>
@@ -57,6 +66,64 @@
 @vite(['resources/js/liff_merchant.js'])
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // agency_id が空なら URL（liff.state 含む）から補完
+        const agencyField = document.querySelector('#merchantForm input[name="agency_id"]');
+        if (agencyField && !agencyField.value) {
+            const params = new URLSearchParams(window.location.search);
+            let agencyId = params.get('agency_id');
+            if (!agencyId && params.get('liff.state')) {
+                const state = params.get('liff.state');
+                agencyId = new URLSearchParams(state.includes('?') ? state.slice(state.indexOf('?') + 1) : state).get('agency_id');
+            }
+            if (agencyId && /^\d+$/.test(agencyId)) {
+                agencyField.value = agencyId;
+            }
+        }
+
+        // すでにサロン登録済み（オーナー or スタッフ）の人は公式LINEへ
+        if (window.liff && liff.ready) {
+            liff.ready.then(function() {
+                if (!liff.isLoggedIn()) return;
+                return fetch('/ykk08ok/get-registration-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    },
+                    body: JSON.stringify({ access_token: liff.getAccessToken() }),
+                })
+                .then(function(res) { return res.ok ? res.json() : {}; })
+                .then(function(data) {
+                    if (data.status === 'salon') {
+                        window.location.href = 'https://line.me/R/ti/p/{{ '@' }}797lemhx';
+                    }
+                });
+            }).catch(function(err) { console.error('registration status error', err); });
+        }
+
+        // スタッフ追加用：QRリーダーを起動し、読み取ったスタッフ追加URLへ移動
+        document.getElementById('scanStaffQrButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+            try {
+                if (window.liff && liff.isApiAvailable && liff.isApiAvailable('scanCodeV2')) {
+                    const result = await liff.scanCodeV2();
+                    const value = result && result.value ? result.value.trim() : '';
+                    if (!value) return; // キャンセル時
+                    if (/^https:\/\/(liff\.line\.me|line\.me|lin\.ee)\//.test(value)) {
+                        window.location.href = value;
+                    } else {
+                        alert('スタッフ追加用のQRコードではありません。サロンオーナーのQRコードを読み込んでください。');
+                    }
+                } else {
+                    // LIFFのQR読み取りが使えない環境では、LINEアプリのQRコードリーダーを開く
+                    window.location.href = 'https://line.me/R/nv/QRCodeReader';
+                }
+            } catch (e) {
+                console.error('scanCodeV2 error', e);
+                window.location.href = 'https://line.me/R/nv/QRCodeReader';
+            }
+        });
+
         // 郵便番号から住所を自動入力
         function fetchAddress() {
             const code1 = document.getElementById('postal_code1').value;

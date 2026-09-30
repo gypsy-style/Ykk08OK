@@ -26,8 +26,8 @@
                 <dt><label for="product_code">サロンコード</label></dt>
                 <dd><input type="text" class="form-control" id="merchant_code" name="merchant_code" value="{{ old('merchant_code', $merchant->merchant_code) }}" required></dd>
 
-                <dt><label for="campaign_code">キャンペーンコード</label></dt>
-                <dd><input type="text" class="form-control" id="campaign_code" name="campaign_code" value="{{ old('campaign_code', $merchant->campaign_code) }}"></dd>
+                {{-- キャンペーンコードは不要になったため非表示（既存の値は保持） --}}
+                <input type="hidden" name="campaign_code" id="campaign_code" value="{{ old('campaign_code', $merchant->campaign_code) }}">
 
                 <dt><label for="category_id">ステータス</label></dt>
                 <dd>

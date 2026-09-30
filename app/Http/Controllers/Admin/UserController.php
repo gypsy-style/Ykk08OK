@@ -43,8 +43,9 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
             $line_id = $user->line_id;
-            $richmenu_id_1 = env("RICHMENU_ID_1");
-            $result = $lineRichMenuService->switchRichMenu($line_id, $richmenu_id_1);
+            // 個別の紐付けを外して既定メニュー（①）に戻す。①を個別に紐付けると、
+            // あとで既定メニューを変更してもこの人には届かなくなるため
+            $result = $lineRichMenuService->unlinkUser($line_id);
             $user->delete();
             return redirect()->route('admin.users.index')->with('success', 'ユーザーを削除しました。');
         } catch (Exception $e) {
@@ -84,7 +85,7 @@ class UserController extends Controller
             ]);
 
             // リッチメニュー更新
-            $richmenu_value = config("app.richmenus.{$richmenu_id}"); // 環境変数から適切に取得
+            $richmenu_value = (\App\Services\RichMenuSlots::isSlot($richmenu_id) ? $lineRichMenuService->slotMenuIdFor($richmenu_id, $user) : null); // 環境変数から適切に取得
             if (!$richmenu_value) {
                 return response()->json(['success' => false, 'message' => 'リッチメニューの設定が見つかりません。'], 400);
             }

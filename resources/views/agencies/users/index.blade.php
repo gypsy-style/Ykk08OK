@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-$richmenuOptions = config('app.richmenus');
+$richmenuOptions = \App\Services\RichMenuSlots::labels(); // キー=段階、値=表示名
 @endphp
 <section class="lma-content flex">
     <div class="lma-main_head">
@@ -26,7 +26,7 @@ $richmenuOptions = config('app.richmenus');
                         <select class="form-control richmenu-select" data-user-id="{{ $user->id }}">
                             @foreach($richmenuOptions as $key => $value)
                             <option value="{{ $key }}" {{ $user->richmenu_id == $key ? 'selected' : '' }}>
-                                {{ $key }}
+                                {{ $value }}
                             </option>
                             @endforeach
                         </select>
