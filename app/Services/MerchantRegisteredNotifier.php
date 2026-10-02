@@ -49,7 +49,9 @@ class MerchantRegisteredNotifier
             $lines[] = '管理画面から有効に切り替えてください。';
         }
 
-        $lines[] = route('admin.merchants.edit', $merchant->id);
+        // LINE 内ブラウザだと管理画面のログイン状態が引き継がれないため、
+        // openExternalBrowser=1 を付けて端末のデフォルトブラウザで開かせる
+        $lines[] = route('admin.merchants.edit', $merchant->id) . '?openExternalBrowser=1';
 
         return implode("\n", $lines);
     }

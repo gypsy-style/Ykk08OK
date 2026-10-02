@@ -182,21 +182,12 @@ document.addEventListener("DOMContentLoaded", function() {
             if (data.success) {
                 // 代理店の招待URLから来た場合は、閉じずにそのままサロン登録へ（代理店を引き継ぐ）
                 const agencyId = document.getElementById('agency_id').value;
-                alert(agencyId ? '登録が完了しました。続けてサロン登録をお願いします。' : '登録が完了しました。');
-                liff.sendMessages([
-                    {
-                        type: 'text',
-                        text: '【会員登録済】'
-                    }
-                ]).catch(function(err) {
-                    console.error('sendMessages error', err);
-                }).finally(function() {
-                    if (agencyId) {
-                        window.location.href = 'https://liff.line.me/' + window.LIFF_ID_MERCHANT_REGISTER + '?agency_id=' + encodeURIComponent(agencyId);
-                    } else {
-                        liff.closeWindow();
-                    }
-                });
+                // 登録完了メッセージ（【会員登録済】の送信）は廃止
+                if (agencyId) {
+                    window.location.href = 'https://liff.line.me/' + window.LIFF_ID_MERCHANT_REGISTER + '?agency_id=' + encodeURIComponent(agencyId);
+                } else {
+                    liff.closeWindow();
+                }
                 return;
             } else {
                 document.getElementById("errorMessages").innerText = data.error || "エラーが発生しました";

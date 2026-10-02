@@ -172,17 +172,8 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('サロン登録が完了しました');
-                        liff.sendMessages([
-                            {
-                                type: 'text',
-                                text: '【店舗登録済】'
-                            }
-                        ]).catch(function(err) {
-                            console.error('sendMessages error', err);
-                        }).finally(function() {
-                            liff.closeWindow();
-                        });
+                        // 登録完了メッセージ（【店舗登録済】の送信）は廃止。閉じずに公式LINEのトークへ移動する
+                        window.location.href = 'https://line.me/R/ti/p/{{ '@' }}797lemhx';
                         return;
                     } else {
                         document.getElementById("errorMessage").innerText = data.error || "エラーが発生しました";
