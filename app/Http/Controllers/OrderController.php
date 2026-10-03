@@ -8,6 +8,9 @@ use App\Models\Category;
 use App\Models\Merchant;
 use App\Models\MerchantMember;
 use App\Models\Order;
+use App\Services\MerchantAccess;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\URL;
 use App\Services\ActivityLogService;
 use App\Services\EmailNotificationService;
 use App\Services\TestDataFilter;
@@ -66,31 +69,20 @@ class OrderController extends Controller
             return response()->json(['error' => 'access_token is required'], 422);
         }
 
-        $profile = $this->getLineProfile($accessToken);
-        if (!$profile) {
+        $access = $this->merchantAccessFromToken($accessToken);
+        if (!$access) {
             return response()->json(['error' => 'User not found or invalid token'], 404);
         }
-        $lineId = $profile['line_id'];
 
-        $user = User::where('line_id', $lineId)->first();
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        // オーナー or メンバーから加盟店を特定
-        $merchant = Merchant::where('user_id', $user->id)->first();
-        if (!$merchant) {
-            $merchantMember = MerchantMember::where('user_id', $user->id)->first();
-            if ($merchantMember) {
-                $merchant = Merchant::find($merchantMember->merchant_id);
-            }
-        }
+        $merchant = $access->merchant;
         if (!$merchant) {
             return response()->json(['error' => 'Merchant not found'], 404);
         }
 
         return response()->json([
             'member_rank' => (int) ($merchant->member_rank ?? 1),
+            // 注文画面はリッチメニューから全スタッフが開けるため、ここで出し分ける
+            'can_order' => $access->can('can_order'),
         ]);
     }
 
@@ -123,13 +115,11 @@ class OrderController extends Controller
         $userId = $user->id;
 
         // 加盟店を特定（オーナー or メンバー）
-        $merchant = Merchant::where('user_id', $userId)->first();
-        if (!$merchant) {
-            $merchantMember = MerchantMember::where('user_id', $userId)->first();
-            if ($merchantMember) {
-                $merchant = Merchant::find($merchantMember->merchant_id);
-            }
+        $access = MerchantAccess::forUser($user);
+        if (!$access->can('can_order')) {
+            return redirect()->route('order.list')->withErrors(['line_id' => '注文の権限がありません。サロンオーナーにご確認ください。']);
         }
+        $merchant = $access->merchant;
         $memberRank = (int) ($merchant->member_rank ?? 1);
 
         // 2. item_number_{商品ID} フォーマットのデータを抽出
@@ -212,19 +202,13 @@ class OrderController extends Controller
             return response()->json(['error' => 'ユーザーが見つかりません'], 404);
         }
         $userId = $user->id;
-        $merchant = Merchant::where('user_id', $userId)->first();
-        if(!$merchant) {
-            // オーナーではない場合
-            $merchantMember = MerchantMember::where('user_id', $userId)->first();
-            if (!$merchantMember) {
-                return response()->json(['error' => '対応する店舗が見つかりません'], 404);
-            }
-            $merchant_id = $merchantMember->merchant_id;
-            $merchant = Merchant::find($merchant_id);
-        }
-
+        $access = MerchantAccess::forUser($user);
+        $merchant = $access->merchant;
         if (!$merchant) {
             return response()->json(['error' => '対応する店舗が見つかりません'], 404);
+        }
+        if (!$access->can('can_order')) {
+            return response()->json(['error' => '注文の権限がありません。サロンオーナーにご確認ください。'], 403);
         }
 
         $merchantId = $merchant->id;
@@ -336,14 +320,14 @@ class OrderController extends Controller
 
     public function cancel(Request $request)
     {
-        $order_id = $request->input('order_id');
-        if(!$order_id) {
-            return response()->json(['error' => 'Order not requested'], 404);   
+        // 注文詳細を開ける人にだけ発行する署名付き URL で受け付ける
+        if (!$request->hasValidSignature()) {
+            return response()->json(['error' => 'このリンクの有効期限が切れています。注文履歴からもう一度開いてください。'], 403);
         }
-        
-        $order = Order::findOrFail($order_id);
+
+        $order = Order::find($request->query('order'));
         if(!$order) {
-            return response()->json(['error' => 'Order not found'], 404);   
+            return response()->json(['error' => 'Order not found'], 404);
         }
 
         // 変更前の値を保存
@@ -379,11 +363,19 @@ class OrderController extends Controller
         return view('order.history');
     }
 
-    public function detail(Order $order)
+    public function detail(Request $request, Order $order)
     {
+        // 履歴を見られる人にだけ発行する署名付き URL で開かせる（注文 ID の数字を変えて他店の注文を見られないように）
+        if (!$request->hasValidSignature()) {
+            return response()->view('merchants.invoice_expired', [
+                'title' => '注文詳細',
+                'message' => 'このリンクの有効期限が切れています。注文履歴からもう一度開いてください。',
+            ], 403);
+        }
+
         $order->load('details.product', 'merchant', 'agency');
-        // dd($order);
-        return view('order.detail', compact('order'));
+        $cancelUrl = URL::temporarySignedRoute('order.cancel', Carbon::now()->addDay(), ['order' => $order->id]);
+        return view('order.detail', compact('order', 'cancelUrl'));
     }
 
     public function logMessageFailed(Request $request)
@@ -401,35 +393,22 @@ class OrderController extends Controller
     {
         $data = $request->all();
         // リクエストのバリデーション
-        $accessToken = $data['accessToken'];;
-        $profile = $this->getLineProfile($accessToken);
-        Log::alert('order line_ID:' . print_r($profile, true));
-        if ($profile) {
-            $lineId = $profile['line_id'];
-        } else {
+        $access = $this->merchantAccessFromToken($data['accessToken'] ?? null);
+        if (!$access) {
             return response()->json(['error' => 'User not found or invalid token'], 404);
         }
 
-
-        // LINE ID でユーザーを取得
-        $user = User::where('line_id', $lineId)->first();
-
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-        $merchant = Merchant::where('user_id', $user->id)->first();
-        if(!$merchant) {
-            // オーナーではない場合
-            $merchantMember = MerchantMember::where('user_id', $user->id)->first();
-            if (!$merchantMember) {
-                return response()->json(['error' => '対応する店舗が見つかりません'], 404);
-            }
-            $merchant_id = $merchantMember->merchant_id;
-            $merchant = Merchant::find($merchant_id);
-        }
-
+        $merchant = $access->merchant;
         if (!$merchant) {
             return response()->json(['error' => '対応する店舗が見つかりません'], 404);
+        }
+
+        // 履歴は liff.js が返した HTML をそのまま表示するので、権限がなければメッセージの HTML を返す
+        if (!$access->can('can_view_order_history')) {
+            $html = view('order.partials.no_permission', [
+                'message' => '注文履歴を見る権限がありません。サロンオーナーにご確認ください。',
+            ])->render();
+            return response()->json(['html' => $html]);
         }
 
         $merchant_id = $merchant->id;
@@ -445,6 +424,8 @@ class OrderController extends Controller
         // 表示用に税込注文合計を付与（商品合計税込 + 送料）
         $orders->each(function ($order) {
             $order->total_price_included = (int) round($order->total_price * 1.1) + ($order->shipping_fee ?? 0);
+            // 注文詳細は本人確認のため署名付き URL で開かせる
+            $order->detail_url = URL::temporarySignedRoute('order.detail', Carbon::now()->addDay(), ['order' => $order->id]);
         });
 
         // BladeでHTMLをレンダリング

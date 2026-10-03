@@ -44,7 +44,7 @@ $orderStatusLabel = $statusLabels[$order->status] ?? '不明なステータス';
     </ul>
     <p class="lmf-btn_box">
 
-        <a href="{{ route('order.detail', $order->id) }}">注文詳細</a>
+        <a href="{{ $order->detail_url }}">注文詳細</a>
     </p>
 </div>
 @endforeach
