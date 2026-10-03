@@ -183,17 +183,16 @@ class OrderController extends Controller
         $data = $request->all();
         Log::alert(print_r($data, true));
 
-        // ユーザー取得（access_token 優先、なければ user_id にフォールバック）
+        // ユーザー取得（access_token 必須。user_id だけで注文できると権限判定を素通りするため）
         $accessToken = $data['access_token'] ?? null;
-        if ($accessToken) {
-            $profile = $this->getLineProfile($accessToken);
-            if (!$profile) {
-                return response()->json(['error' => 'ユーザーが見つかりません'], 404);
-            }
-            $user = User::where('line_id', $profile['line_id'])->first();
-        } else {
-            $user = User::find($data['user_id'] ?? null);
+        if (!$accessToken) {
+            return response()->json(['error' => 'ユーザーが見つかりません'], 404);
         }
+        $profile = $this->getLineProfile($accessToken);
+        if (!$profile) {
+            return response()->json(['error' => 'ユーザーが見つかりません'], 404);
+        }
+        $user = User::where('line_id', $profile['line_id'])->first();
 
         // 備考
         $memo = $data['memo'];
@@ -328,6 +327,11 @@ class OrderController extends Controller
         $order = Order::find($request->query('order'));
         if(!$order) {
             return response()->json(['error' => 'Order not found'], 404);
+        }
+
+        // UI は代理店未処理（status 1）のときだけキャンセルを出すので、サーバー側でも合わせる
+        if ((int) $order->status !== 1) {
+            return response()->json(['error' => 'この注文はキャンセルできません。'], 422);
         }
 
         // 変更前の値を保存
