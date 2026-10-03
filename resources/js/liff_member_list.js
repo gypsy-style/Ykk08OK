@@ -57,6 +57,8 @@ async function main() {
             const merchantId = memberList.merchant_id;
             generateQRCode(merchantId);
             // renderOrderHistory(orderHistory);
+        } else if (response.status === 403) {
+            document.getElementById('staff-list').innerHTML = '<p class="lmf-no-staff">スタッフ一覧を見る権限がありません。サロンオーナーにご確認ください。</p>';
         } else {
             throw new Error('Failed to send order data.');
         }

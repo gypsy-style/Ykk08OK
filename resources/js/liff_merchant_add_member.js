@@ -12,6 +12,7 @@ async function main() {
         // URLから `merchant_id` を取得
         const urlParams = new URLSearchParams(window.location.search);
         let merchantId = urlParams.get("merchant_id");
+        let inviteToken = urlParams.get("invite_token");
 
         // `liff.state` から `merchant_id` を取得する
         const liffState = urlParams.get("liff.state");
@@ -19,6 +20,9 @@ async function main() {
             const stateParams = new URLSearchParams(liffState.replace("?", ""));
             if (stateParams.has("merchant_id")) {
                 merchantId = stateParams.get("merchant_id");
+            }
+            if (stateParams.has("invite_token")) {
+                inviteToken = stateParams.get("invite_token");
             }
         }
 
@@ -37,7 +41,7 @@ async function main() {
         // LIFFログインチェック
         if (!liff.isLoggedIn()) {
             console.log("ログインが必要です。リダイレクトします...");
-            let redirectUri = `${window.location.origin}${window.location.pathname}?merchant_id=${merchantId}`;
+            let redirectUri = `${window.location.origin}${window.location.pathname}?merchant_id=${merchantId}&invite_token=${encodeURIComponent(inviteToken || '')}`;
             liff.login({ redirectUri });
             return;
         }
@@ -68,6 +72,7 @@ async function main() {
 
             const payload = {
                 merchant_id: merchantId,
+                invite_token: inviteToken,
                 access_token: accessToken
             };
             console.log(payload);

@@ -196,35 +196,59 @@ class MerchantController extends Controller
     public function add_member(Request $request)
     {
         $merchant_id = $request->query('merchant_id');
+        $invite_token = $request->query('invite_token');
         if (!$merchant_id) {
             $liffState = $request->query('liff_state');
             $decodedState = urldecode($liffState);
             $cleanState = ltrim($decodedState, '?'); // 先頭の `?` を削除
             parse_str($cleanState, $params);
             $merchant_id = $params['merchant_id'] ?? null;
+            $invite_token = $params['invite_token'] ?? null;
         }
+
+        // 正しい QR から来た人だけ受け付ける（merchant_id の数字を変えて別のサロンに入れないように）
+        if (!MerchantAccess::isValidInviteToken($merchant_id, $invite_token)) {
+            return response()->view('merchants.invoice_expired', [
+                'title' => 'スタッフ追加',
+                'message' => 'このスタッフ追加用のURLは無効です。サロンオーナーに新しいQRコードを出してもらってください。',
+            ], 403);
+        }
+
         $merchant = Merchant::find($merchant_id);
 
-        // $merchant_id = $request->input('merchant_id');
         if (!$merchant) {
             abort(404, 'Merchant not found');
         }
         return view('merchants.add_member', compact('merchant'));
     }
 
-    public function destroy_member(LineRichMenuService $lineRichMenuService, $id)
+    public function destroy_member(LineRichMenuService $lineRichMenuService, Request $request, $id)
     {
+        $access = $this->merchantAccessFromToken($request->input('access_token'));
+        if (!$access || !$access->can('can_manage_staff')) {
+            return response()->json(['error' => 'スタッフを削除する権限がありません。サロンオーナーにご確認ください。'], 403);
+        }
+
+        if ((int) $id === (int) $access->user->id) {
+            return response()->json(['error' => '自分自身は削除できません。'], 422);
+        }
+
+        // 別のサロンのスタッフは消せないよう、自分のサロンに絞って探す
+        $merchantMember = MerchantMember::where('user_id', $id)
+            ->where('merchant_id', $access->merchant->id)
+            ->first();
+        if (!$merchantMember) {
+            return response()->json(['error' => 'スタッフが見つかりません。'], 404);
+        }
+
         $richmenu_2 = \App\Services\RichMenuSlots::id('RICHMENU_ID_2');
-         $merchantMember = MerchantMember::where('user_id', $id)->firstOrFail();
-         if($merchantMember && $merchantMember->line_id)
-         {
+        if ($merchantMember->line_id) {
             $lineRichMenuService->switchRichMenu($merchantMember->line_id, $richmenu_2);
             User::where('id', $merchantMember->user_id)->update(['richmenu_id' => 'RICHMENU_ID_2']);
-         }
-         $merchantMember->delete();
+        }
+        $merchantMember->delete();
 
-         return response()->json(['success' => true, 'message' => 'Member deleted successfully'], 200);
-
+        return response()->json(['success' => true, 'message' => 'Member deleted successfully'], 200);
     }
 
     /**
@@ -236,6 +260,17 @@ class MerchantController extends Controller
 
         $accessToken = $request->input('access_token');
         $merchant_id = $request->input('merchant_id');
+
+        if (!MerchantAccess::isValidInviteToken($merchant_id, $request->input('invite_token'))) {
+            return response()->json([
+                'error' => 'invalid invite token',
+                'message' => 'このスタッフ追加用のURLは無効です。サロンオーナーに新しいQRコードを出してもらってください。',
+            ], 403);
+        }
+
+        if (!Merchant::find($merchant_id)) {
+            return response()->json(['error' => 'Merchant not found', 'message' => 'サロンが見つかりません。'], 404);
+        }
 
 
         // LINEのプロフィール取得
@@ -254,6 +289,14 @@ class MerchantController extends Controller
                 'error' => 'User not found',
                 'redirect_url' => url("/register?line_id={$line_id}")
             ], 404);
+        }
+
+        // すでにどこかのサロンのオーナーかスタッフである人は追加しない（二重所属を防ぐ）
+        if (MerchantAccess::forUser($user)->merchant) {
+            return response()->json([
+                'error' => 'already belongs',
+                'message' => 'すでにサロンに登録されています。',
+            ], 409);
         }
 
         // データベースに保存
@@ -368,46 +411,67 @@ class MerchantController extends Controller
         ));
     }
 
-    public function getMemberList(Request $request)
+    /**
+     * スタッフの権限を1つ切り替える（オーナーだけ）
+     */
+    public function updateMemberPermission(Request $request)
     {
-        $accessToken = $request->input('access_token');
-        $profile = $this->getLineProfile($accessToken);
-        if ($profile) {
-            $line_id = $profile['line_id'];
-        } else {
-            return response()->json(['error' => 'User not found or invalid token'], 404);
-        }
-        $line_id = $profile['line_id'];
-
-        // `line_id` から `User` を検索
-        $user = User::where('line_id', $line_id)->first();
-
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
+        $access = $this->merchantAccessFromToken($request->input('access_token'));
+        if (!$access || !$access->merchant || !$access->isOwner) {
+            return response()->json(['error' => '権限を変更できるのはサロンオーナーだけです。'], 403);
         }
 
-        // `user_id` を持つ `Merchant` を取得
-        $merchant = Merchant::where('user_id', $user->id)->first();
-
-        if (!$merchant) {
-            return response()->json(['error' => 'Merchant not found'], 404);
+        $permission = $request->input('permission');
+        if (!in_array($permission, MerchantAccess::PERMISSIONS, true)) {
+            return response()->json(['error' => '変更できない項目です。'], 422);
         }
-        $merchant_id = $merchant->id;
-        // 店舗メンバー一覧を取得
-        // `merchant_id` に紐づくメンバーを取得
-        $members = MerchantMember::where('merchant_id', $merchant_id)->with('user')->get();
 
+        // 別のサロンのスタッフは変えられないよう、自分のサロンに絞って探す
+        $member = MerchantMember::where('user_id', $request->input('member_user_id'))
+            ->where('merchant_id', $access->merchant->id)
+            ->first();
+        if (!$member) {
+            return response()->json(['error' => 'スタッフが見つかりません。'], 404);
+        }
 
-        // BladeでHTMLをレンダリング
-        $html = $this->renderMemberListHtml($user, $members, $merchant_id);
+        $member->{$permission} = $request->boolean('value');
+        $member->save();
 
-
-        return response()->json(['html' => $html,'merchant_id'=>$merchant_id]);
+        return response()->json(['success' => true]);
     }
 
-    public function renderMemberListHtml($user, $members, $merchant_id)
+    public function getMemberList(Request $request)
     {
-        return view('merchants.partials.member_list', compact('user', 'members', 'merchant_id'))->render();
+        $access = $this->merchantAccessFromToken($request->input('access_token'));
+        if (!$access) {
+            return response()->json(['error' => 'User not found or invalid token'], 404);
+        }
+
+        $merchant = $access->merchant;
+        if (!$merchant || !$access->can('can_manage_staff')) {
+            return response()->json(['error' => 'スタッフ一覧を見る権限がありません。サロンオーナーにご確認ください。'], 403);
+        }
+
+        // 開いた人がスタッフの場合もあるので、オーナーは店舗から引く
+        $owner = User::find($merchant->user_id);
+        $members = MerchantMember::where('merchant_id', $merchant->id)->with('user')->get();
+
+        $html = $this->renderMemberListHtml($owner, $members, $merchant->id, $access);
+
+        return response()->json(['html' => $html, 'merchant_id' => $merchant->id]);
+    }
+
+    public function renderMemberListHtml($owner, $members, $merchant_id, MerchantAccess $access)
+    {
+        return view('merchants.partials.member_list', [
+            'owner' => $owner,
+            'members' => $members,
+            'merchant_id' => $merchant_id,
+            'viewerUserId' => $access->user->id,
+            // 権限を変えられるのはオーナーだけ（スタッフ同士で権限を広げ合えないように）
+            'canEditPermissions' => $access->isOwner,
+            'inviteToken' => MerchantAccess::inviteToken($merchant_id),
+        ])->render();
     }
 
     /**
