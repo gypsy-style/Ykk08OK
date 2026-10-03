@@ -92,23 +92,18 @@ function updateMerchantInformation(data) {
     document.getElementById('phone').textContent = data.phone || 'N/A';
     document.getElementById('bank_account_name').innerText = data.bank_account_name || 'N/A';
 
-    // 編集画面のURLを生成
-    const merchantId = data.merchant_id;
-    window.EDIT_URL = window.EDIT_URL.replace(':id', merchantId);
-    $('#edit_link a').attr('href',window.EDIT_URL);
-
-    // ログイン中のユーザーと店舗のオーナーが同一かチェック
-    const userId = data.user_id;
-    const merchantUserId = data.merchant_user_id;
-    if(userId == merchantUserId) {
-         // 「登録情報を修正する」ボタンを表示
-         document.querySelector('.lmf-btn_box.btn_dgy.btn_small').style.display = 'block';
-         // 「登録スタッフ一覧」ボタンを表示
-         document.querySelector('.lmf-btn_box.member_list').style.display = 'block';
-         // 「請求書」ボタンは確定済みの請求書がある場合のみ表示
-         if (data.has_invoice) {
-             document.querySelector('.lmf-btn_box.invoice_list').style.display = 'block';
-         }
+    // 権限に応じてボタンを出す（同じ判定をサーバー側の API でも行っている）
+    const permissions = data.permissions || {};
+    if (permissions.can_edit_merchant && data.edit_url) {
+        $('#edit_link a').attr('href', data.edit_url);
+        document.getElementById('edit_link').style.display = 'block';
+    }
+    if (permissions.can_manage_staff) {
+        document.querySelector('.lmf-btn_box.member_list').style.display = 'block';
+    }
+    // 「請求書」ボタンは確定済みの請求書がある場合のみ表示
+    if (permissions.can_view_invoice && data.has_invoice) {
+        document.querySelector('.lmf-btn_box.invoice_list').style.display = 'block';
     }
 }
 

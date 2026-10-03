@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Services\InvoiceService;
 use App\Services\LineRichMenuService;
+use App\Services\MerchantAccess;
 use App\Services\MerchantRegisteredNotifier;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\URL;
@@ -49,17 +50,37 @@ class MerchantController extends Controller
         return view('merchants.create', compact('agency_id'));
     }
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
+        // 本人確認のため、マイページが権限のある人にだけ発行する署名付き URL で開かせる
+        if (!$request->hasValidSignature()) {
+            return response()->view('merchants.invoice_expired', [
+                'title' => '登録情報の修正',
+                'message' => 'このリンクの有効期限が切れています。マイページからもう一度開いてください。',
+            ], 403);
+        }
 
         $merchant = Merchant::findOrFail($id); // IDで検索、見つからなければ404
 
-        return view('merchants.edit', compact('merchant'));
+        $updateUrl = URL::temporarySignedRoute(
+            'merchants.update',
+            Carbon::now()->addDay(),
+            ['id' => $merchant->id]
+        );
+
+        return view('merchants.edit', compact('merchant', 'updateUrl'));
     }
 
 
     public function update(Request $request, $id)
     {
+        if (!$request->hasValidSignature()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'このリンクの有効期限が切れています。マイページからもう一度開いてください。',
+            ], 403);
+        }
+
         try {
             $merchant = Merchant::findOrFail($id);
 
@@ -264,22 +285,14 @@ class MerchantController extends Controller
 
     public function getInvoiceList(Request $request)
     {
-        $accessToken = $request->input('access_token');
-        $profile = $this->getLineProfile($accessToken);
-        if (!$profile) {
+        $access = $this->merchantAccessFromToken($request->input('access_token'));
+        if (!$access) {
             return response()->json(['error' => 'User not found or invalid token'], 404);
         }
-        $line_id = $profile['line_id'];
 
-        $user = User::where('line_id', $line_id)->first();
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        // オーナーの店舗のみ請求書を閲覧可能
-        $merchant = Merchant::where('user_id', $user->id)->first();
-        if (!$merchant) {
-            return response()->json(['error' => 'Merchant not found'], 404);
+        $merchant = $access->merchant;
+        if (!$merchant || !$access->can('can_view_invoice')) {
+            return response()->json(['error' => '請求書を見る権限がありません。サロンオーナーにご確認ください。'], 403);
         }
 
         // 当月は未確定のため前月までを対象とする
@@ -403,42 +416,28 @@ class MerchantController extends Controller
      */
     public function getMerchantInformation(Request $request)
     {
-        $accessToken = $request->input('access_token');
-
-        $profile = $this->getLineProfile($accessToken);
-
-        if (!$profile) {
+        $access = $this->merchantAccessFromToken($request->input('access_token'));
+        if (!$access) {
             return response()->json(['error' => 'User not found or invalid token'], 404);
         }
 
-        $line_id = $profile['line_id'];
-
-        // `line_id` から `User` を検索
-        $user = User::where('line_id', $line_id)->first();
-
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        // `user_id` を持つ `Merchant` を取得
-        $merchant = Merchant::where('user_id', $user->id)->first();
-
-        if(!$merchant) {
-            // オーナーではない場合
-            $merchantMember = MerchantMember::where('user_id', $user->id)->first();
-            if (!$merchantMember) {
-                return response()->json(['error' => '対応する店舗が見つかりません'], 404);
-            }
-            $merchant_id = $merchantMember->merchant_id;
-            $merchant = Merchant::find($merchant_id);
-        }
-
+        $merchant = $access->merchant;
         if (!$merchant) {
-            return response()->json(['error' => 'Merchant not found'], 404);
+            return response()->json(['error' => '対応する店舗が見つかりません'], 404);
+        }
+
+        // 登録情報の修正画面は本人確認のため署名付き URL で開かせる
+        $editUrl = null;
+        if ($access->can('can_edit_merchant')) {
+            $editUrl = URL::temporarySignedRoute(
+                'merchants.edit',
+                Carbon::now()->addDay(),
+                ['id' => $merchant->id]
+            );
         }
 
         return response()->json([
-            'user_id' => $user->id,
+            'user_id' => $access->user->id,
             'merchant_user_id' => $merchant->user_id,
             'merchant_id' => $merchant->id,
             'merchant_code' => $merchant->merchant_code,
@@ -449,7 +448,10 @@ class MerchantController extends Controller
             'phone' => $merchant->phone,
             'bank_account_name' => $merchant->bank_account_name,
             'agency_name' => optional($merchant->agency)->name,
-            'has_invoice' => $this->invoiceService->hasInvoice($merchant),
+            'has_invoice' => $access->can('can_view_invoice') && $this->invoiceService->hasInvoice($merchant),
+            'is_owner' => $access->isOwner,
+            'permissions' => $access->permissions(),
+            'edit_url' => $editUrl,
         ]);
     }
 }

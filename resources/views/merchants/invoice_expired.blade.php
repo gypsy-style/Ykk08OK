@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>請求書</title>
+<title>{{ $title ?? '請求書' }}</title>
 <style>
 body {
   font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
