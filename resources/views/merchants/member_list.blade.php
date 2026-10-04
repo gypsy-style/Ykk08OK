@@ -76,7 +76,8 @@
 <script type="text/javascript">
     function generateQRCode(merchantId) {
         const liffIdAddMember = window.LIFF_ID_REGISTER; // これが QR 用の LIFF ID
-        const url = `https://liff.line.me/${liffIdAddMember}?merchant_id=${merchantId}`;
+        const inviteToken = $('#invite_token').val() || '';
+        const url = `https://liff.line.me/${liffIdAddMember}?merchant_id=${merchantId}&invite_token=${encodeURIComponent(inviteToken)}`;
 
         const qrContainer = document.getElementById('qrcode');
         if (!qrContainer) {
@@ -143,9 +144,13 @@
             }
 
             $.ajax({
-                type: "DELETE",
+                type: "POST",
                 url: `{{ route('merchant.member.destroy', ':id') }}`.replace(':id', deleteUserID),
                 dataType: "json",
+                data: {
+                    _method: "DELETE",
+                    access_token: $('#access_token').val(),
+                },
                 headers: {
                     "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"), // CSRF対策
                 },
@@ -154,7 +159,41 @@
                     location.reload();
                 },
                 error: function(xhr, status, error) {
-                    alert("削除に失敗しました: " + xhr.responseJSON.error);
+                    alert("削除に失敗しました: " + (xhr.responseJSON ? xhr.responseJSON.error : error));
+                }
+            });
+        });
+
+        // 権限の切り替え（チェックを変えたらその場で保存。失敗したら元に戻す）
+        $(document).on('change', '.member-permission', function() {
+            const $box = $(this);
+            const checked = $box.prop('checked');
+            $box.prop('disabled', true);
+
+            $.ajax({
+                type: "POST",
+                url: "{{ url('/api/merchant/member_permission') }}",
+                dataType: "json",
+                data: {
+                    access_token: $('#access_token').val(),
+                    member_user_id: $box.data('user_id'),
+                    permission: $box.data('permission'),
+                    value: checked ? 1 : 0,
+                },
+                headers: {
+                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                },
+                success: function() {
+                    const $msg = $('<span style="color: #06c755; margin-left: 6px; font-size: 12px;">保存しました</span>');
+                    $box.closest('label').append($msg);
+                    setTimeout(function() { $msg.remove(); }, 1500);
+                },
+                error: function(xhr) {
+                    $box.prop('checked', !checked);
+                    alert(xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : '保存に失敗しました');
+                },
+                complete: function() {
+                    $box.prop('disabled', false);
                 }
             });
         });
@@ -190,7 +229,8 @@
     function copyToClipboard() {
         const merchantId = document.getElementById("merchant_id").value;
         const liffIdAddMember = "{{ config('app.add_member_liff_id') }}"; // Replace this with your actual PHP variable
-        const url = `https://liff.line.me/${liffIdAddMember}?merchant_id=${merchantId}`;
+        const inviteToken = document.getElementById("invite_token").value;
+        const url = `https://liff.line.me/${liffIdAddMember}?merchant_id=${merchantId}&invite_token=${encodeURIComponent(inviteToken)}`;
 
         // Create a temporary input element to hold the URL
         const tempInput = document.createElement("input");

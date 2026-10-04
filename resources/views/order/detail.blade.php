@@ -102,7 +102,7 @@ document.getElementById('cancel-order-btn')?.addEventListener('click', function 
         const orderId = this.dataset.orderId;
         console.log(orderId);
 
-        fetch("{{ route('order.cancel') }}", {
+        fetch(@json($cancelUrl), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

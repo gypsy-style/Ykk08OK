@@ -22,6 +22,7 @@
                     <input type="hidden" name="merchant_id" id="merchant_id" value="{{$merchant->id}}">
                     <p class="lmf-btn_box btn_small"><input id="submitBtn" type="submit" value="スタッフとして追加"></p>
                 </form>
+                <p id="message" style="display: none;"></p>
             </div>
         </section>
     </main>

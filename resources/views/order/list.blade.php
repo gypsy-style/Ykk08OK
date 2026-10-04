@@ -49,6 +49,9 @@
 	</div>
 
 	<main class="lmf-main_contents">
+		<div id="noOrderPermission" class="lmf-white_block" style="display: none; text-align: center; padding: 20px; margin: 20px 0; font-size: 14px;">
+			注文の権限がありません。サロンオーナーにご確認ください。
+		</div>
 		<div class="lmf-itemlist_block">
 			<form method="POST" action="{{route('order.register')}}" id="send_form">
 				@csrf
@@ -276,6 +279,14 @@
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
+                // 注文の権限がないスタッフには商品一覧と確認ボタンを出さない（注文確定時にサーバーでも止める）
+                if (data.can_order === false) {
+                    document.getElementById('noOrderPermission').style.display = 'block';
+                    var form = document.getElementById('send_form');
+                    if (form) form.style.display = 'none';
+                    var confirmButton = document.getElementById('confirm_button');
+                    if (confirmButton) confirmButton.style.display = 'none';
+                }
                 var rank = parseInt(data.member_rank, 10);
                 if ([1, 2, 3].includes(rank)) applyShowPrice(rank);
             })

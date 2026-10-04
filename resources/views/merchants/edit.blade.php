@@ -56,7 +56,7 @@
             const submitButton = form.querySelector("input[type='submit']");
             submitButton.disabled = true; // 二重送信防止
 
-            fetch("{{ route('merchants.update', $merchant->id) }}", {
+            fetch(@json($updateUrl), {
                 method: "POST", // Laravel の `PUT` は `POST` に `X-HTTP-Method-Override` を追加
                 headers: {
                     "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value,

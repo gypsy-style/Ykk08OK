@@ -34,7 +34,6 @@
 @endsection
 @push('scripts')
 <script>
-    window.EDIT_URL = "{{ route('merchants.edit', ['id' => ':id']) }}";
     window.LIFF_ID_REGISTER = "{{ config('app.register_liff_id') }}";
     window.LIFF_ID_MERCHANT_INFORMATION = "{{ config('app.merchant_information_liff_id') }}";
     window.LIFF_MOCK = {{ config('app.liff_mock') ? 'true' : 'false' }};

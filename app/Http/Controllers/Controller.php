@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Services\MerchantAccess;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -58,6 +60,31 @@ class Controller extends BaseController
         }
 
         return null;
+    }
+
+    /**
+     * LIFF のアクセストークンから、ユーザーとサロンでの権限を引く
+     *
+     * @param mixed $accessToken
+     * @return MerchantAccess|null トークンが不正、またはユーザー未登録なら null
+     */
+    protected function merchantAccessFromToken($accessToken): ?MerchantAccess
+    {
+        if (!is_string($accessToken) || $accessToken === '') {
+            return null;
+        }
+
+        $profile = $this->getLineProfile($accessToken);
+        if (!$profile) {
+            return null;
+        }
+
+        $user = User::where('line_id', $profile['line_id'])->first();
+        if (!$user) {
+            return null;
+        }
+
+        return MerchantAccess::forUser($user);
     }
 
     /**
