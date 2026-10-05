@@ -18,15 +18,22 @@
                 <dd class="id">{{ $member->user->line_id }}</dd>
             </dl>
             {{-- 権限はオーナーだけが変えられる。スタッフ管理の権限を持つスタッフには見るだけで出す --}}
-            <div style="margin: 10px 0; font-size: 14px;">
-                <p style="margin: 0 0 6px; font-weight: bold;">権限</p>
-                @foreach (\App\Services\MerchantAccess::LABELS as $column => $label)
-                    <label style="display: block; margin: 4px 0;">
-                        <input type="checkbox" class="member-permission" data-user_id="{{ $member->user_id }}" data-permission="{{ $column }}" {{ $member->{$column} ? 'checked' : '' }} {{ $canEditPermissions ? '' : 'disabled' }}>
-                        {{ $label }}
-                    </label>
-                @endforeach
-            </div>
+            {{-- フォームと同じ組み方にして front.css のチェックボックス・ラベルの指定を効かせる --}}
+            <dl class="lmf-form_box" style="margin: 10px 0;">
+                <dt>権限</dt>
+                <dd>
+                    <ul class="form_ctrl">
+                        @foreach (\App\Services\MerchantAccess::LABELS as $column => $label)
+                            <li>
+                                <label>
+                                    <input type="checkbox" class="member-permission" data-user_id="{{ $member->user_id }}" data-permission="{{ $column }}" {{ $member->{$column} ? 'checked' : '' }} {{ $canEditPermissions ? '' : 'disabled' }}>
+                                    {{ $label }}
+                                </label>
+                            </li>
+                        @endforeach
+                    </ul>
+                </dd>
+            </dl>
             {{-- 自分自身は削除できない --}}
             @if ((int) $member->user_id !== (int) $viewerUserId)
             <p class="lmf-btn_box btn_pk btn_min">
