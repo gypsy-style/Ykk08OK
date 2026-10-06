@@ -75,17 +75,23 @@
 														$rank1Tax = $product->price_1 !== null ? (int) round($product->price_1 * 1.1) : null;
 														$rank2Tax = $product->price_2 !== null ? (int) round($product->price_2 * 1.1) : null;
 														$rank3Tax = $product->price_3 !== null ? (int) round($product->price_3 * 1.1) : null;
+														$rank4Tax = $product->price_4 !== null ? (int) round($product->price_4 * 1.1) : null;
+														$rank5Tax = $product->price_5 !== null ? (int) round($product->price_5 * 1.1) : null;
 													@endphp
 													<p class="item_price-upper"
 														data-show-1="{{ $product->show_price_1 ? '1' : '0' }}"
 														data-show-2="{{ $product->show_price_2 ? '1' : '0' }}"
 														data-show-3="{{ $product->show_price_3 ? '1' : '0' }}"
+														data-show-4="{{ $product->show_price_4 ? '1' : '0' }}"
+														data-show-5="{{ $product->show_price_5 ? '1' : '0' }}"
 														style="display:none;">サロン価格　{{ number_format($defaultTax) }}円</p>
 													<b class="item_price"
 														data-price-default="{{ $defaultTax }}"
 														data-price-1="{{ $rank1Tax ?? '' }}"
 														data-price-2="{{ $rank2Tax ?? '' }}"
 														data-price-3="{{ $rank3Tax ?? '' }}"
+														data-price-4="{{ $rank4Tax ?? '' }}"
+														data-price-5="{{ $rank5Tax ?? '' }}"
 														style="visibility:hidden;"
 													>{{ number_format($product->price ?? 0) }}円</b>
 													<p class="item_price-under" style="visibility:hidden;">(税込 {{ number_format($defaultTax) }}円)</p>
@@ -96,6 +102,8 @@
 														data-price-1="{{ $rank1Tax ?? '' }}"
 														data-price-2="{{ $rank2Tax ?? '' }}"
 														data-price-3="{{ $rank3Tax ?? '' }}"
+														data-price-4="{{ $rank4Tax ?? '' }}"
+														data-price-5="{{ $rank5Tax ?? '' }}"
 														name="item_number_{{ $product->id }}" type="text" value="0"><button
 														class="plus" type="button">＋</button>
 												</div>
@@ -288,7 +296,7 @@
                     if (confirmButton) confirmButton.style.display = 'none';
                 }
                 var rank = parseInt(data.member_rank, 10);
-                if ([1, 2, 3].includes(rank)) applyShowPrice(rank);
+                if ([1, 2, 3, 4, 5].includes(rank)) applyShowPrice(rank);
             })
             .catch(function() {})
             .finally(function() {

@@ -47,7 +47,7 @@
                     <label for="member_rank">会員ランク</label>
                     <select name="member_rank" id="member_rank">
                         <option value="">すべて</option>
-                        @foreach([1, 2, 3] as $rank)
+                        @foreach([1, 2, 3, 4, 5] as $rank)
                         <option value="{{ $rank }}" {{ request('member_rank') == $rank ? 'selected' : '' }}>{{ $rank }}</option>
                         @endforeach
                     </select>

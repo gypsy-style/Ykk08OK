@@ -81,7 +81,7 @@ async function main() {
                     if (resp.ok) {
                         const data = await resp.json();
                         const rank = parseInt(data.member_rank, 10);
-                        if ([1, 2, 3].includes(rank)) {
+                        if ([1, 2, 3, 4, 5].includes(rank)) {
                             applyRankPriceToOrderList(rank);
                         }
                     }

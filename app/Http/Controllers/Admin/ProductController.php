@@ -48,6 +48,8 @@ class ProductController extends Controller
             'price_1' => 'nullable|integer',
             'price_2' => 'nullable|integer',
             'price_3' => 'nullable|integer',
+            'price_4' => 'nullable|integer',
+            'price_5' => 'nullable|integer',
             'wholesale_price' => 'nullable|integer',
             'retail_price' => 'nullable|integer',
             'tax_rate' => 'required|integer',
@@ -126,6 +128,8 @@ class ProductController extends Controller
             'price_1' => 'nullable|integer',
             'price_2' => 'nullable|integer',
             'price_3' => 'nullable|integer',
+            'price_4' => 'nullable|integer',
+            'price_5' => 'nullable|integer',
             'wholesale_price' => 'nullable|integer',
             'retail_price' => 'nullable|integer',
             'tax_rate' => 'required|integer',
@@ -138,6 +142,8 @@ class ProductController extends Controller
             'show_price_1' => 'nullable|boolean',
             'show_price_2' => 'nullable|boolean',
             'show_price_3' => 'nullable|boolean',
+            'show_price_4' => 'nullable|boolean',
+            'show_price_5' => 'nullable|boolean',
             'accessories' => 'nullable|array',
             'accessories.*.product_id' => 'nullable|exists:products,id',
             'accessories.*.quantity' => 'nullable|integer|min:1|max:9999',
@@ -149,6 +155,8 @@ class ProductController extends Controller
         $data['show_price_1'] = $request->has('show_price_1') ? 1 : 0;
         $data['show_price_2'] = $request->has('show_price_2') ? 1 : 0;
         $data['show_price_3'] = $request->has('show_price_3') ? 1 : 0;
+        $data['show_price_4'] = $request->has('show_price_4') ? 1 : 0;
+        $data['show_price_5'] = $request->has('show_price_5') ? 1 : 0;
 
         // 既存の画像を削除して新しい画像を保存
         if ($request->hasFile('product_image')) {

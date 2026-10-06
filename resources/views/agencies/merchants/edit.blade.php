@@ -43,6 +43,8 @@
                         <option value="1" {{ (string)old('member_rank', $merchant->member_rank ?? 1) === '1' ? 'selected' : '' }}>1</option>
                         <option value="2" {{ (string)old('member_rank', $merchant->member_rank ?? 1) === '2' ? 'selected' : '' }}>2</option>
                         <option value="3" {{ (string)old('member_rank', $merchant->member_rank ?? 1) === '3' ? 'selected' : '' }}>3</option>
+                        <option value="4" {{ (string)old('member_rank', $merchant->member_rank ?? 1) === '4' ? 'selected' : '' }}>4</option>
+                        <option value="5" {{ (string)old('member_rank', $merchant->member_rank ?? 1) === '5' ? 'selected' : '' }}>5</option>
                     </select>
                 </dd>
 

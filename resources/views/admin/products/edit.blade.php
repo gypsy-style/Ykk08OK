@@ -72,6 +72,20 @@
                     <label for="show_price_3">サロン価格を表示する</label>
                 </dd>
 
+                <dt><label for="price_4">会員ランク4の価格</label></dt>
+                <dd>
+                    <input type="number" name="price_4" id="price_4" value="{{ old('price_4', $product->price_4) }}" placeholder="未入力ならサロン価格を使用">
+                    <input type="checkbox" name="show_price_4" id="show_price_4" value="1" {{ old('show_price_4', $product->show_price_4) ? 'checked' : '' }}>
+                    <label for="show_price_4">サロン価格を表示する</label>
+                </dd>
+
+                <dt><label for="price_5">会員ランク5の価格</label></dt>
+                <dd>
+                    <input type="number" name="price_5" id="price_5" value="{{ old('price_5', $product->price_5) }}" placeholder="未入力ならサロン価格を使用">
+                    <input type="checkbox" name="show_price_5" id="show_price_5" value="1" {{ old('show_price_5', $product->show_price_5) ? 'checked' : '' }}>
+                    <label for="show_price_5">サロン価格を表示する</label>
+                </dd>
+
                 <dt><label for="wholesale_price">代理店価格</label></dt>
                 <dd><input type="number" name="wholesale_price" id="wholesale_price" value="{{ old('wholesale_price', $product->wholesale_price) }}"></dd>
 
