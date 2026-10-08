@@ -63,6 +63,9 @@
                     $confirmation = $paymentConfirmations[$m->merchant_id] ?? null;
                     $send = $invoiceSends[$m->merchant_id] ?? null;
                     $reminder = $reminderSends[$m->merchant_id] ?? null;
+                    // 外したあとも送信済みは覚えておき、付け直したときに確認ダイアログを出さない
+                    $lineSend = $confirmedLineSends[$m->merchant_id] ?? null;
+                    $confirmedLine = $confirmation ? $lineSend : null;
                 @endphp
                 <li>
                     <div class="lma-user_box{{ $confirmation ? ' tbd' : '' }}">
@@ -76,10 +79,19 @@
                         <div class="lma-select_box" style="flex:0 0 auto;white-space:nowrap;margin-left:.5em;">
                             @if ($isFixedMonth)
                                 <label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-                                    <input type="checkbox" class="js-payment-confirm" data-merchant="{{ $m->merchant_id }}" {{ $confirmation ? 'checked' : '' }}>
+                                    <input type="checkbox" class="js-payment-confirm" data-merchant="{{ $m->merchant_id }}" data-name="{{ $m->merchant_name }}" data-line-sent="{{ $lineSend && $lineSend->status === 'success' ? '1' : '' }}" {{ $confirmation ? 'checked' : '' }}>
                                     振込確認
                                 </label>
                                 <span class="js-confirm-label" data-merchant="{{ $m->merchant_id }}" style="font-size:12px;color:#666;margin-left:6px;">{{ $confirmation && $confirmation->confirmed_at ? '確認済 ' . $confirmation->confirmed_at->format('n/j') : '' }}</span>
+                                @if ($confirmedLine)
+                                    @if ($confirmedLine->status === 'success')
+                                        <span style="font-size:12px;color:#666;margin-left:4px;">通知済</span>
+                                    @elseif ($confirmedLine->status === 'skipped')
+                                        <span style="font-size:12px;color:#d64545;margin-left:4px;" title="{{ $confirmedLine->error }}">LINE未登録</span>
+                                    @else
+                                        <span style="font-size:12px;color:#d64545;margin-left:4px;" title="{{ $confirmedLine->error }}">通知失敗</span>
+                                    @endif
+                                @endif
                             @endif
                         </div>
                         <div class="lma-btn_box btn_list">
@@ -136,6 +148,17 @@ document.addEventListener('DOMContentLoaded', function () {
             var id = box.dataset.merchant;
             var label = document.querySelector('.js-confirm-label[data-merchant="' + id + '"]');
             var wanted = box.checked;
+
+            // チェックを入れるときだけ、LINE送信の確認を挟む（送信済みの月は再送しないので聞かない）
+            if (wanted && !box.dataset.lineSent) {
+                var monthParts = month.split('-');
+                var monthLabel = monthParts[0] + '年' + parseInt(monthParts[1], 10) + '月分';
+                var message = box.dataset.name + ' に' + monthLabel + 'の振込確認のLINEを送信します。よろしいですか？';
+                if (!window.confirm(message)) {
+                    box.checked = false;
+                    return;
+                }
+            }
             box.disabled = true;
 
             post(confirmUrl.replace('__ID__', id), function (ok, json) {

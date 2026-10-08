@@ -7,10 +7,12 @@ use App\Models\InvoiceLineSend;
 use App\Models\Merchant;
 use App\Models\MerchantPaymentConfirmation;
 use App\Models\Order;
+use App\Models\PaymentConfirmedLineSend;
 use App\Models\PaymentReminderSend;
 use App\Models\Setting;
 use App\Services\InvoiceLineSender;
 use App\Services\InvoiceService;
+use App\Services\PaymentConfirmedLineSender;
 use App\Services\PaymentReminderMessageService;
 use App\Services\PaymentReminderSender;
 use App\Services\TestDataFilter;
@@ -109,6 +111,10 @@ class SalesController extends Controller
             ->where('status', 'success')
             ->get()
             ->keyBy('merchant_id');
+        // 失敗・スキップも一覧に出すので status で絞らない
+        $confirmedLineSends = PaymentConfirmedLineSend::where('month', $month)
+            ->get()
+            ->keyBy('merchant_id');
 
         // 未入金を上に集めたいので、振込確認済みの店舗を末尾へ回す（各グループ内は売上降順のまま）
         $merchantSales = $merchantSales
@@ -169,6 +175,7 @@ class SalesController extends Controller
             'excludeTest',
             'paymentConfirmations',
             'invoiceSends',
+            'confirmedLineSends',
             'reminderSends',
             'reminderTargets',
             'reminderMessage',
@@ -328,9 +335,13 @@ class SalesController extends Controller
      *
      * 行があれば確認済み。もう一度押されたら行を消す。
      */
-    public function togglePaymentConfirm($merchantId, Request $request, InvoiceService $invoiceService)
-    {
-        $merchant = Merchant::findOrFail($merchantId);
+    public function togglePaymentConfirm(
+        $merchantId,
+        Request $request,
+        InvoiceService $invoiceService,
+        PaymentConfirmedLineSender $lineSender
+    ) {
+        $merchant = Merchant::with('owner')->findOrFail($merchantId);
         $month = (string) $request->input('month');
 
         if (!$invoiceService->isFixedMonth($month)) {
@@ -355,9 +366,20 @@ class SalesController extends Controller
             ]
         );
 
+        // 振込確認の保存は LINE の成否に関係なく有効にする（結果は一覧に表示）
+        $line = null;
+        if ($confirmation->wasRecentlyCreated) {
+            $line = $lineSender->send($merchant, $month);
+        }
+
         return response()->json([
             'confirmed' => true,
             'confirmed_at' => $confirmation->confirmed_at->format('n/j'),
+            'line' => $line ? [
+                'success' => $line['success'],
+                'skipped' => $line['skipped'],
+                'message' => $line['message'],
+            ] : null,
         ]);
     }
 
