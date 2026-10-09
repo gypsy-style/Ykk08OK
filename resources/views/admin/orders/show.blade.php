@@ -69,9 +69,10 @@ default: return $action;
 						<td></td>
 						<td>
 							@if($order->status === 2)
-								<input type="number" id="shipping-fee-input" value="{{ $order->shipping_fee }}" min="0" style="width:100px; padding:4px 8px; border:1px solid #aaa; border-radius:4px; background:#fff; color:#333; font-size:14px;">円
-								<button type="button" id="shipping-fee-save" style="margin-left:8px; padding:4px 12px; background:#4a90d9; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;">保存</button>
-								<button type="button" id="order-confirm" style="margin-left:8px; padding:4px 12px; background:#2e8b57; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;">確定して発送待ちにする</button>
+								<div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:6px; white-space:normal;">
+									<span style="white-space:nowrap;"><input type="number" inputmode="numeric" id="shipping-fee-input" value="{{ $order->shipping_fee }}" min="0" style="width:80px; max-width:100%; padding:4px 8px; border:1px solid #aaa; border-radius:4px; background:#fff; color:#333; font-size:16px;">円</span>
+									<button type="button" id="shipping-fee-save" style="padding:4px 12px; background:#4a90d9; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer; white-space:nowrap;">保存</button>
+								</div>
 							@else
 								{{ $order->shipping_fee }}円
 							@endif
@@ -95,6 +96,9 @@ default: return $action;
 			<div class="lma-detail_note">
 				<p>備考：{{ $order->memo }}</p>
 			</div>
+			@if($order->status === 2)
+			<button type="button" id="order-confirm" style="display:block; width:100%; margin-top:12px; padding:12px; background:#2e8b57; color:#fff; border:none; border-radius:4px; font-size:15px; font-weight:bold; cursor:pointer;">送料を確定して発送待ちにする</button>
+			@endif
 		</div>
 
 		<div class="lma-copy_wrap">
