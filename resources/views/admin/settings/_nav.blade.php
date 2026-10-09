@@ -9,6 +9,7 @@
     <li><a href="{{ route('admin.settings.company_info') }}" @if($active === 'company_info') class="is-active" @endif>会社情報</a></li>
     <li><a href="{{ route('admin.settings.shipping') }}" @if($active === 'shipping') class="is-active" @endif>送料設定</a></li>
     <li><a href="{{ route('admin.settings.invoice_line') }}" @if($active === 'invoice_line') class="is-active" @endif>請求書LINE通知</a></li>
+    <li><a href="{{ route('admin.settings.merchant_registered_line') }}" @if($active === 'merchant_registered_line') class="is-active" @endif>オーナー登録</a></li>
     <li><a href="{{ route('admin.settings.richmenu') }}" @if($active === 'richmenu') class="is-active" @endif>リッチメニュー</a></li>
 </ul>
 <style>

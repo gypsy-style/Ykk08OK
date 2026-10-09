@@ -315,4 +315,40 @@ class SettingController extends Controller
             'message' => $result['message'] ?? '',
         ]);
     }
+
+    /**
+     * オーナー登録の通知先ユーザーを選ぶ画面
+     *
+     * 送信先は users.is_notify_target で持つ（ユーザー一覧のチェックと同じ値）。
+     * 送信先は1人だけ。LINE ID が無いユーザーには送れないので、選択肢に出さない。
+     */
+    public function merchantRegisteredLine()
+    {
+        $users = User::with('merchant:id,name')
+            ->whereNotNull('line_id')
+            ->orderByDesc('is_notify_target')
+            ->orderBy('id')
+            ->get(['id', 'name', 'display_name', 'merchant_id', 'is_notify_target']);
+
+        return view('admin.settings.merchant_registered_line', compact('users'));
+    }
+
+    public function updateMerchantRegisteredLine(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'nullable|integer',
+        ]);
+
+        $userId = $request->input('user_id');
+
+        // 送信先は1人だけなので、いったん全員を外してから選ばれたユーザー（LINE ID あり）だけを対象にする
+        User::where('is_notify_target', true)->update(['is_notify_target' => false]);
+        if ($userId) {
+            User::where('id', $userId)
+                ->whereNotNull('line_id')
+                ->update(['is_notify_target' => true]);
+        }
+
+        return redirect()->route('admin.settings.merchant_registered_line')->with('success', 'オーナー登録の通知先を保存しました。');
+    }
 }

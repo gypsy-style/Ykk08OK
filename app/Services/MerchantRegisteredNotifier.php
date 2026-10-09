@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
  * 加盟店が登録されたことを、通知対象ユーザーのLINEへ知らせる
  *
  * 宛先は users.is_notify_target が立っていて line_id を持つユーザー全員。
+ * is_notify_target は設定画面「オーナー登録」とユーザー一覧のチェックで切り替える（1人だけ）。
  * 通知の失敗で加盟店登録そのものを巻き添えにしてはいけないため、
  * このクラスは例外を外へ投げない。失敗はログにだけ残す。
  */
@@ -25,29 +26,14 @@ class MerchantRegisteredNotifier
     /**
      * 送信する本文を組み立てる
      *
-     * LIFF からの登録は status=2（無効）固定で入るが、管理画面・代理店の登録フォームは
-     * status を選べる。有効（status=1）で登録された加盟店にまで「無効です」と案内すると
-     * 受け取る側の判断を誤らせるため、無効化案内は status=2 のときだけ入れる。
-     * 管理画面 URL は内容確認のためどちらの場合も入れる。
-     *
      * @param Merchant $merchant
      * @return string
      */
     public function buildBody(Merchant $merchant)
     {
         $lines = [];
-        $lines[] = '新しい加盟店が登録されました';
+        $lines[] = '加盟店が登録されました。';
         $lines[] = '';
-        $lines[] = 'サロン名：' . $merchant->name;
-        $lines[] = '加盟店コード：' . $merchant->merchant_code;
-        $lines[] = '電話番号：' . $merchant->phone;
-        $lines[] = '登録日時：' . optional($merchant->created_at)->format('Y/m/d H:i');
-        $lines[] = '';
-
-        if ((int) $merchant->status === 2) {
-            $lines[] = '現在このサロンは「無効」です。';
-            $lines[] = '管理画面から有効に切り替えてください。';
-        }
 
         // LINE 内ブラウザだと管理画面のログイン状態が引き継がれないため、
         // openExternalBrowser=1 を付けて端末のデフォルトブラウザで開かせる

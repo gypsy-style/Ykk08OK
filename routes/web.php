@@ -179,6 +179,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('settings/invoice-line', [AdminSettingController::class, 'invoiceLine'])->name('settings.invoice_line');
         Route::post('settings/invoice-line', [AdminSettingController::class, 'updateInvoiceLine'])->name('settings.update_invoice_line');
         Route::post('settings/invoice-line/test', [AdminSettingController::class, 'testInvoiceLine'])->name('settings.test_invoice_line');
+        Route::get('settings/merchant-registered-line', [AdminSettingController::class, 'merchantRegisteredLine'])->name('settings.merchant_registered_line');
+        Route::post('settings/merchant-registered-line', [AdminSettingController::class, 'updateMerchantRegisteredLine'])->name('settings.update_merchant_registered_line');
         // リッチメニュー（割り当て・既存ユーザーへの再適用・作成）
         Route::get('settings/richmenu', [AdminRichMenuController::class, 'index'])->name('settings.richmenu');
         Route::post('settings/richmenu/assign', [AdminRichMenuController::class, 'updateAssignments'])->name('settings.richmenu.assign');

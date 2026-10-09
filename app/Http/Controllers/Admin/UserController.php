@@ -126,6 +126,13 @@ class UserController extends Controller
             ], 400);
         }
 
+        // 通知先は1人だけなので、新しく対象にしたら他のユーザーは外す
+        if ($isNotifyTarget) {
+            User::where('is_notify_target', true)
+                ->where('id', '!=', $user->id)
+                ->update(['is_notify_target' => false]);
+        }
+
         $user->update([
             'is_notify_target' => $isNotifyTarget,
         ]);

@@ -126,6 +126,12 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // 通知先は1人だけなので、他のユーザーのチェックを外す
+                    if (isNotifyTarget) {
+                        document.querySelectorAll('.notify-target-check').forEach(other => {
+                            if (other !== this) other.checked = false;
+                        });
+                    }
                     alert(isNotifyTarget ? "通知対象に設定しました！" : "通知対象から外しました！");
                 } else {
                     // 保存できていないので、チェックの見た目を元に戻す
