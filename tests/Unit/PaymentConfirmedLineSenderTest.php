@@ -34,7 +34,7 @@ class PaymentConfirmedLineSenderTest extends TestCase
     public function オーナーに振込確認のLINEを送り履歴を残す()
     {
         $this->line()->shouldReceive('sendMessage')->once()
-            ->with('Uowner', "いつもお世話になっております。\n2026年9月分のお振込みを確認いたしました。\nお忙しい中、ご対応いただきありがとうございます。\n\n引き続き、どうぞよろしくお願いいたします。")
+            ->with('Uowner', "テスト商店 様\n\nいつもお世話になっております。\n2026年9月分のお振込みを確認いたしました。\nお忙しい中、ご対応いただきありがとうございます。\n\n引き続き、どうぞよろしくお願いいたします。")
             ->andReturn(['status' => 'success']);
 
         $result = app(PaymentConfirmedLineSender::class)->send($this->merchant(), '2026-09');

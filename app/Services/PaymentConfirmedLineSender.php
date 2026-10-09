@@ -30,7 +30,8 @@ class PaymentConfirmedLineSender
     {
         $monthLabel = Carbon::createFromFormat('Y-m-d', $month . '-01')->format('Y年n月分');
 
-        return "いつもお世話になっております。\n"
+        return "{$merchant->name} 様\n\n"
+            . "いつもお世話になっております。\n"
             . "{$monthLabel}のお振込みを確認いたしました。\n"
             . "お忙しい中、ご対応いただきありがとうございます。\n\n"
             . "引き続き、どうぞよろしくお願いいたします。";
