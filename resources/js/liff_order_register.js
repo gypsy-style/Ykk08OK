@@ -51,7 +51,7 @@ function renderOrderHistory(orders) {
     function getStatusLabel(status) {
         const statusLabels = {
             1: '代理店未処理',
-            2: '代理店処理済み',
+            2: '本部未処理',
             3: '本部処理済み',
             4: '保留',
             5: '発送待ち',

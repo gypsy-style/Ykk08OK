@@ -6,7 +6,7 @@
 function getStatusText($status) {
 switch($status) {
 case 1: return '代理店未処理';
-case 2: return '代理店処理済み';
+case 2: return '本部未処理';
 case 3: return '本部処理済み';
 case 4: return '保留';
 case 5: return '発送待ち';
@@ -71,6 +71,7 @@ default: return $action;
 							@if($order->status === 2)
 								<input type="number" id="shipping-fee-input" value="{{ $order->shipping_fee }}" min="0" style="width:100px; padding:4px 8px; border:1px solid #aaa; border-radius:4px; background:#fff; color:#333; font-size:14px;">円
 								<button type="button" id="shipping-fee-save" style="margin-left:8px; padding:4px 12px; background:#4a90d9; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;">保存</button>
+								<button type="button" id="order-confirm" style="margin-left:8px; padding:4px 12px; background:#2e8b57; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;">確定して発送待ちにする</button>
 							@else
 								{{ $order->shipping_fee }}円
 							@endif
@@ -150,8 +151,10 @@ default: return $action;
 			<div class="lma-select_box">
 				<label class="label">ステータス</label>
 				<select class="form-select status-dropdown" data-order-id="{{ $order->id }}">
-					<option value="2" {{ $order->status == 2 ? 'selected' : '' }}>代理店処理済み</option>
-					<option value="3" {{ $order->status == 3 ? 'selected' : '' }}>本部処理済み</option>
+					<option value="2" {{ $order->status == 2 ? 'selected' : '' }}>本部未処理</option>
+					@if ($order->status == 3)
+					<option value="3" selected>本部処理済み（旧）</option>
+					@endif
 					<option value="5" {{ $order->status == 5 ? 'selected' : '' }}>発送待ち</option>
 					<option value="6" {{ $order->status == 6 ? 'selected' : '' }}>発送済み</option>
 					<option value="4" {{ $order->status == 4 ? 'selected' : '' }}>保留</option>
@@ -209,6 +212,38 @@ default: return $action;
 							alert('送料を更新しました');
 						} else {
 							alert('更新に失敗しました');
+						}
+					})
+					.catch(error => {
+						console.error('Error:', error);
+						alert('エラーが発生しました');
+					});
+			});
+		}
+
+		const orderConfirmBtn = document.getElementById('order-confirm');
+		if (orderConfirmBtn) {
+			orderConfirmBtn.addEventListener('click', function() {
+				const orderId = {{ $order->id }};
+				const shippingFee = document.getElementById('shipping-fee-input').value;
+				if (!confirm('送料 ' + (parseInt(shippingFee) || 0).toLocaleString() + '円で確定し、発送待ちにしますか？')) {
+					return;
+				}
+				fetch(`${BASE_URL}/admin/orders/${orderId}/confirm`, {
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+						},
+						body: JSON.stringify({ shipping_fee: shippingFee })
+					})
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							alert('確定して発送待ちにしました');
+							location.reload();
+						} else {
+							alert(data.message || '確定に失敗しました');
 						}
 					})
 					.catch(error => {

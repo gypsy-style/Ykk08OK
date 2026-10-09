@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use App\Services\InvoiceService;
 use App\Services\TestDataFilter;
 use Illuminate\Http\Request;
@@ -33,19 +34,7 @@ class DashboardController extends Controller
             'merchantCount' => $merchantCountQuery->count(),
         ];
 
-        // 各statusの件数を取得
-        $statusCountsQuery = DB::table('orders')
-            ->select('status', DB::raw('COUNT(*) as count'))
-            ->whereIn('status', [2, 3, 4, 5, 6, 9]); // 対象とするステータス
-        if ($excludeTest) {
-            TestDataFilter::excludeMerchants($statusCountsQuery);
-        }
-        $statusCounts = $statusCountsQuery
-            ->groupBy('status')
-            ->pluck('count', 'status') // 結果を 'status' => 'count' の形式で取得
-            ->toArray();
-        // 全ステータスを初期化し、結果をマージして不足分を補完
-        $statusCounts = array_replace([2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 9 => 0], $statusCounts);
+        $statusCounts = Order::adminStatusCounts($excludeTest);
 
         $headquartersProcessedQuery = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price, SUM(shipping_fee) as shipping_fee');

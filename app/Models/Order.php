@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\TestDataFilter;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -26,6 +28,43 @@ class Order extends Model
     protected $casts = [
         'shipped_at' => 'datetime',
     ];
+
+    // 加盟店の注文は代理店を経由せずこのステータスで作成され、本部が送料を確定する
+    public const STATUS_HQ_PENDING = 2;
+    // 旧フローの「本部処理済み」。新規には使わず、既存分は発送待ちとして扱う
+    public const STATUS_HQ_PROCESSED_LEGACY = 3;
+    public const STATUS_AWAITING_SHIPMENT = 5;
+
+    /**
+     * 管理画面の受注タブに含めるステータス（発送待ちタブには旧「本部処理済み」も含める）
+     */
+    public static function statusesForTab(int $status): array
+    {
+        if ($status === self::STATUS_AWAITING_SHIPMENT) {
+            return [self::STATUS_HQ_PROCESSED_LEGACY, self::STATUS_AWAITING_SHIPMENT];
+        }
+        return [$status];
+    }
+
+    /**
+     * 管理画面のタブごとの件数（旧「本部処理済み」は発送待ちに合算）
+     */
+    public static function adminStatusCounts(bool $excludeTest): array
+    {
+        $query = DB::table('orders')
+            ->select('status', DB::raw('COUNT(*) as count'))
+            ->whereIn('status', [2, 3, 4, 5, 6, 9]);
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($query);
+        }
+        $counts = array_replace(
+            [2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 9 => 0],
+            $query->groupBy('status')->pluck('count', 'status')->toArray()
+        );
+        $counts[self::STATUS_AWAITING_SHIPMENT] += $counts[self::STATUS_HQ_PROCESSED_LEGACY];
+        unset($counts[self::STATUS_HQ_PROCESSED_LEGACY]);
+        return $counts;
+    }
 
     public function merchant()
     {
@@ -95,7 +134,7 @@ class Order extends Model
     {
         switch ($status) {
             case 1: return '代理店未処理';
-            case 2: return '代理店処理済み';
+            case 2: return '本部未処理';
             case 3: return '本部処理済み';
             case 4: return '保留';
             case 5: return '発送待ち';

@@ -12,21 +12,21 @@
     </div>
     <div class="lma-content_block order_block">
         <div class="store_box">
-            <em class="label">代理店処理済みの受注</em>
+            <em class="label">本部未処理の受注</em>
             <b class="number color__sky">
-                <span class="num">{{ $agenciesProcessed->order_count }}</span><small class="unit">件</small>
-                <span class="num">{{ number_format((int) round($agenciesProcessed->total_price * 1.1)) }}</span><small class="unit">円</small>
+                <span class="num">{{ $hqPending->order_count }}</span><small class="unit">件</small>
+                <span class="num">{{ number_format((int) round($hqPending->total_price * 1.1)) }}</span><small class="unit">円</small>
             </b>
         </div>
         <div class="hq_box">
-            <em class="label">本部処理済みの受注</em>
+            <em class="label">発送待ちの受注</em>
             <b class="number color__sky">
-                <span class="num">{{ $headquartersProcessed->order_count }}</span><small class="unit">件</small>
-                <span class="num">{{ number_format((int) round($headquartersProcessed->total_price * 1.1)) }}</span><small class="unit">円</small>
+                <span class="num">{{ $awaitingShipment->order_count }}</span><small class="unit">件</small>
+                <span class="num">{{ number_format((int) round($awaitingShipment->total_price * 1.1)) }}</span><small class="unit">円</small>
             </b>
         </div>
     </div>
-    @if($status==3)
+    @if($status==5)
     <p class="lma-btn_box btn_wide"><a href="{{ route('admin.export.orders', ['exclude_test' => $excludeTest ? 1 : 0]) }}">店舗別CSVダウンロード</a></p>
     @endif
     @include('admin.partials.exclude_test_checkbox', [
@@ -37,21 +37,14 @@
     <div class="lma-content_block nobg">
         <ul class="lma-sort_list">
             <li>@if ($status == 2)
-                <span>代理店処理済み({{ $statusCounts[2] }})</span>
+                <span>本部未処理({{ $statusCounts[2] }})</span>
                 @else
-                <a href="{{ route('admin.orders.index', ['status' => 2, 'exclude_test' => $excludeTest ? 1 : 0]) }}">代理店処理済み({{ $statusCounts[2] }})</a>
-                @endif
-            </li>
-            <li>
-                @if ($status == 3)
-                <span>本部処理済み({{ $statusCounts[3] }})</span>
-                @else
-                <a href="{{ route('admin.orders.index', ['status' => 3, 'exclude_test' => $excludeTest ? 1 : 0]) }}">本部処理済み({{ $statusCounts[3] }})</a>
+                <a href="{{ route('admin.orders.index', ['status' => 2, 'exclude_test' => $excludeTest ? 1 : 0]) }}">本部未処理({{ $statusCounts[2] }})</a>
                 @endif
             </li>
             <li>
                 @if ($status == 5)
-                <span>発送待ち</span>
+                <span>発送待ち({{ $statusCounts[5] }})</span>
                 @else
                 <a href="{{ route('admin.orders.index', ['status' => 5, 'exclude_test' => $excludeTest ? 1 : 0]) }}">発送待ち({{ $statusCounts[5] }})</a>
                 @endif
@@ -81,18 +74,14 @@
         @if ($status == 2)
         <!-- 一括処理ボタン -->
         <div class="bulk-action lma-btn_box btn_wide">
-            <button id="bulk-update-btn" class="btn btn-success">選択した注文を本部処理済みにする</button>
-        </div>
-        @elseif($status == 3)
-        <div class="bulk-action lma-btn_box btn_wide">
-            <button id="bulk-update-btn" class="btn btn-success">選択した注文を発送待ちにする</button>
+            <button id="bulk-update-btn" class="btn btn-success">選択した注文を確定して発送待ちにする</button>
         </div>
         @elseif($status == 5)
         <div class="bulk-action lma-btn_box btn_wide">
             <button id="bulk-update-btn" class="btn btn-success">選択した注文を発送済みにする</button>
         </div>
         @endif
-        @if ($status == 2 || $status == 3 || $status == 5)
+        @if ($status == 2 || $status == 5)
         <div class="bulk-action">
             <input type="checkbox" id="select-all">
             <label for="select-all">全選択</label>
@@ -103,7 +92,7 @@
             <li>
                 <div class="lma-order_box">
                     <div class="order_info">
-                        @if ($status == 2 || $status == 3 || $status == 5 )
+                        @if ($status == 2 || $status == 5)
                         <input type="checkbox" class="order-checkbox" value="{{ $order->id }}">
                         @endif
                         <p class="data">{{ $order->formatted_date }}</p>
@@ -125,8 +114,10 @@
                         <div class="lma-select_box">
                         @if ($status != 9)
                             <select class="form-select status-dropdown" data-order-id="{{ $order->id }}">
-                                <option value="2" {{ $order->status == 2 ? 'selected' : '' }}>代理店処理済み</option>
-                                <option value="3" {{ $order->status == 3 ? 'selected' : '' }}>本部処理済み</option>
+                                <option value="2" {{ $order->status == 2 ? 'selected' : '' }}>本部未処理</option>
+                                @if ($order->status == 3)
+                                <option value="3" selected>本部処理済み（旧）</option>
+                                @endif
                                 <option value="5" {{ $order->status == 5 ? 'selected' : '' }}>発送待ち</option>
                                 <option value="6" {{ $order->status == 6 ? 'selected' : '' }}>発送済み</option>
                                 <option value="4" {{ $order->status == 4 ? 'selected' : '' }}>保留</option>
@@ -169,10 +160,6 @@
         
         switch (status) {
             case '2':
-                updateStatus = '3';
-                updateStatusText = '本部処理済み';
-                break;
-            case '3':
                 updateStatus = '5';
                 updateStatusText = '発送待ち';
                 break;

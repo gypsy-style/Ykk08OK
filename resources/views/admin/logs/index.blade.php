@@ -6,7 +6,7 @@
 function getStatusText($status) {
 switch($status) {
 case 1: return '代理店未処理';
-case 2: return '代理店処理済み';
+case 2: return '本部未処理';
 case 3: return '本部処理済み';
 case 4: return '保留';
 case 5: return '発送待ち';

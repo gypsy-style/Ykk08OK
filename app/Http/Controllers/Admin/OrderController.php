@@ -25,58 +25,40 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        // GETパラメータからstatusを取得（デフォルトは1）
-        $status = $request->get('status', 2);
+        // GETパラメータからstatusを取得（デフォルトは本部未処理）
+        $status = (int) $request->get('status', Order::STATUS_HQ_PENDING);
         // 未指定ならテストを除外する
         $excludeTest = $request->query('exclude_test', '1') !== '0';
 
         $ordersQuery = Order::with(['merchant.agency', 'details.product', 'agency', 'statusChangeLogs'])
-            ->where('status', $status)
+            ->whereIn('status', Order::statusesForTab($status))
             ->orderBy('created_at', 'desc');
         if ($excludeTest) {
             TestDataFilter::excludeMerchants($ordersQuery);
         }
         $orders = $ordersQuery->get();
-            // dd($orders);
 
-        //代理店処理済みの受注
-        $agenciesProcessedQuery = DB::table('orders')
+        // 本部未処理の受注
+        $hqPendingQuery = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price')
-            ->where('status', 2);
+            ->whereIn('status', Order::statusesForTab(Order::STATUS_HQ_PENDING));
         if ($excludeTest) {
-            TestDataFilter::excludeMerchants($agenciesProcessedQuery);
+            TestDataFilter::excludeMerchants($hqPendingQuery);
         }
-        $agenciesProcessed = $agenciesProcessedQuery->first();
+        $hqPending = $hqPendingQuery->first();
 
-        // 本部処理済みの受注
-        $headquartersProcessedQuery = DB::table('orders')
+        // 発送待ちの受注
+        $awaitingShipmentQuery = DB::table('orders')
             ->selectRaw('COUNT(id) as order_count, SUM(total_price) as total_price')
-            ->where('status', 3);
+            ->whereIn('status', Order::statusesForTab(Order::STATUS_AWAITING_SHIPMENT));
         if ($excludeTest) {
-            TestDataFilter::excludeMerchants($headquartersProcessedQuery);
+            TestDataFilter::excludeMerchants($awaitingShipmentQuery);
         }
-        $headquartersProcessed = $headquartersProcessedQuery->first();
+        $awaitingShipment = $awaitingShipmentQuery->first();
 
-            // 各statusの件数を取得
-            $statusCountsQuery = DB::table('orders')
-            ->select('status', DB::raw('COUNT(*) as count'))
-            ->whereIn('status', [2, 3, 4, 5, 6, 9]); // 対象とするステータス
-        if ($excludeTest) {
-            TestDataFilter::excludeMerchants($statusCountsQuery);
-        }
-        $statusCounts = $statusCountsQuery
-            ->groupBy('status')
-            ->pluck('count', 'status') // 結果を 'status' => 'count' の形式で取得
-            ->toArray();
+        $statusCounts = Order::adminStatusCounts($excludeTest);
 
-
-        // 全ステータスを初期化し、結果をマージして不足分を補完
-        $statusCounts = array_replace([ 2 => 0, 3 => 0, 4 => 0,5 => 0,6 => 0,9 => 0], $statusCounts);
-
-
-
-            // dd($headquartersProcessed);
-        return view('admin.orders.index', compact('status','orders','agenciesProcessed','headquartersProcessed','statusCounts','excludeTest'));
+        return view('admin.orders.index', compact('status','orders','hqPending','awaitingShipment','statusCounts','excludeTest'));
     }
 
     /**
@@ -164,12 +146,35 @@ class OrderController extends Controller
             'shipping_fee' => 'required|integer|min:0'
         ]);
 
-        if ($order->status !== 2) {
-            return response()->json(['success' => false, 'message' => 'ステータスが2の注文のみ送料を変更できます'], 403);
+        if ((int) $order->status !== Order::STATUS_HQ_PENDING) {
+            return response()->json(['success' => false, 'message' => '本部未処理の注文のみ送料を変更できます'], 403);
         }
 
         $order->shipping_fee = $validated['shipping_fee'];
         $order->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * 本部未処理の注文を送料込みで確定し、発送待ちにする
+     */
+    public function confirm(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'shipping_fee' => 'required|integer|min:0'
+        ]);
+
+        if ((int) $order->status !== Order::STATUS_HQ_PENDING) {
+            return response()->json(['success' => false, 'message' => '本部未処理の注文のみ確定できます'], 403);
+        }
+
+        $oldStatus = $order->status;
+        $order->shipping_fee = $validated['shipping_fee'];
+        $order->status = Order::STATUS_AWAITING_SHIPMENT;
+        $order->save();
+
+        $this->activityLogService->logOrderStatusUpdated($order, $oldStatus, Order::STATUS_AWAITING_SHIPMENT);
 
         return response()->json(['success' => true]);
     }
