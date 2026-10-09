@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', '管理画面 [オーナー登録LINE通知]')
+@section('title', '管理画面 [オーナー登録]')
 
 @push('head')
 <style>

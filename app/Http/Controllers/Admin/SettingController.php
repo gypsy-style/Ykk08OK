@@ -317,7 +317,7 @@ class SettingController extends Controller
     }
 
     /**
-     * オーナー登録LINE通知の送信先ユーザーを選ぶ画面
+     * オーナー登録の通知先ユーザーを選ぶ画面
      *
      * 送信先は users.is_notify_target で持つ（ユーザー一覧のチェックと同じ値）。
      * 送信先は1人だけ。LINE ID が無いユーザーには送れないので、選択肢に出さない。
@@ -349,6 +349,6 @@ class SettingController extends Controller
                 ->update(['is_notify_target' => true]);
         }
 
-        return redirect()->route('admin.settings.merchant_registered_line')->with('success', 'オーナー登録LINE通知の送信先を保存しました。');
+        return redirect()->route('admin.settings.merchant_registered_line')->with('success', 'オーナー登録の通知先を保存しました。');
     }
 }
