@@ -315,4 +315,41 @@ class SettingController extends Controller
             'message' => $result['message'] ?? '',
         ]);
     }
+
+    /**
+     * 加盟店登録LINE通知の送信先ユーザーを選ぶ画面
+     *
+     * 送信先は users.is_notify_target で持つ（ユーザー一覧のチェックと同じ値）。
+     * LINE ID が無いユーザーには送れないので、選択肢に出さない。
+     */
+    public function merchantRegisteredLine()
+    {
+        $users = User::with('merchant:id,name')
+            ->whereNotNull('line_id')
+            ->orderByDesc('is_notify_target')
+            ->orderBy('id')
+            ->get(['id', 'name', 'display_name', 'merchant_id', 'is_notify_target']);
+
+        return view('admin.settings.merchant_registered_line', compact('users'));
+    }
+
+    public function updateMerchantRegisteredLine(Request $request)
+    {
+        $request->validate([
+            'user_ids' => 'nullable|array',
+            'user_ids.*' => 'integer',
+        ]);
+
+        $userIds = $request->input('user_ids', []);
+
+        // チェックを外したユーザーは対象から外し、チェックしたユーザー（LINE ID あり）だけを対象にする
+        User::where('is_notify_target', true)
+            ->whereNotIn('id', $userIds)
+            ->update(['is_notify_target' => false]);
+        User::whereIn('id', $userIds)
+            ->whereNotNull('line_id')
+            ->update(['is_notify_target' => true]);
+
+        return redirect()->route('admin.settings.merchant_registered_line')->with('success', '加盟店登録LINE通知の送信先を保存しました。');
+    }
 }
