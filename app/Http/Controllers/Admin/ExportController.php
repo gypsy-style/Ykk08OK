@@ -102,7 +102,7 @@ class ExportController extends Controller
 
             // データ取得
             $ordersQuery = Order::with(['merchant', 'agency', 'details.product'])
-                ->where('status', 3);
+                ->whereIn('status', Order::statusesForTab(Order::STATUS_AWAITING_SHIPMENT));
             if ($excludeTest) {
                 TestDataFilter::excludeMerchants($ordersQuery);
             }

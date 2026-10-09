@@ -15,17 +15,9 @@
 			</div>
 			<div class="lma-content_block dashboard_order col20">
 				<div class="process_box">
-					<em class="label">代理店処理済</em>
+					<em class="label">本部未処理</em>
 					<b class="number color__sky">
 						<a href="{{ route('admin.orders.index', ['status' => 2, 'exclude_test' => $excludeTest ? 1 : 0]) }}"><span class="num">{{ $statusCounts[2] }}</span></a><small class="unit">件</small>
-					</b>
-				</div>
-			</div>
-			<div class="lma-content_block dashboard_order col20">
-				<div class="process_box">
-					<em class="label">本部処理済</em>
-					<b class="number">
-						<a href="{{ route('admin.orders.index', ['status' => 3, 'exclude_test' => $excludeTest ? 1 : 0]) }}"><span class="num">{{ $statusCounts[3] }}</span></a><small class="unit">件</small>
 					</b>
 				</div>
 			</div>
