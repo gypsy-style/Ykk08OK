@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', '管理画面 [加盟店登録LINE通知]')
+@section('title', '管理画面 [オーナー登録LINE通知]')
 
 @push('head')
 <style>
@@ -76,7 +76,7 @@
                 </dt>
                 <dd>
                     <p class="mrl-help">
-                        加盟店が新規登録されると、チェックしたユーザーのLINEへ「加盟店が登録されました。」と、その加盟店の管理画面へのリンクを送ります。<br>
+                        オーナーが新規登録されると、選んだユーザー1人のLINEへ「加盟店が登録されました。」と、その加盟店の管理画面へのリンクを送ります。<br>
                         LINE IDが登録されているユーザーだけを表示しています。
                     </p>
 
@@ -85,10 +85,16 @@
                     @else
                         <input type="search" class="mrl-search" id="mrl-search" placeholder="名前・加盟店名で絞り込み">
                         <ul class="mrl-list" id="mrl-list">
+                            <li data-search="">
+                                <label>
+                                    <input type="radio" name="user_id" value="" {{ $users->contains('is_notify_target', true) ? '' : 'checked' }}>
+                                    <span>通知しない</span>
+                                </label>
+                            </li>
                             @foreach($users as $user)
                                 <li data-search="{{ mb_strtolower(($user->name ?? '') . ' ' . ($user->display_name ?? '') . ' ' . optional($user->merchant)->name) }}">
                                     <label>
-                                        <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" {{ $user->is_notify_target ? 'checked' : '' }}>
+                                        <input type="radio" name="user_id" value="{{ $user->id }}" {{ $user->is_notify_target ? 'checked' : '' }}>
                                         <span>
                                             {{ $user->name ?: ($user->display_name ?: 'ID:' . $user->id) }}
                                             @if($user->merchant)
@@ -111,7 +117,8 @@
 </section>
 
 <script>
-    // 絞り込みは表示を隠すだけ。隠れたチェック済みの行もそのまま送信される
+    // 絞り込みは表示を隠すだけ。隠れた選択済みの行もそのまま送信される。
+    // 「通知しない」（data-search が空）は絞り込み中も常に表示する
     (function () {
         var search = document.getElementById('mrl-search');
         if (!search) return;
@@ -122,7 +129,7 @@
         search.addEventListener('input', function () {
             var q = search.value.trim().toLowerCase();
             document.querySelectorAll('#mrl-list li').forEach(function (li) {
-                li.style.display = !q || li.dataset.search.indexOf(q) !== -1 ? '' : 'none';
+                li.style.display = !q || !li.dataset.search || li.dataset.search.indexOf(q) !== -1 ? '' : 'none';
             });
         });
     })();

@@ -317,10 +317,10 @@ class SettingController extends Controller
     }
 
     /**
-     * 加盟店登録LINE通知の送信先ユーザーを選ぶ画面
+     * オーナー登録LINE通知の送信先ユーザーを選ぶ画面
      *
      * 送信先は users.is_notify_target で持つ（ユーザー一覧のチェックと同じ値）。
-     * LINE ID が無いユーザーには送れないので、選択肢に出さない。
+     * 送信先は1人だけ。LINE ID が無いユーザーには送れないので、選択肢に出さない。
      */
     public function merchantRegisteredLine()
     {
@@ -336,20 +336,19 @@ class SettingController extends Controller
     public function updateMerchantRegisteredLine(Request $request)
     {
         $request->validate([
-            'user_ids' => 'nullable|array',
-            'user_ids.*' => 'integer',
+            'user_id' => 'nullable|integer',
         ]);
 
-        $userIds = $request->input('user_ids', []);
+        $userId = $request->input('user_id');
 
-        // チェックを外したユーザーは対象から外し、チェックしたユーザー（LINE ID あり）だけを対象にする
-        User::where('is_notify_target', true)
-            ->whereNotIn('id', $userIds)
-            ->update(['is_notify_target' => false]);
-        User::whereIn('id', $userIds)
-            ->whereNotNull('line_id')
-            ->update(['is_notify_target' => true]);
+        // 送信先は1人だけなので、いったん全員を外してから選ばれたユーザー（LINE ID あり）だけを対象にする
+        User::where('is_notify_target', true)->update(['is_notify_target' => false]);
+        if ($userId) {
+            User::where('id', $userId)
+                ->whereNotNull('line_id')
+                ->update(['is_notify_target' => true]);
+        }
 
-        return redirect()->route('admin.settings.merchant_registered_line')->with('success', '加盟店登録LINE通知の送信先を保存しました。');
+        return redirect()->route('admin.settings.merchant_registered_line')->with('success', 'オーナー登録LINE通知の送信先を保存しました。');
     }
 }
