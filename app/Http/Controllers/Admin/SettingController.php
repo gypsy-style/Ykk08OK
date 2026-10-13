@@ -320,7 +320,7 @@ class SettingController extends Controller
      * オーナー登録の通知先ユーザーを選ぶ画面
      *
      * 送信先は users.is_notify_target で持つ（ユーザー一覧のチェックと同じ値）。
-     * 送信先は1人だけ。LINE ID が無いユーザーには送れないので、選択肢に出さない。
+     * LINE ID が無いユーザーには送れないので、選択肢に出さない。
      */
     public function merchantRegisteredLine()
     {
@@ -336,18 +336,19 @@ class SettingController extends Controller
     public function updateMerchantRegisteredLine(Request $request)
     {
         $request->validate([
-            'user_id' => 'nullable|integer',
+            'user_ids' => 'nullable|array',
+            'user_ids.*' => 'integer',
         ]);
 
-        $userId = $request->input('user_id');
+        $userIds = $request->input('user_ids', []);
 
-        // 送信先は1人だけなので、いったん全員を外してから選ばれたユーザー（LINE ID あり）だけを対象にする
-        User::where('is_notify_target', true)->update(['is_notify_target' => false]);
-        if ($userId) {
-            User::where('id', $userId)
-                ->whereNotNull('line_id')
-                ->update(['is_notify_target' => true]);
-        }
+        // チェックを外したユーザーは対象から外し、チェックしたユーザー（LINE ID あり）だけを対象にする
+        User::where('is_notify_target', true)
+            ->whereNotIn('id', $userIds)
+            ->update(['is_notify_target' => false]);
+        User::whereIn('id', $userIds)
+            ->whereNotNull('line_id')
+            ->update(['is_notify_target' => true]);
 
         return redirect()->route('admin.settings.merchant_registered_line')->with('success', 'オーナー登録の通知先を保存しました。');
     }
