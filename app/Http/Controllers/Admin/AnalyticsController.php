@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\SalonAnalyticsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AnalyticsController extends Controller
 {
@@ -71,6 +72,107 @@ class AnalyticsController extends Controller
             'detail' => $detail,
             'dailySales' => SalonAnalyticsService::salonDailySales($merchantId, $month),
         ], $nav));
+    }
+
+    /**
+     * 画面のテーブルをCSVで落とす。月・テスト除外は画面と同じ条件を使う
+     *
+     * Excelでそのまま開けるよう、BOM付きUTF-8で出す。
+     * 商品売上は画面の上位10件に限らず全サロンを出す。
+     */
+    public function csv(Request $request, $type)
+    {
+        $month = $this->month($request);
+        $excludeTest = $this->excludeTest($request);
+
+        switch ($type) {
+            case 'product-sales':
+                [$filename, $rows] = $this->productSalesCsv($month, $excludeTest);
+                break;
+            case 'new-merchants':
+                [$filename, $rows] = $this->newMerchantsCsv($month, $excludeTest);
+                break;
+            case 'dormant-salons':
+                [$filename, $rows] = $this->dormantSalonsCsv($excludeTest);
+                break;
+            default:
+                abort(404);
+        }
+
+        return new StreamedResponse(function () use ($rows) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            foreach ($rows as $row) {
+                fputcsv($handle, array_map([$this, 'csvCell'], $row));
+            }
+            fclose($handle);
+        }, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    private function productSalesCsv($month, $excludeTest)
+    {
+        $sales = SalonAnalyticsService::salonProductSales($month, $excludeTest);
+
+        $header = ['サロン名', '削除済み', '件数'];
+        foreach ($sales['products'] as $product) {
+            $header[] = $product['name'] . '（個数）';
+            $header[] = $product['name'] . '（売上）';
+        }
+        $header[] = '合計（個数）';
+        $header[] = '合計（売上）';
+
+        $rows = [$header];
+        foreach ($sales['rows'] as $row) {
+            $line = [$row['name'], $row['deleted'] ? '削除済み' : '', $row['shipments']];
+            foreach ($sales['products'] as $product) {
+                $line[] = $row['byQuantity'][$product['id']];
+                $line[] = $row['byProduct'][$product['id']];
+            }
+            $line[] = $row['quantity'];
+            $line[] = $row['total'];
+            $rows[] = $line;
+        }
+
+        return ['product_sales_' . $month . '.csv', $rows];
+    }
+
+    private function newMerchantsCsv($month, $excludeTest)
+    {
+        $months = SalonAnalyticsService::months($month);
+        $data = SalonAnalyticsService::monthlyNewMerchantsByAgency($months, $excludeTest);
+
+        $rows = [array_merge(['代理店名'], $months)];
+        foreach ($data['rows'] as $row) {
+            $rows[] = array_merge([$row['name']], array_values($row['byMonth']));
+        }
+        $rows[] = array_merge(['合計'], array_values($data['totals']));
+
+        return ['new_merchants_' . $months[0] . '_' . $month . '.csv', $rows];
+    }
+
+    private function dormantSalonsCsv($excludeTest)
+    {
+        $rows = [['区分', 'サロン名']];
+        foreach (SalonAnalyticsService::dormantSalons($excludeTest) as $group) {
+            foreach ($group['salons'] as $salon) {
+                $rows[] = [$group['label'], $salon['name']];
+            }
+        }
+
+        return ['dormant_salons_' . Carbon::now()->format('Ymd') . '.csv', $rows];
+    }
+
+    /** Excelで式として解釈されないよう、=+-@ で始まる文字列の頭に ' を付ける */
+    private function csvCell($value)
+    {
+        if (is_string($value) && $value !== '' && strpbrk($value[0], '=+-@') !== false) {
+            return "'" . $value;
+        }
+
+        return $value;
     }
 
     /** 代理店1件の詳細 */

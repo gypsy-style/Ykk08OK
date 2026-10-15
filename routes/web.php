@@ -125,6 +125,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('analytics/new-merchants', [AdminAnalyticsController::class, 'newMerchants'])->name('analytics.new_merchants');
         Route::get('analytics/product-sales', [AdminAnalyticsController::class, 'productSales'])->name('analytics.product_sales');
         Route::get('analytics/product-sales/all', [AdminAnalyticsController::class, 'productSalesAll'])->name('analytics.product_sales_all');
+        Route::get('analytics/csv/{type}', [AdminAnalyticsController::class, 'csv'])->name('analytics.csv');
         Route::get('analytics/salon/{merchant}', [AdminAnalyticsController::class, 'salon'])->name('analytics.salon');
         Route::get('analytics/agency/{agency}', [AdminAnalyticsController::class, 'agency'])->name('analytics.agency');
         // 商品管理

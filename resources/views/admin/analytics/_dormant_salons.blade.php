@@ -1,3 +1,4 @@
+<p class="lma-btn_box btn_wh btn_min analytics_csv"><a href="{{ route('admin.analytics.csv', ['type' => 'dormant-salons', 'exclude_test' => $excludeTest ? 1 : 0]) }}">注文のないサロンをCSVダウンロード</a></p>
 <div class="analytics_dormant">
     @foreach ($dormantSalons as $group)
     <div class="analytics_dormant_col">
