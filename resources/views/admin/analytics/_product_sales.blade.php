@@ -9,6 +9,7 @@
         <li class="next"><a href="#" data-month="{{ $productNextMonth }}">次月</a></li>
         @endif
     </ul>
+    <p class="lma-btn_box btn_wh btn_min analytics_csv"><a href="{{ route('admin.analytics.csv', ['type' => 'product-sales', 'month' => $productMonth, 'exclude_test' => $excludeTest ? 1 : 0]) }}">CSVダウンロード（全サロン）</a></p>
     <table class="lma-detail_tbl analytics_tbl">
         <tbody>
             <tr>

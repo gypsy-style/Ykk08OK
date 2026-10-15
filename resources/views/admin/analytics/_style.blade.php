@@ -82,6 +82,11 @@
         background-color: var(--color_lglay);
     }
 
+    .analytics_csv {
+        margin-bottom: 15px;
+        text-align: right;
+    }
+
     .analytics_more {
         margin-top: 15px;
         text-align: center;
