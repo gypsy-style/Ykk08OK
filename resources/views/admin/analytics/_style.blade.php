@@ -77,6 +77,13 @@
         text-align: right;
     }
 
+    /* btn_min の固定幅120pxだと文言が折り返すため、内容幅に合わせる */
+    .lma-btn_box.btn_min.analytics_csv a {
+        width: auto;
+        padding-left: 1.5em;
+        padding-right: 1.5em;
+    }
+
     .analytics_more {
         margin-top: 15px;
         text-align: center;
