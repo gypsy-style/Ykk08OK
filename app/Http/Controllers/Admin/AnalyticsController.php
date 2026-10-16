@@ -92,9 +92,6 @@ class AnalyticsController extends Controller
             case 'new-merchants':
                 [$filename, $rows] = $this->newMerchantsCsv($month, $excludeTest);
                 break;
-            case 'dormant-salons':
-                [$filename, $rows] = $this->dormantSalonsCsv($excludeTest);
-                break;
             default:
                 abort(404);
         }
@@ -151,18 +148,6 @@ class AnalyticsController extends Controller
         $rows[] = array_merge(['合計'], array_values($data['totals']));
 
         return ['new_merchants_' . $months[0] . '_' . $month . '.csv', $rows];
-    }
-
-    private function dormantSalonsCsv($excludeTest)
-    {
-        $rows = [['区分', 'サロン名']];
-        foreach (SalonAnalyticsService::dormantSalons($excludeTest) as $group) {
-            foreach ($group['salons'] as $salon) {
-                $rows[] = [$group['label'], $salon['name']];
-            }
-        }
-
-        return ['dormant_salons_' . Carbon::now()->format('Ymd') . '.csv', $rows];
     }
 
     /** Excelで式として解釈されないよう、=+-@ で始まる文字列の頭に ' を付ける */

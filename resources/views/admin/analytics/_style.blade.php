@@ -32,27 +32,17 @@
 
     /* 直近注文のないサロンの4カラム。
        親の .record_block が 1040px 以上で flex になるため、幅を指定しないと
-       内容幅に縮んで右側が余り、4カラムが均等に並ばない */
+       内容幅に縮んで右側が余り、4カラムが均等に並ばない。
+       狭い画面では折り返さず横スクロールさせる */
     .analytics_dormant {
         display: flex;
-        flex-wrap: wrap;
         gap: 20px;
         width: 100%;
+        overflow-x: auto;
     }
 
     .analytics_dormant_col {
-        flex: 1 1 200px;
-        min-width: 0;
-    }
-
-    @media only screen and (max-width: 678px) {
-        .analytics_dormant {
-            display: block;
-        }
-
-        .analytics_dormant_col:not(:last-child) {
-            margin-bottom: 20px;
-        }
+        flex: 1 0 200px;
     }
 
     .analytics_agency {
