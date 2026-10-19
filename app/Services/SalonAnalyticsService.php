@@ -265,6 +265,93 @@ class SalonAnalyticsService
     }
 
     /**
+     * 月ごとの注文のあったサロンと購入率。購入率の推移を追うための一覧
+     *
+     * 注文のないサロン一覧と対になる表で、列は新しい月から並べる。
+     * 購入率 = その月に発送のあったサロン数 ÷ その月に在籍していたサロン数。
+     * 在籍は「月末までに登録済みで、月初より前に削除されていない」で判定する。
+     * 今の数で割ると、後からサロンが増減するたびに過去月の購入率が変わるため。
+     *
+     * @param array<int, string> $months 'YYYY-MM'（古い順）
+     * @return array<int, array{month: string, label: string, orderedCount: int, activeCount: int, rate: float|null, salons: array<int, array{id: int, name: string, deleted: bool, shipments: int}>}>
+     */
+    public static function orderedSalonsByMonth(array $months, $excludeTest = true)
+    {
+        [$start, $end] = self::range($months);
+
+        $query = DB::table('orders as o')
+            ->selectRaw('DATE_FORMAT(o.shipped_at, "%Y-%m") as ym, o.merchant_id, COUNT(*) as cnt')
+            ->where('o.shipped_at', '>=', $start)
+            ->where('o.shipped_at', '<', $end)
+            ->groupBy('ym', 'o.merchant_id');
+
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchants($query, 'o');
+        }
+
+        InvoiceService::applyInvoiceScope($query, 'o');
+
+        $shipments = [];
+        foreach ($query->get() as $row) {
+            $shipments[$row->ym][(int) $row->merchant_id] = (int) $row->cnt;
+        }
+
+        $merchantsQuery = Merchant::withTrashed();
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchantRows($merchantsQuery);
+        }
+        $merchants = $merchantsQuery->where('created_at', '<', $end)
+            ->get(['id', 'name', 'created_at', 'deleted_at'])
+            ->keyBy('id');
+
+        $groups = [];
+        foreach (array_reverse($months) as $month) {
+            [$monthStart, $monthEnd] = self::range([$month]);
+
+            $activeCount = 0;
+            foreach ($merchants as $merchant) {
+                if ($merchant->created_at !== null && $merchant->created_at->gte($monthEnd)) {
+                    continue;
+                }
+                if ($merchant->deleted_at !== null && $merchant->deleted_at->lt($monthStart)) {
+                    continue;
+                }
+                $activeCount++;
+            }
+
+            $salons = [];
+            foreach ($shipments[$month] ?? [] as $merchantId => $count) {
+                $merchant = $merchants->get($merchantId);
+                if ($merchant === null) {
+                    continue;
+                }
+                $salons[] = [
+                    'id' => $merchant->id,
+                    'name' => $merchant->name,
+                    'deleted' => $merchant->deleted_at !== null,
+                    'shipments' => $count,
+                ];
+            }
+
+            // 発送件数の多いサロンから並べる
+            usort($salons, function ($a, $b) {
+                return $b['shipments'] <=> $a['shipments'] ?: strcmp($a['name'], $b['name']);
+            });
+
+            $groups[] = [
+                'month' => $month,
+                'label' => Carbon::parse($month . '-01')->format('Y年n月') . 'に注文のあったサロン',
+                'orderedCount' => count($salons),
+                'activeCount' => $activeCount,
+                'rate' => $activeCount === 0 ? null : round(count($salons) / $activeCount * 100, 1),
+                'salons' => $salons,
+            ];
+        }
+
+        return $groups;
+    }
+
+    /**
      * サロン1件の日別商品売上（税込・単月）
      *
      * 行は売上のあった日だけ。売上0の日まで並べると1ヶ月で31行になり、

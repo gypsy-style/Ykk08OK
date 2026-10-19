@@ -45,6 +45,11 @@
         flex: 1 0 200px;
     }
 
+    .analytics_rate {
+        margin: 0 0 10px;
+        text-align: right;
+    }
+
     .analytics_agency {
         margin-top: 5px;
         font-size: .9em;
