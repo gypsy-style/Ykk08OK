@@ -25,7 +25,6 @@ class AnalyticsController extends Controller
                 'excludeTest' => $excludeTest,
                 'overview' => SalonAnalyticsService::overview($excludeTest),
                 'dormantSalons' => SalonAnalyticsService::dormantSalons($excludeTest),
-                'orderedSalons' => SalonAnalyticsService::orderedSalonsByMonth($nav['months'], $excludeTest),
                 'newMerchants' => SalonAnalyticsService::monthlyNewMerchantsByAgency($nav['months'], $excludeTest),
             ],
             $this->productSalesData($month, self::TOP_ROWS, $excludeTest)
@@ -93,6 +92,9 @@ class AnalyticsController extends Controller
             case 'new-merchants':
                 [$filename, $rows] = $this->newMerchantsCsv($month, $excludeTest);
                 break;
+            case 'last-orders':
+                [$filename, $rows] = $this->lastOrdersCsv($excludeTest);
+                break;
             default:
                 abort(404);
         }
@@ -149,6 +151,16 @@ class AnalyticsController extends Controller
         $rows[] = array_merge(['合計'], array_values($data['totals']));
 
         return ['new_merchants_' . $months[0] . '_' . $month . '.csv', $rows];
+    }
+
+    private function lastOrdersCsv($excludeTest)
+    {
+        $rows = [['サロン名', '最終購入日']];
+        foreach (SalonAnalyticsService::lastOrderDates($excludeTest) as $row) {
+            $rows[] = [$row['name'], $row['last'] === null ? '' : $row['last']->format('Y-m-d')];
+        }
+
+        return ['last_orders_' . Carbon::now()->format('Ymd') . '.csv', $rows];
     }
 
     /** Excelで式として解釈されないよう、=+-@ で始まる文字列の頭に ' を付ける */

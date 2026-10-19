@@ -34,6 +34,12 @@
        親の .record_block が 1040px 以上で flex になるため、幅を指定しないと
        内容幅に縮んで右側が余り、4カラムが均等に並ばない。
        狭い画面では折り返さず横スクロールさせる */
+    /* CSVボタンと4カラムを1つにまとめる。.record_block の flex 子要素に
+       ボタンが並ぶと、4カラムが細い列に押し込まれて崩れるため */
+    .analytics_dormant_wrap {
+        width: 100%;
+    }
+
     .analytics_dormant {
         display: flex;
         gap: 20px;
@@ -43,11 +49,6 @@
 
     .analytics_dormant_col {
         flex: 1 0 200px;
-    }
-
-    .analytics_rate {
-        margin: 0 0 10px;
-        text-align: right;
     }
 
     .analytics_agency {
