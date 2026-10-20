@@ -173,7 +173,7 @@ class MerchantController extends Controller
                             $query->whereNull('deleted_at');
                         }),
                 ],
-                'agency_id' => 'required|integer|exists:agencies,id',
+                'agency_id' => 'nullable|integer|exists:agencies,id',
             ], [
                 'name_kana.regex' => 'ふりがなはひらがなで始めてください。',
             ]);
