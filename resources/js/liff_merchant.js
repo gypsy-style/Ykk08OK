@@ -18,7 +18,8 @@ async function main() {
         // ユーザーがログインしていない場合はログイン処理を開始
         if (!liff.isLoggedIn()) {
             console.log('ログインが必要です。リダイレクトします...');
-            liff.login();
+            // redirectUri を省くとエンドポイントURLに戻り、?agency_id= が消えて代理店が紐づかなくなる
+            liff.login({ redirectUri: window.location.href });
             return; // ログイン後に処理が再開される
         }
 

@@ -7,7 +7,8 @@ async function main() {
 
         // ユーザーがログインしていない場合はログインさせる
         if (!liff.isLoggedIn()) {
-            liff.login();
+            // redirectUri を省くとエンドポイントURLに戻り、?agency_id= などのクエリが消える
+            liff.login({ redirectUri: window.location.href });
             return; // ログイン後に再度実行される想定
         }
 

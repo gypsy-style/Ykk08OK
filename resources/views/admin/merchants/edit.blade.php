@@ -23,6 +23,8 @@
                 <dt><label for="agency_id">代理店</label></dt>
                 <dd>
                     <select class="form-control" id="agency_id" name="agency_id">
+                        {{-- 未設定の加盟店を保存したときに先頭の代理店が勝手に入らないようにする --}}
+                        <option value="" {{ $merchant->agency_id ? '' : 'selected' }}>未設定</option>
                         @foreach ($agencies as $agency)
                         <option value="{{ $agency->id }}" {{ $merchant->agency_id == $agency->id ? 'selected' : '' }}>
                             {{ $agency->name }}
