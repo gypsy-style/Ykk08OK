@@ -200,16 +200,7 @@ class SalonAnalyticsService
      */
     public static function dormantSalons($excludeTest = true)
     {
-        $lastOrders = DB::table('orders as o')
-            ->selectRaw('o.merchant_id, MAX(o.shipped_at) as last_shipped_at')
-            ->groupBy('o.merchant_id');
-
-        InvoiceService::applyInvoiceScope($lastOrders, 'o');
-
-        $lastShipped = [];
-        foreach ($lastOrders->get() as $row) {
-            $lastShipped[(int) $row->merchant_id] = Carbon::parse($row->last_shipped_at);
-        }
+        $lastShipped = self::lastShippedAt();
 
         $merchantsQuery = Merchant::query();
         if ($excludeTest) {
@@ -262,6 +253,65 @@ class SalonAnalyticsService
         }
 
         return $groups;
+    }
+
+    /**
+     * サロンごとの最終購入日。注文のないサロン一覧と同じく発送日で判定する
+     *
+     * 削除済みサロンは対象外。最近買ったサロンから並べ、一度も注文のない
+     * サロンは日付を空にして末尾に出す。
+     *
+     * @return array<int, array{id: int, name: string, last: Carbon|null}>
+     */
+    public static function lastOrderDates($excludeTest = true)
+    {
+        $lastShipped = self::lastShippedAt();
+
+        $merchantsQuery = Merchant::query();
+        if ($excludeTest) {
+            TestDataFilter::excludeMerchantRows($merchantsQuery);
+        }
+
+        $rows = [];
+        foreach ($merchantsQuery->orderBy('name')->get(['id', 'name']) as $merchant) {
+            $rows[] = [
+                'id' => $merchant->id,
+                'name' => $merchant->name,
+                'last' => $lastShipped[$merchant->id] ?? null,
+            ];
+        }
+
+        // usort は安定ソートなので、同じ日付どうしは名前順のまま残る
+        usort($rows, function ($a, $b) {
+            if ($a['last'] === null || $b['last'] === null) {
+                return ($a['last'] === null) <=> ($b['last'] === null);
+            }
+
+            return $b['last'] <=> $a['last'];
+        });
+
+        return $rows;
+    }
+
+    /**
+     * サロンごとの最後の発送日時
+     *
+     * @return array<int, Carbon> merchant_id => 最終発送日時
+     */
+    private static function lastShippedAt()
+    {
+        $query = DB::table('orders as o')
+            ->selectRaw('o.merchant_id, MAX(o.shipped_at) as last_shipped_at')
+            ->groupBy('o.merchant_id');
+
+        InvoiceService::applyInvoiceScope($query, 'o');
+
+        $lastShipped = [];
+        foreach ($query->get() as $row) {
+            $lastShipped[(int) $row->merchant_id] = Carbon::parse($row->last_shipped_at);
+        }
+
+        return $lastShipped;
     }
 
     /**
