@@ -52,7 +52,8 @@
 		<div id="noOrderPermission" class="lmf-white_block" style="display: none; text-align: center; padding: 20px; margin: 20px 0; font-size: 14px;">
 			注文の権限がありません。サロンオーナーにご確認ください。
 		</div>
-		<div class="lmf-itemlist_block">
+		{{-- 会員ランクが分かるまで隠す（ランク価格が空欄の商品を一瞬見せないため） --}}
+		<div class="lmf-itemlist_block" style="visibility:hidden;">
 			<form method="POST" action="{{route('order.register')}}" id="send_form">
 				@csrf
 				<div class="main_splide splide" role="group" aria-label="メイン">
@@ -262,6 +263,31 @@
         });
     }
 
+    // ランク価格が空欄の商品はそのランクの会員に出さない（注文確定時にサーバーでも外す）
+    function hideUnpricedItems(rank) {
+        document.querySelectorAll('input[name^="item_number_"]').forEach(function(input) {
+            if (input.type === 'hidden' || input.getAttribute('data-price-' + rank) !== '') return;
+            var li = input.closest('li');
+            if (li) li.style.display = 'none';
+            // localStorage から戻したカートに入っていた場合は数量を外して合計を計算し直す
+            if (Number(input.value) > 0) $(input).val(0).trigger('change');
+        });
+        document.querySelectorAll('.lmf-item_list').forEach(function(list) {
+            var items = Array.prototype.slice.call(list.children);
+            var visible = items.some(function(li) { return li.style.display !== 'none'; });
+            if (!visible) {
+                var empty = document.createElement('li');
+                empty.textContent = '商品がありません';
+                list.appendChild(empty);
+            }
+        });
+    }
+
+    function showItemList() {
+        var block = document.querySelector('.lmf-itemlist_block');
+        if (block) block.style.visibility = '';
+    }
+
     function waitForToken(callback, tries) {
         tries = tries || 0;
         var el = document.getElementById('access_token');
@@ -270,13 +296,15 @@
             callback(token);
         } else if (tries < 30) {
             setTimeout(function() { waitForToken(callback, tries + 1); }, 200);
+        } else {
+            showItemList();
         }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         waitForToken(function(token) {
             var csrf = document.querySelector('meta[name="csrf-token"]');
-            if (!csrf) return;
+            if (!csrf) { showItemList(); return; }
             fetch('/ykk08ok/api/merchant/member_rank', {
                 method: 'POST',
                 headers: {
@@ -296,10 +324,14 @@
                     if (confirmButton) confirmButton.style.display = 'none';
                 }
                 var rank = parseInt(data.member_rank, 10);
-                if ([1, 2, 3, 4, 5].includes(rank)) applyShowPrice(rank);
+                if ([1, 2, 3, 4, 5].includes(rank)) {
+                    applyShowPrice(rank);
+                    hideUnpricedItems(rank);
+                }
             })
             .catch(function() {})
             .finally(function() {
+                showItemList();
                 document.querySelectorAll('.item_price, .item_price-under').forEach(function(el) {
                     el.style.visibility = '';
                 });

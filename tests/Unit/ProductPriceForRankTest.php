@@ -52,4 +52,27 @@ class ProductPriceForRankTest extends TestCase
         $this->assertSame(1000, $product->getPriceForRank(6));
         $this->assertSame(1000, $product->getPriceForRank(0));
     }
+
+    /** @test */
+    public function ランク価格が空欄の商品はそのランクには出さない()
+    {
+        $product = $this->product(['price_1' => 900, 'price_2' => null]);
+
+        $this->assertTrue($product->isAvailableForRank(1));
+        $this->assertFalse($product->isAvailableForRank(2));
+        $this->assertFalse($product->isAvailableForRank(5));
+    }
+
+    /** @test */
+    public function ランク未設定はランク1の価格で判定する()
+    {
+        $this->assertTrue($this->product(['price_1' => 900])->isAvailableForRank(null));
+        $this->assertFalse($this->product([])->isAvailableForRank(null));
+    }
+
+    /** @test */
+    public function ランク価格が0円なら出す()
+    {
+        $this->assertTrue($this->product(['price_3' => 0])->isAvailableForRank(3));
+    }
 }
