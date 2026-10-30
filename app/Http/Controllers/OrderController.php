@@ -138,9 +138,12 @@ class OrderController extends Controller
 
 
         // 3. 商品情報を取得し、価格の合計を計算
+        // ランク価格が空欄の商品はそのランクの会員には売らない
         $products = Product::whereIn('id', array_keys($items))
             ->with(['accessories'])
-            ->get();
+            ->get()
+            ->filter(fn ($product) => $product->isAvailableForRank($memberRank))
+            ->values();
         $totalPrice = 0;
         $totalQuantity = 0;
 
@@ -228,11 +231,21 @@ class OrderController extends Controller
             return response()->json(['error' => '商品が選択されていません'], 400);
         }
 
-        $products = Product::whereIn('id', array_keys($items))->with('accessories')->get();
+        $memberRank = (int) ($merchant->member_rank ?? 1);
+
+        // ランク価格が空欄の商品はそのランクの会員には売らない
+        $products = Product::whereIn('id', array_keys($items))
+            ->with('accessories')
+            ->get()
+            ->filter(fn ($product) => $product->isAvailableForRank($memberRank))
+            ->values();
+        if ($products->isEmpty()) {
+            return response()->json(['error' => '商品が選択されていません'], 400);
+        }
         $totalPrice = 0;
 
         foreach ($products as $product) {
-            $unitPrice = $product->getPriceForRank((int) ($merchant->member_rank ?? 1));
+            $unitPrice = $product->getPriceForRank($memberRank);
             $totalPrice += $unitPrice * $items[$product->id];
         }
         // 送料の計算（20,000円以下なら770円）
@@ -264,7 +277,7 @@ class OrderController extends Controller
             foreach ($products as $product) {
                 // メイン商品を登録（DBには実際の個数を保存）
                 $actualQuantity = $items[$product->id];
-                $unitPrice = $product->getPriceForRank((int) ($merchant->member_rank ?? 1));
+                $unitPrice = $product->getPriceForRank($memberRank);
                 DB::table('order_details')->insert([
                     'order_id' => $order->id,
                     'product_id' => $product->id,

@@ -43,6 +43,16 @@ class Product extends Model
     }
 
     /**
+     * そのランクの会員に販売する商品か（ランク価格が空欄の商品は出さない）
+     */
+    public function isAvailableForRank(?int $memberRank): bool
+    {
+        $rank = $memberRank ?? 1;
+        if ($rank < 1 || $rank > 5) return true;
+        return $this->{'price_' . $rank} !== null;
+    }
+
+    /**
      * Category モデルとのリレーション
      */
     public function category()
