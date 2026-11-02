@@ -53,35 +53,35 @@
 
                 <dt><label for="price_1">会員ランク1の価格</label></dt>
                 <dd>
-                    <input type="number" name="price_1" id="price_1" value="{{ old('price_1', $product->price_1) }}" placeholder="未入力ならサロン価格を使用">
+                    <input type="number" name="price_1" id="price_1" value="{{ old('price_1', $product->price_1) }}" placeholder="未入力ならこのランクの会員には表示しません">
                     <input type="checkbox" name="show_price_1" id="show_price_1" value="1" {{ old('show_price_1', $product->show_price_1) ? 'checked' : '' }}>
                     <label for="show_price_1">サロン価格を表示する</label>
                 </dd>
 
                 <dt><label for="price_2">会員ランク2の価格</label></dt>
                 <dd>
-                    <input type="number" name="price_2" id="price_2" value="{{ old('price_2', $product->price_2) }}" placeholder="未入力ならサロン価格を使用">
+                    <input type="number" name="price_2" id="price_2" value="{{ old('price_2', $product->price_2) }}" placeholder="未入力ならこのランクの会員には表示しません">
                     <input type="checkbox" name="show_price_2" id="show_price_2" value="1" {{ old('show_price_2', $product->show_price_2) ? 'checked' : '' }}>
                     <label for="show_price_2">サロン価格を表示する</label>
                 </dd>
 
                 <dt><label for="price_3">会員ランク3の価格</label></dt>
                 <dd>
-                    <input type="number" name="price_3" id="price_3" value="{{ old('price_3', $product->price_3) }}" placeholder="未入力ならサロン価格を使用">
+                    <input type="number" name="price_3" id="price_3" value="{{ old('price_3', $product->price_3) }}" placeholder="未入力ならこのランクの会員には表示しません">
                     <input type="checkbox" name="show_price_3" id="show_price_3" value="1" {{ old('show_price_3', $product->show_price_3) ? 'checked' : '' }}>
                     <label for="show_price_3">サロン価格を表示する</label>
                 </dd>
 
                 <dt><label for="price_4">会員ランク4の価格</label></dt>
                 <dd>
-                    <input type="number" name="price_4" id="price_4" value="{{ old('price_4', $product->price_4) }}" placeholder="未入力ならサロン価格を使用">
+                    <input type="number" name="price_4" id="price_4" value="{{ old('price_4', $product->price_4) }}" placeholder="未入力ならこのランクの会員には表示しません">
                     <input type="checkbox" name="show_price_4" id="show_price_4" value="1" {{ old('show_price_4', $product->show_price_4) ? 'checked' : '' }}>
                     <label for="show_price_4">サロン価格を表示する</label>
                 </dd>
 
                 <dt><label for="price_5">会員ランク5の価格</label></dt>
                 <dd>
-                    <input type="number" name="price_5" id="price_5" value="{{ old('price_5', $product->price_5) }}" placeholder="未入力ならサロン価格を使用">
+                    <input type="number" name="price_5" id="price_5" value="{{ old('price_5', $product->price_5) }}" placeholder="未入力ならこのランクの会員には表示しません">
                     <input type="checkbox" name="show_price_5" id="show_price_5" value="1" {{ old('show_price_5', $product->show_price_5) ? 'checked' : '' }}>
                     <label for="show_price_5">サロン価格を表示する</label>
                 </dd>
