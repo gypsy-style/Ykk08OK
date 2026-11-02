@@ -294,7 +294,8 @@
         var token = el ? el.value : '';
         if (token) {
             callback(token);
-        } else if (tries < 30) {
+        } else if (tries < 300) {
+            // LIFF のログインに時間がかかっても、ランクが分かるまで一覧は出さない（最大60秒）
             setTimeout(function() { waitForToken(callback, tries + 1); }, 200);
         } else {
             showItemList();
