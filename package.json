@@ -12,7 +12,7 @@
         "vite": "^4.0.0"
     },
     "dependencies": {
-        "@line/liff": "^2.25.0",
+        "@line/liff": "^2.31.2",
         "bootstrap": "^5.3.3"
     }
 }
