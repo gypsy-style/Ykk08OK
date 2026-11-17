@@ -91,25 +91,6 @@
 	</main>
 </div><!-- /.lmf-container -->
 <script>
-	// トーク送信の失敗はクライアント側でしか分からないため、サーバーに記録して原因を追えるようにする
-	function reportSendMessagesFailure(orderId, err) {
-		let inClient = 'unknown';
-		try {
-			inClient = liff.isInClient() ? 'yes' : 'no';
-		} catch (e) {}
-
-		const body = new FormData();
-		body.append('_token', document.querySelector('input[name="_token"]').value);
-		body.append('order_id', orderId);
-		body.append('in_client', inClient);
-		body.append('error', String((err && err.message) || err));
-
-		return fetch("{{ route('order.message_failed') }}", {
-			method: "POST",
-			body: body
-		}).catch(function() {});
-	}
-
 	document.addEventListener("DOMContentLoaded", function() {
 		document.getElementById("order_regist").addEventListener("submit", function(event) {
 			event.preventDefault();
@@ -140,20 +121,7 @@
 					localStorage.removeItem('cartData');
 					document.getElementById('order_regist').reset();
 
-					const liffOrderUrl = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
-					liff.sendMessages([{
-						type: 'text',
-						text: '【注文しました】'
-					}]).then(function() {
-						window.location.href = liffOrderUrl;
-					}).catch(function(err) {
-						console.error('sendMessages error', err);
-						// この投稿が公式アカウントの自動応答トリガーなので、失敗すると注文内容が届かない
-						alert("注文は受け付けましたが、トークへの送信ができませんでした。LINEアプリから開き直すと注文内容が届きます。");
-						reportSendMessagesFailure(data.order_id, err).then(function() {
-							window.location.href = liffOrderUrl;
-						});
-					});
+					window.location.href = `https://liff.line.me/{{ env('LIFF_ID_ORDER_HISTORY') }}`;
 				})
 				.catch(error => {
 					alert("エラーが発生しました: " + (error.error || error.message || "不明なエラー"));
