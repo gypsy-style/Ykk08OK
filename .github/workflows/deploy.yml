@@ -5,10 +5,46 @@ on:
     branches:
       - main
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  APP_DIR: lme-order.net/public_html/ykk08ok
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # public/build は git 管理外なので、ここでビルドしてサーバーへ送る
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+
+      # いったん build_new に送り、最後に入れ替える（古いファイルを残さないため）
+      - name: Upload build to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          source: public/build
+          target: ${{ env.APP_DIR }}/public/build_new
+          strip_components: 2
+          rm: true
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -18,6 +54,13 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd lme-order.net/public_html/ykk08ok
+            set -e
+            cd ${{ env.APP_DIR }}
             git pull
             php artisan migrate --force
+            cd public
+            test -f build_new/manifest.json
+            rm -rf build_old
+            if [ -d build ]; then mv build build_old; fi
+            mv build_new build
+            rm -rf build_old
